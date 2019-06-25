@@ -38,6 +38,7 @@ class DiscordBot {
                                         "from User user where user.discordId = :discordId and user.guildId = :guildId");
                                 findUser.setParameter("discordId", member.getId().asLong());
                                 findUser.setParameter("guildId", member.getGuildId().asLong());
+                                System.out.println(new User(member).toString());
                                 return findUser.getResultList().isEmpty();
                             })
                             .doOnNext(member -> {
