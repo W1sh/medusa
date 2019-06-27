@@ -19,8 +19,8 @@ public class CommandHandler {
         String commandName = command.getContent().map(s -> s.split(" ")[0]).orElse("NOT FOUND");
         commandName = commandName.substring(1);
         if(commands.containsKey(commandName)){
-            String response = commands.get(commandName).execute();
-            command.getChannel().flatMap(messageChannel -> messageChannel.createMessage(response)).subscribe();
+            //String response = commands.get(commandName).execute();
+            //command.getChannel().flatMap(messageChannel -> messageChannel.createMessage(response)).subscribe();
         }
     }
 
