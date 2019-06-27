@@ -1,6 +1,6 @@
 package handlers;
 
-import commands.Command;
+import commands.AbstractCommand;
 import discord4j.core.object.entity.Message;
 import org.reflections.Reflections;
 
@@ -11,7 +11,7 @@ import java.util.Set;
 
 public class CommandHandler {
 
-    private static final Map<String, Command> commands = new HashMap<>();
+    private static final Map<String, AbstractCommand> commands = new HashMap<>();
 
     private CommandHandler(){}
 
@@ -26,12 +26,12 @@ public class CommandHandler {
 
     public static void loadCommands() {
         Reflections reflections = new Reflections("commands");
-        Set<Class<? extends Command>> classes = reflections.getSubTypesOf(Command.class);
+        Set<Class<? extends AbstractCommand>> classes = reflections.getSubTypesOf(AbstractCommand.class);
         classes.forEach(item -> {
             try {
-                Command command = item.getConstructor().newInstance();
-                if(!commands.containsKey(command.getName())){
-                    commands.put(command.getName(), command);
+                AbstractCommand abstractCommand = item.getConstructor().newInstance();
+                if(!commands.containsKey(abstractCommand.getName())){
+                    commands.put(abstractCommand.getName(), abstractCommand);
                 }
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 e.printStackTrace();

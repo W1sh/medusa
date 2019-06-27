@@ -36,7 +36,7 @@ public class DatabaseHandler {
     }
 
     @SuppressWarnings(value = "unchecked")
-    public static void initializeAutomaticPointIncrementation(EntityManager entityManager, DiscordClient client){
+    public static void initializeAutomaticPointIncrementation(EntityManager entityManager){
         ScheduledExecutorService ses = Executors.newSingleThreadScheduledExecutor();
         ses.scheduleAtFixedRate(() -> {
             System.out.println("TIME TO GET POINTS"); // flogger
