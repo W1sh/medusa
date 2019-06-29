@@ -48,4 +48,11 @@ public class User{
         this.guildId = member.getGuildId().asLong();
         this.points = 0;
     }
+
+    public User(long discordId, long guildId){
+        this.discordId = discordId;
+        this.name = "me";
+        this.discriminator = "0001";
+        this.guildId = guildId;
+    }
 }
