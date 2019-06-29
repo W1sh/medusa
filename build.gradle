@@ -14,7 +14,6 @@ repositories {
 dependencies {
     implementation 'com.discord4j:discord4j-core:3.0.7'
     implementation 'com.discord4j:discord4j-command:3.0.7'
-    compile group: 'org.reflections', name:'reflections', version:'0.9.11'
     compile group: 'org.hibernate', name:'hibernate-core', version:'5.4.3.Final'
     compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.16'
     compileOnly 'org.projectlombok:lombok:1.18.8'
