@@ -15,18 +15,13 @@ public class GenericRepositoryTest {
 
     @Test
     public void read() {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("PersistenceUnit");
-        EntityManager em = emf.createEntityManager();
-        User user = new User();
-        GenericRepository<User, Long> genericRepository = new GenericRepository<>(User.class, em);
+        GenericRepository<User, Long> genericRepository = new GenericRepository<>(User.class);
         genericRepository.read().forEach(System.out::println);
     }
 
     @Test
     public void readById() {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("PersistenceUnit");
-        EntityManager em = emf.createEntityManager();
-        GenericRepository<User, Long> genericRepository = new GenericRepository<>(User.class, em);
+        GenericRepository<User, Long> genericRepository = new GenericRepository<>(User.class);
         Tuple2<String, Long> tuple = Tuples.of("id", 1L);
         System.out.println(genericRepository.read(tuple));
     }
@@ -39,7 +34,7 @@ public class GenericRepositoryTest {
         em.getTransaction().begin();
         em.persist(user);
         em.getTransaction().commit();
-        GenericRepository<User, Long> genericRepository = new GenericRepository<>(User.class, em);
+        GenericRepository<User, Long> genericRepository = new GenericRepository<>(User.class);
         Tuple2<String, Long> tuple = Tuples.of("discordId", 1L);
         assertEquals(1, genericRepository.delete(tuple));
     }

@@ -14,29 +14,23 @@ import handlers.DatabaseHandler;
 import reactor.core.publisher.Mono;
 import utils.Vault;
 
-import javax.persistence.*;
-
 class DiscordBot {
 
     private final String token = Vault.fetch("discord_token");
     private final DiscordClient client = new DiscordClientBuilder(token).build();
 
     public DiscordBot() {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("PersistenceUnit");
-        EntityManager em = emf.createEntityManager();
-        em.getTransaction().begin();
-
         client.getEventDispatcher().on(ReadyEvent.class)
                 .subscribe(ready -> {
-                    DatabaseHandler.initializeDatabase(em, client);
-                    DatabaseHandler.initializeAutomaticPointIncrementation(em);
+                    DatabaseHandler.initializeDatabase(client);
+                    DatabaseHandler.initializeAutomaticPointIncrementation();
                     CommandHandler.setupCommands(client);
                     System.out.println("Logged in as " + ready.getSelf().getUsername());
                     System.out.println("Currently serving " + ready.getGuilds().size() + " servers");
                 });
 
         client.getEventDispatcher().on(DisconnectEvent.class)
-                .doOnNext(disconnectEvent -> em.getTransaction().commit())
+                //.doOnNext(disconnectEvent -> em.getTransaction().commit())
                 .subscribe();
 
         client.getEventDispatcher().on(GuildCreateEvent.class)
