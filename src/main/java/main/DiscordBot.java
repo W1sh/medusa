@@ -1,6 +1,5 @@
 package main;
 
-import commands.AbstractCommand;
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
@@ -31,6 +30,7 @@ class DiscordBot {
                 .subscribe(ready -> {
                     DatabaseHandler.initializeDatabase(em, client);
                     DatabaseHandler.initializeAutomaticPointIncrementation(em);
+                    CommandHandler.setupCommands(client);
                     System.out.println("Logged in as " + ready.getSelf().getUsername());
                     System.out.println("Currently serving " + ready.getGuilds().size() + " servers");
                 });
@@ -50,13 +50,13 @@ class DiscordBot {
                 //.doOnNext(/*register guild*/)
                 .subscribe();
 
-        client.getEventDispatcher().on(MessageCreateEvent.class)
+        /*client.getEventDispatcher().on(MessageCreateEvent.class)
                 .map(MessageCreateEvent::getMessage)
                 .filter(message -> message.getAuthor().map(user -> !user.isBot()).orElse(false) &&
                         message.getContent().map(content -> content.startsWith(AbstractCommand.COMMAND_PREFIX)).orElse(false))
-                //.doOnNext(CommandHandler::executeCommand)
+                .doOnNext(CommandHandler::executeCommand)
                 .onErrorResume(e -> Mono.empty())
-                .subscribe();
+                .subscribe();*/
 
         client.getEventDispatcher().on(MemberJoinEvent.class)
                 .map(MemberJoinEvent::getMember)

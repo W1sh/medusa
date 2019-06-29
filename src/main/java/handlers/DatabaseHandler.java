@@ -2,6 +2,7 @@ package handlers;
 
 import discord4j.core.DiscordClient;
 import discord4j.core.object.entity.Guild;
+import entities.GenericRepository;
 import entities.User;
 
 import javax.persistence.EntityManager;
@@ -40,13 +41,11 @@ public class DatabaseHandler {
         ScheduledExecutorService ses = Executors.newSingleThreadScheduledExecutor();
         ses.scheduleAtFixedRate(() -> {
             System.out.println("TIME TO GET POINTS"); // flogger
-            Query selectQuery = entityManager.createQuery("select new map(id as id, points as points) from User");
-            selectQuery.getResultList().forEach(map -> {
-                int id = (int) ((HashMap) map).get("id");
-                int points = (int) ((HashMap) map).get("points");
+            GenericRepository<User, Long> genericRepository = new GenericRepository<>(User.class, entityManager);
+            genericRepository.read().forEach(user -> {
                 Query updateQuery = entityManager.createQuery("update User set points = :points where id = :id");
-                updateQuery.setParameter("points", (points + 100));
-                updateQuery.setParameter("id", id);
+                updateQuery.setParameter("points", (user.getPoints() + 100));
+                updateQuery.setParameter("id", user.getId());
                 updateQuery.executeUpdate();
             });
         },1, 1, TimeUnit.HOURS);

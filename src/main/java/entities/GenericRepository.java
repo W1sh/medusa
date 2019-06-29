@@ -29,7 +29,7 @@ public class GenericRepository<T, K> {
 
     }
 
-    protected Stream<T> read(){
+    public Stream<T> read(){
         Root<T> root = criteriaQuery.from(typeParameterClass);
         CriteriaQuery<T> all = criteriaQuery.select(root);
 
@@ -37,7 +37,7 @@ public class GenericRepository<T, K> {
         return typedQuery.getResultStream();
     }
 
-    protected T read(Tuple2<String, K> tuple){
+    public T read(Tuple2<String, K> tuple){
         Root<T> root = criteriaQuery.from(typeParameterClass);
         CriteriaQuery<T> builtQuery = criteriaQuery.select(root)
                 .where(criteriaBuilder.equal(root.get(tuple.getT1()), tuple.getT2()));
@@ -47,15 +47,15 @@ public class GenericRepository<T, K> {
         return typedQuery.getSingleResult();
     }
 
-    protected void persist(T entity){
+    public void persist(T entity){
         entityManager.persist(entity);
     }
 
-    protected T update(T entity){
+    public T update(T entity){
         return null;
     }
 
-    protected int delete(Tuple2<String, K> tuple){
+    public int delete(Tuple2<String, K> tuple){
         Root<T> root = criteriaDelete.from(typeParameterClass);
         Predicate predicate = criteriaBuilder.equal(root.get(tuple.getT1()), tuple.getT2());
         CriteriaDelete<T> deleteQuery = criteriaDelete.where(predicate);
@@ -63,7 +63,7 @@ public class GenericRepository<T, K> {
         return entityManager.createQuery(deleteQuery).executeUpdate();
     }
 
-    protected int delete(Tuple2<String, K> tuple1, Tuple2<String, K> tuple2){
+    public int delete(Tuple2<String, K> tuple1, Tuple2<String, K> tuple2){
         Root<T> root = criteriaDelete.from(typeParameterClass);
         Predicate predicate1 = criteriaBuilder.equal(root.get(tuple1.getT1()), tuple1.getT2());
         Predicate predicate2 = criteriaBuilder.equal(root.get(tuple2.getT1()), tuple2.getT2());
