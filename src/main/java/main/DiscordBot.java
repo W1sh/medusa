@@ -54,7 +54,7 @@ class DiscordBot {
                 .map(MessageCreateEvent::getMessage)
                 .filter(message -> message.getAuthor().map(user -> !user.isBot()).orElse(false) &&
                         message.getContent().map(content -> content.startsWith(AbstractCommand.COMMAND_PREFIX)).orElse(false))
-                .doOnNext(CommandHandler::executeCommand)
+                //.doOnNext(CommandHandler::executeCommand)
                 .onErrorResume(e -> Mono.empty())
                 .subscribe();
 

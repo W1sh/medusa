@@ -1,5 +1,8 @@
 package commands;
 
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import reactor.core.publisher.Mono;
+
 public class HelpCommand extends AbstractCommand {
 
     @Override
@@ -18,7 +21,7 @@ public class HelpCommand extends AbstractCommand {
     }
 
     @Override
-    public String execute() {
-        return "!ping -> Requests a \"Pong!\" response from the bot.";
+    public Mono<Void> execute(MessageCreateEvent event, Object context) {
+        return null;
     }
 }

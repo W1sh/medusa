@@ -4,7 +4,7 @@ import handlers.CommandHandler;
 
 public class Main {
     public static void main(String[] args) {
-        CommandHandler.loadCommands();
+        //CommandHandler.loadCommands();
         DiscordBot bot = new DiscordBot();
     }
 }
