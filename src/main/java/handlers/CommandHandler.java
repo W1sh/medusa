@@ -12,6 +12,8 @@ import reactor.core.publisher.Mono;
 
 public class CommandHandler {
 
+    private static final String COMMAND_PREFIX = "!";
+
     private CommandHandler(){}
 
     private static class SimpleCommandDispatcher extends AbstractCommandDispatcher {
@@ -38,7 +40,7 @@ public class CommandHandler {
     }
 
     public static void setupCommands(DiscordClient client) {
-        SimpleCommandDispatcher dispatcher = new SimpleCommandDispatcher("!"); //Handles triggering commands using our ! prefix
+        SimpleCommandDispatcher dispatcher = new SimpleCommandDispatcher(COMMAND_PREFIX); //Handles triggering commands using our ! prefix
         CommandBootstrapper bootstrapper = new CommandBootstrapper(dispatcher); //This mediates all internal logic for commands
         bootstrapper.addProvider(new SimpleCommandProvider()); //Register our command provider
         bootstrapper.attach(client).subscribe(); //Attach the provider to the client and activate it
