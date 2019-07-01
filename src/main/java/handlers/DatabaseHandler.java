@@ -15,8 +15,9 @@ import java.util.concurrent.TimeUnit;
 
 public class DatabaseHandler {
 
+    private static final GenericRepository<User, Long> genericRepository = new GenericRepository<>(User.class);
+
     public static void initializeDatabase(DiscordClient client){
-        GenericRepository<User, Long> genericRepository = new GenericRepository<>(User.class);
         client.getGuilds()
                 .flatMap(Guild::getMembers)
                 .filter(member -> !member.isBot())
@@ -34,7 +35,6 @@ public class DatabaseHandler {
     }
 
     public static void initializeAutomaticPointIncrementation(){
-        GenericRepository<User, Long> genericRepository = new GenericRepository<>(User.class);
         ScheduledExecutorService ses = Executors.newSingleThreadScheduledExecutor();
         ses.scheduleAtFixedRate(() -> {
             System.out.println("TIME TO GET POINTS"); // flogger

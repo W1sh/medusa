@@ -8,11 +8,17 @@ import discord4j.core.event.domain.guild.MemberJoinEvent;
 import discord4j.core.event.domain.guild.MemberLeaveEvent;
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
-import discord4j.core.event.domain.message.MessageCreateEvent;
+import entities.GenericRepository;
+import entities.User;
 import handlers.CommandHandler;
 import handlers.DatabaseHandler;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 import utils.Vault;
+
+import java.util.Objects;
 
 class DiscordBot {
 
@@ -20,6 +26,7 @@ class DiscordBot {
     private final DiscordClient client = new DiscordClientBuilder(token).build();
 
     public DiscordBot() {
+        GenericRepository<User, Long> userRepository = new GenericRepository<>(User.class);
         client.getEventDispatcher().on(ReadyEvent.class)
                 .subscribe(ready -> {
                     DatabaseHandler.initializeDatabase(client);
@@ -44,23 +51,25 @@ class DiscordBot {
                 //.doOnNext(/*register guild*/)
                 .subscribe();
 
-        /*client.getEventDispatcher().on(MessageCreateEvent.class)
-                .map(MessageCreateEvent::getMessage)
-                .filter(message -> message.getAuthor().map(user -> !user.isBot()).orElse(false) &&
-                        message.getContent().map(content -> content.startsWith(AbstractCommand.COMMAND_PREFIX)).orElse(false))
-                .doOnNext(CommandHandler::executeCommand)
-                .onErrorResume(e -> Mono.empty())
-                .subscribe();*/
-
         client.getEventDispatcher().on(MemberJoinEvent.class)
                 .map(MemberJoinEvent::getMember)
-                //.doOnNext(/*do something*/)
+                .map(User::new)
+                .doOnNext(userRepository::persist)
                 .onErrorResume(e -> Mono.empty())
                 .subscribe();
 
         client.getEventDispatcher().on(MemberLeaveEvent.class)
-                .map(MemberLeaveEvent::getUser)
-                //.doOnNext(/*do something*/)
+                .map(event -> {
+                    if(event.getMember().isPresent()){
+                        return Tuples.of(event.getGuildId().asLong(),
+                                event.getMember().map(discord4j.core.object.entity.User::getId).get().asLong());
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .doOnNext(tuple-> userRepository.delete(
+                        Tuples.of("discordId", tuple.getT2()),
+                        Tuples.of("guildId", tuple.getT1())))
                 .onErrorResume(e -> Mono.empty())
                 .subscribe();
 

@@ -27,9 +27,8 @@ public class GenericRepository<T, K> {
         CriteriaQuery<T> criteriaQuery = criteriaBuilder.createQuery(typeParameterClass);
         Root<T> root = criteriaQuery.from(typeParameterClass);
         criteriaQuery.select(root);
-
-        TypedQuery<T> typedQuery = entityManager.createQuery(criteriaQuery);
-        return typedQuery.getResultStream();
+        
+        return entityManager.createQuery(criteriaQuery).getResultStream();
     }
 
     @SafeVarargs
