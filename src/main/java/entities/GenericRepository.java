@@ -70,6 +70,16 @@ public class GenericRepository<T, K> {
         return entityManager.createQuery(deleteQuery).executeUpdate();
     }
 
+    public boolean isPresent(Tuple2<String, K> tuple){
+        CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+        Root<T> root = criteriaQuery.from(typeParameterClass);
+        Predicate predicate = createWhereClause(root, tuple);
+        criteriaQuery.select(criteriaBuilder.count(root)).where(predicate);
+
+        final TypedQuery<Long> typedQuery = entityManager.createQuery(criteriaQuery);
+        return typedQuery.getSingleResult() > 0;
+    }
+
     @SafeVarargs
     private final Predicate createWhereClause(Root<T> root, Tuple2<String, K>... tuples){
         if(tuples.length > 1){

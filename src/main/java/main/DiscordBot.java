@@ -12,9 +12,7 @@ import entities.GenericRepository;
 import entities.User;
 import handlers.CommandHandler;
 import handlers.DatabaseHandler;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 import utils.Vault;
 
@@ -26,7 +24,7 @@ class DiscordBot {
     private final DiscordClient client = new DiscordClientBuilder(token).build();
 
     public DiscordBot() {
-        GenericRepository<User, Long> userRepository = new GenericRepository<>(User.class);
+        final GenericRepository<User, Long> userRepository = new GenericRepository<>(User.class);
         client.getEventDispatcher().on(ReadyEvent.class)
                 .subscribe(ready -> {
                     DatabaseHandler.initializeDatabase(client);
@@ -41,8 +39,9 @@ class DiscordBot {
                 .subscribe();
 
         client.getEventDispatcher().on(GuildCreateEvent.class)
-                .map(GuildCreateEvent::getGuild)
-                //.doOnNext(/*register guild*/)
+                .map(event -> Tuples.of("guildId", event.getGuild().getId().asLong()))
+                .filter(tuple -> !userRepository.isPresent(tuple))
+                //.doOnNext(tuple -> )
                 .subscribe();
 
         client.getEventDispatcher().on(GuildDeleteEvent.class)
