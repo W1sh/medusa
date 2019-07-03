@@ -10,6 +10,8 @@ public class Vault {
 
     private static final String file = "/home/bruno/IdeaProjects/jdbot/src/main/resources/config.properties";
 
+    private Vault(){}
+
     public static void store(String key, String value, String comments){
         Properties prop = new Properties();
         prop.setProperty(key, value);

@@ -4,7 +4,6 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 public class PingCommand extends AbstractCommand {
 

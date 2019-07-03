@@ -1,4 +1,4 @@
-package entities;
+package entity.entities;
 
 import discord4j.core.object.entity.Member;
 import lombok.*;

@@ -4,8 +4,8 @@ import discord4j.core.DiscordClient;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.object.presence.Status;
-import entities.GenericRepository;
-import entities.User;
+import entity.entities.User;
+import entity.repositories.implementations.UserRepository;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
@@ -15,7 +15,9 @@ import java.util.concurrent.TimeUnit;
 
 public class DatabaseHandler {
 
-    private static final GenericRepository<User, Long> genericRepository = new GenericRepository<>(User.class);
+    private static final UserRepository userRepository = UserRepository.getInstance();
+
+    private DatabaseHandler(){}
 
     public static void initializeDatabase(DiscordClient client){
         client.getGuilds()
@@ -26,11 +28,12 @@ public class DatabaseHandler {
                     return presence != null && presence.getStatus().equals(Status.ONLINE);
                 })
                 .filter(member -> {
-                    Tuple2<String, Long> tupleDiscordId = Tuples.of("discordId", member.getId().asLong());
-                    Tuple2<String, Long> tupleGuildId = Tuples.of("guildId", member.getGuildId().asLong());
-                    return genericRepository.read(tupleDiscordId, tupleGuildId) == null;
+                    final Tuple2<String, Long>[] tuples = new Tuple2[2];
+                    tuples[0] = Tuples.of("discordId", member.getId().asLong());
+                    tuples[1] = Tuples.of("guildId", member.getGuildId().asLong());
+                    return userRepository.read(tuples) == null;
                 })
-                .doOnNext(member -> genericRepository.persist(new User(member)))
+                .doOnNext(member -> userRepository.persist(new User(member)))
                 .subscribe();
     }
 
@@ -38,11 +41,11 @@ public class DatabaseHandler {
         ScheduledExecutorService ses = Executors.newSingleThreadScheduledExecutor();
         ses.scheduleAtFixedRate(() -> {
             System.out.println("TIME TO GET POINTS"); // flogger
-            genericRepository.read().forEach(user -> {
+            userRepository.read().forEach(user -> {
                 Tuple2<String, Long> tuple1 = Tuples.of("points", (long) (user.getPoints() + 100));
                 Tuple2<String, Long> tuple2 = Tuples.of("id", (long) user.getId());
                 // log update result
-                System.out.println(genericRepository.update(tuple1, tuple2));
+                System.out.println(userRepository.update(tuple1, tuple2));
             });
         },1, 1, TimeUnit.HOURS);
     }

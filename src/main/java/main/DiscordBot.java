@@ -8,8 +8,8 @@ import discord4j.core.event.domain.guild.MemberJoinEvent;
 import discord4j.core.event.domain.guild.MemberLeaveEvent;
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
-import entities.GenericRepository;
-import entities.User;
+import entity.entities.User;
+import entity.repositories.implementations.UserRepository;
 import handlers.CommandHandler;
 import handlers.DatabaseHandler;
 import reactor.core.publisher.Mono;
@@ -22,11 +22,13 @@ class DiscordBot {
 
     private final String token = Vault.fetch("discord_token");
     private final DiscordClient client = new DiscordClientBuilder(token).build();
+    private final UserRepository userRepository = UserRepository.getInstance();
 
     public DiscordBot() {
-        final GenericRepository<User, Long> userRepository = new GenericRepository<>(User.class);
         client.getEventDispatcher().on(ReadyEvent.class)
                 .subscribe(ready -> {
+                    // bad implementation
+                    // should only be added to database after trying to betting
                     DatabaseHandler.initializeDatabase(client);
                     DatabaseHandler.initializeAutomaticPointIncrementation();
                     CommandHandler.setupCommands(client);

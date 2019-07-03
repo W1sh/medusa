@@ -1,5 +1,6 @@
-package entities;
+package entity;
 
+import entity.entities.User;
 import org.junit.Test;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
@@ -7,7 +8,6 @@ import reactor.util.function.Tuples;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import javax.persistence.Tuple;
 
 import static org.junit.Assert.*;
 
