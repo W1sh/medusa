@@ -4,10 +4,7 @@ import entity.entities.User;
 import entity.repositories.IUserRepository;
 import reactor.util.function.Tuple2;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +20,7 @@ public class UserRepository implements IUserRepository {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("PersistenceUnit");
         this.entityManager = emf.createEntityManager();
         this.criteriaBuilder = entityManager.getCriteriaBuilder();
+        entityManager.getTransaction().begin();
     }
 
     public static UserRepository getInstance(){
@@ -48,7 +46,11 @@ public class UserRepository implements IUserRepository {
         criteriaQuery.select(root).where(predicate);
         final TypedQuery<User> typedQuery = entityManager.createQuery(criteriaQuery);
         typedQuery.setMaxResults(1);
-        return typedQuery.getSingleResult();
+        try {
+            return typedQuery.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
     }
 
     @Override
@@ -58,16 +60,26 @@ public class UserRepository implements IUserRepository {
 
     @Override
     public void persist(User entity) {
+        /*if(entityManager.getTransaction().isActive()){
+            entityManager.getTransaction().begin();
+        }*/
         entityManager.persist(entity);
+        //entityManager.getTransaction().commit();
     }
 
     @Override
     public int update(Tuple2<String, Long> tupleUpdate, Tuple2<String, Long> tuplePredicate) {
-        final CriteriaUpdate<User> updateQuery = criteriaBuilder.createCriteriaUpdate(User.class);
-        final Root<User> root = updateQuery.from(User.class);
-        final Predicate predicate = criteriaBuilder.equal(root.get(tuplePredicate.getT1()), tuplePredicate.getT2());
-        updateQuery.set(tupleUpdate.getT1(), tupleUpdate.getT2()).where(predicate);
-        return entityManager.createQuery(updateQuery).executeUpdate();
+        try {
+            final CriteriaUpdate<User> updateQuery = criteriaBuilder.createCriteriaUpdate(User.class);
+            final Root<User> root = updateQuery.from(User.class);
+            final Predicate predicate = criteriaBuilder.equal(root.get(tuplePredicate.getT1()), tuplePredicate.getT2());
+            updateQuery.set(tupleUpdate.getT1(), tupleUpdate.getT2()).where(predicate);
+            int entitiesUpdated = entityManager.createQuery(updateQuery).executeUpdate();
+            return entitiesUpdated;
+        } catch (PersistenceException e){
+            entityManager.getTransaction().rollback();
+        }
+        return 0;
     }
 
     @Override
