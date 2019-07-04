@@ -20,7 +20,6 @@ public class UserRepository implements IUserRepository {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("PersistenceUnit");
         this.entityManager = emf.createEntityManager();
         this.criteriaBuilder = entityManager.getCriteriaBuilder();
-        entityManager.getTransaction().begin();
     }
 
     public static UserRepository getInstance(){
@@ -60,22 +59,20 @@ public class UserRepository implements IUserRepository {
 
     @Override
     public void persist(User entity) {
-        /*if(entityManager.getTransaction().isActive()){
-            entityManager.getTransaction().begin();
-        }*/
+        beginTransaction();
         entityManager.persist(entity);
-        //entityManager.getTransaction().commit();
+        entityManager.getTransaction().commit();
     }
 
     @Override
     public int update(Tuple2<String, Long> tupleUpdate, Tuple2<String, Long> tuplePredicate) {
         try {
+            beginTransaction();
             final CriteriaUpdate<User> updateQuery = criteriaBuilder.createCriteriaUpdate(User.class);
             final Root<User> root = updateQuery.from(User.class);
             final Predicate predicate = criteriaBuilder.equal(root.get(tuplePredicate.getT1()), tuplePredicate.getT2());
             updateQuery.set(tupleUpdate.getT1(), tupleUpdate.getT2()).where(predicate);
-            int entitiesUpdated = entityManager.createQuery(updateQuery).executeUpdate();
-            return entitiesUpdated;
+            return entityManager.createQuery(updateQuery).executeUpdate();
         } catch (PersistenceException e){
             entityManager.getTransaction().rollback();
         }
@@ -130,6 +127,12 @@ public class UserRepository implements IUserRepository {
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         }else{
             return criteriaBuilder.equal(root.get(tuples[0].getT1()), tuples[0].getT2());
+        }
+    }
+
+    private void beginTransaction(){
+        if(!entityManager.getTransaction().isActive()){
+            entityManager.getTransaction().begin();
         }
     }
 }

@@ -23,10 +23,10 @@ public class DatabaseHandler {
         client.getGuilds()
                 .flatMap(Guild::getMembers)
                 .filter(member -> !member.isBot())
-                .filter(member -> {
+                /*.filter(member -> {
                     Presence presence = member.getPresence().block();
                     return presence != null && presence.getStatus().equals(Status.ONLINE);
-                })
+                })*/
                 .filter(member -> {
                     final Tuple2<String, Long>[] tuples = new Tuple2[2];
                     tuples[0] = Tuples.of("discordId", member.getId().asLong());
@@ -47,6 +47,6 @@ public class DatabaseHandler {
                 // log update result
                 System.out.println(userRepository.update(tuple1, tuple2));
             });
-        },1, 1, TimeUnit.HOURS);
+        },0, 1, TimeUnit.HOURS);
     }
 }
