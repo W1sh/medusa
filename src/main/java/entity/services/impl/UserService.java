@@ -17,7 +17,7 @@ public class UserService implements IUserService {
         return Mono.just(user)
                 .map(u -> Tuples.of("discordId", user.getDiscordId()))
                 //.zipWith(Mono.just(Tuples.of("guildId", user.getDiscordId())))
-                //.filter(tuple2 -> !userRepository.isPresent(tuple2))
+                .filter(tuple2 -> !userRepository.isPresent(tuple2))
                 .map(tuple2 -> {
                     userRepository.persist(user);
                     return tuple2;
@@ -26,12 +26,10 @@ public class UserService implements IUserService {
 
     @Override
     public Mono<Integer> update(final User user) {
-        /*Mono.just(user)
-                .map(u -> Mono.just(Tuples.of("id", user.getDiscordId()))
-                .zipWith(Mono.just(Tuples.of("points", (long) user.getPoints()))))
-                .map(tuple2s -> userRepository.update(tuple2s.block().getT2(), tuple2s.block().getT1()))
-                .doOnError(error -> System.out.println(error.getLocalizedMessage()))
-                .subscribe();*/
-        return Mono.just(0);
+        return Mono.just(user)
+                .flatMap(u -> Mono.just(Tuples.of("id", user.getDiscordId()))
+                .zipWith(Mono.just(Tuples.of("points", ((long) user.getPoints() + 100)))))
+                .map(tuple2s -> userRepository.update(tuple2s.getT2(), tuple2s.getT1()))
+                .doOnError(error -> System.out.println(error.getLocalizedMessage()));
     }
 }
