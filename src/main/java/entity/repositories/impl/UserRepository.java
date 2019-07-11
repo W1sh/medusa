@@ -1,4 +1,4 @@
-package entity.repositories.implementations;
+package entity.repositories.impl;
 
 import entity.entities.User;
 import entity.repositories.IUserRepository;
@@ -60,12 +60,15 @@ public class UserRepository implements IUserRepository {
     @Override
     public void persist(User entity) {
         beginTransaction();
+        System.out.println("create");
         entityManager.persist(entity);
         entityManager.getTransaction().commit();
     }
 
     @Override
     public int update(Tuple2<String, Long> tupleUpdate, Tuple2<String, Long> tuplePredicate) {
+        System.out.println(tupleUpdate);
+        System.out.println(tuplePredicate);
         try {
             beginTransaction();
             final CriteriaUpdate<User> updateQuery = criteriaBuilder.createCriteriaUpdate(User.class);

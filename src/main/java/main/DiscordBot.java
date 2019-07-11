@@ -9,7 +9,7 @@ import discord4j.core.event.domain.guild.MemberLeaveEvent;
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import entity.entities.User;
-import entity.repositories.implementations.UserRepository;
+import entity.repositories.impl.UserRepository;
 import handlers.CommandHandler;
 import handlers.DatabaseHandler;
 import reactor.core.publisher.Mono;
