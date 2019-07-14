@@ -1,4 +1,4 @@
-package commands;
+package com.w1sh.medusa.commands;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
@@ -12,7 +12,7 @@ public class HelpCommand extends AbstractCommand {
 
     @Override
     public String getDescription() {
-        return "show all commands and what they do.";
+        return "show all com.w1sh.medusa.commands and what they do.";
     }
 
     @Override

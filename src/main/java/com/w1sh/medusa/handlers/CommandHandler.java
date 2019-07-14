@@ -1,6 +1,6 @@
-package handlers;
+package com.w1sh.medusa.handlers;
 
-import commands.PingCommand;
+import com.w1sh.medusa.commands.PingCommand;
 import discord4j.command.CommandBootstrapper;
 import discord4j.command.CommandProvider;
 import discord4j.command.ProviderContext;
@@ -40,8 +40,8 @@ public class CommandHandler {
     }
 
     public static void setupCommands(DiscordClient client) {
-        SimpleCommandDispatcher dispatcher = new SimpleCommandDispatcher(COMMAND_PREFIX); //Handles triggering commands using our ! prefix
-        CommandBootstrapper bootstrapper = new CommandBootstrapper(dispatcher); //This mediates all internal logic for commands
+        SimpleCommandDispatcher dispatcher = new SimpleCommandDispatcher(COMMAND_PREFIX); //Handles triggering com.w1sh.medusa.commands using our ! prefix
+        CommandBootstrapper bootstrapper = new CommandBootstrapper(dispatcher); //This mediates all internal logic for com.w1sh.medusa.commands
         bootstrapper.addProvider(new SimpleCommandProvider()); //Register our command provider
         bootstrapper.attach(client).subscribe(); //Attach the provider to the client and activate it
     }

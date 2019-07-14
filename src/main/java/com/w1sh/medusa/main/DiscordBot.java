@@ -1,4 +1,4 @@
-package main;
+package com.w1sh.medusa.main;
 
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
@@ -8,13 +8,13 @@ import discord4j.core.event.domain.guild.MemberJoinEvent;
 import discord4j.core.event.domain.guild.MemberLeaveEvent;
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
-import entity.entities.User;
-import entity.repositories.impl.UserRepository;
-import handlers.CommandHandler;
-import handlers.DatabaseHandler;
+import com.w1sh.medusa.entity.entities.User;
+import com.w1sh.medusa.entity.repositories.impl.UserRepository;
+import com.w1sh.medusa.handlers.CommandHandler;
+import com.w1sh.medusa.handlers.DatabaseHandler;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
-import utils.Vault;
+import com.w1sh.medusa.utils.Vault;
 
 import java.util.Objects;
 
@@ -22,7 +22,6 @@ class DiscordBot {
 
     private final String token = Vault.fetch("discord_token");
     private final DiscordClient client = new DiscordClientBuilder(token).build();
-    private final UserRepository userRepository = UserRepository.getInstance();
 
     public DiscordBot() {
         client.getEventDispatcher().on(ReadyEvent.class)
@@ -42,7 +41,7 @@ class DiscordBot {
 
         client.getEventDispatcher().on(GuildCreateEvent.class)
                 .map(event -> Tuples.of("guildId", event.getGuild().getId().asLong()))
-                .filter(tuple -> !userRepository.isPresent(tuple))
+                //.filter(tuple -> !userRepository.isPresent(tuple))
                 //.doOnNext(tuple -> )
                 .subscribe();
 
@@ -55,7 +54,7 @@ class DiscordBot {
         client.getEventDispatcher().on(MemberJoinEvent.class)
                 .map(MemberJoinEvent::getMember)
                 .map(User::new)
-                .doOnNext(userRepository::persist)
+                //.doOnNext(userRepository::persist)
                 .onErrorResume(e -> Mono.empty())
                 .subscribe();
 
@@ -68,9 +67,9 @@ class DiscordBot {
                     return null;
                 })
                 .filter(Objects::nonNull)
-                .doOnNext(tuple-> userRepository.delete(
+                /*.doOnNext(tuple-> userRepository.delete(
                         Tuples.of("discordId", tuple.getT2()),
-                        Tuples.of("guildId", tuple.getT1())))
+                        Tuples.of("guildId", tuple.getT1())))*/
                 .onErrorResume(e -> Mono.empty())
                 .subscribe();
 

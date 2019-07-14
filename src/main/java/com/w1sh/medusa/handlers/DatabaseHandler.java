@@ -1,11 +1,11 @@
-package handlers;
+package com.w1sh.medusa.handlers;
 
 import discord4j.core.DiscordClient;
 import discord4j.core.object.entity.Guild;
-import entity.entities.User;
-import entity.repositories.impl.UserRepository;
-import entity.services.IUserService;
-import entity.services.impl.UserService;
+import com.w1sh.medusa.entity.entities.User;
+import com.w1sh.medusa.entity.repositories.impl.UserRepository;
+import com.w1sh.medusa.entity.services.IUserService;
+import com.w1sh.medusa.entity.services.impl.UserService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -14,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 
 public class DatabaseHandler {
 
-    private static final UserRepository userRepository = UserRepository.getInstance();
     private static final IUserService service = new UserService();
 
     private DatabaseHandler(){}
@@ -37,9 +36,9 @@ public class DatabaseHandler {
                 // log update result
                 System.out.println(userRepository.update(tuple1, tuple2));
             });*/
-            Flux.fromStream(userRepository.read())
+            service.read()
                     .flatMap(user -> Mono.when(service.update(user)))
                     .subscribe();
-        }, 0, 1, TimeUnit.HOURS);
+        }, 1, 1, TimeUnit.HOURS);
     }
 }

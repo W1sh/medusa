@@ -1,4 +1,4 @@
-package commands;
+package com.w1sh.medusa.commands;
 
 import discord4j.command.Command;
 

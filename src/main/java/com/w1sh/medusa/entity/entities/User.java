@@ -1,4 +1,4 @@
-package entity.entities;
+package com.w1sh.medusa.entity.entities;
 
 import discord4j.core.object.entity.Member;
 import lombok.*;

@@ -1,4 +1,4 @@
-package utils;
+package com.w1sh.medusa.utils;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
