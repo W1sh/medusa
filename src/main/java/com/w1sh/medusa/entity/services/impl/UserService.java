@@ -13,18 +13,17 @@ public class UserService implements IUserService {
 
     @Override
     public Mono<Void> persist(final User user) {
-        System.out.println("Persisting!");
         return Mono.just(user)
-                //.filter(u -> !userRepository.isPresent(u))
-                .map(tuple2 -> {
-                    userRepository.persist(user);
-                    return tuple2;
-                }).then();
+                .filterWhen(u -> userRepository.isPresent(u)
+                        .hasElement()
+                        .map(b -> !b))
+                .doOnNext(u -> userRepository.persist(user))
+                .then();
     }
 
     @Override
     public Flux<User> read() {
-        return null;
+        return userRepository.read();
     }
 
     @Override
