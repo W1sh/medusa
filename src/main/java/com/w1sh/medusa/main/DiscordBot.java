@@ -1,5 +1,6 @@
 package com.w1sh.medusa.main;
 
+import com.w1sh.medusa.entity.services.impl.UserService;
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
@@ -12,24 +13,35 @@ import com.w1sh.medusa.entity.entities.User;
 import com.w1sh.medusa.entity.repositories.impl.UserRepository;
 import com.w1sh.medusa.handlers.CommandHandler;
 import com.w1sh.medusa.handlers.DatabaseHandler;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 import com.w1sh.medusa.utils.Vault;
 
 import java.util.Objects;
 
+@Component
 class DiscordBot {
+
+    private final DatabaseHandler databaseHandler;
 
     private final String token = Vault.fetch("discord_token");
     private final DiscordClient client = new DiscordClientBuilder(token).build();
 
-    public DiscordBot() {
+    public DiscordBot(DatabaseHandler databaseHandler) {
+        this.databaseHandler = databaseHandler;
+        setupEventDispatcher();
+    }
+
+    public void setupEventDispatcher(){
         client.getEventDispatcher().on(ReadyEvent.class)
                 .subscribe(ready -> {
                     // bad implementation
                     // should only be added to database after trying to betting
-                    DatabaseHandler.initializeDatabase(client);
-                    DatabaseHandler.initializeAutomaticPointIncrementation();
+                    databaseHandler.initializeDatabase(client);
+                    databaseHandler.initializeAutomaticPointIncrementation();
                     CommandHandler.setupCommands(client);
                     System.out.println("Logged in as " + ready.getSelf().getUsername());
                     System.out.println("Currently serving " + ready.getGuilds().size() + " servers");

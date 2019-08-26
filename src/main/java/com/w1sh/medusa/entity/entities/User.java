@@ -1,13 +1,10 @@
 package com.w1sh.medusa.entity.entities;
 
 import discord4j.core.object.entity.Member;
-import lombok.*;
 
 import javax.persistence.*;
 
 @Entity
-@ToString
-@EqualsAndHashCode (exclude={"id"})
 @Table(name = "users", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"discord_id", "guild_id"})
 })
@@ -16,26 +13,20 @@ public class User{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false, nullable = false)
-    @Getter @Setter
     private int id;
 
     @Column(name = "discord_id", updatable = false, nullable = false)
-    @Getter @Setter
     private long discordId;
 
     @Column(updatable = false, nullable = false)
-    @Getter @Setter @NonNull
     private String name;
 
     @Column(updatable = false, nullable = false)
-    @Getter @Setter @NonNull
     private String discriminator;
 
     @Column(name = "guild_id", updatable = false, nullable = false)
-    @Getter @Setter
     private long guildId;
 
-    @Getter @Setter
     private int points;
 
     public User() { }
@@ -54,5 +45,53 @@ public class User{
         this.name = "me";
         this.discriminator = "0001";
         this.guildId = guildId;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public long getDiscordId() {
+        return discordId;
+    }
+
+    public void setDiscordId(long discordId) {
+        this.discordId = discordId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDiscriminator() {
+        return discriminator;
+    }
+
+    public void setDiscriminator(String discriminator) {
+        this.discriminator = discriminator;
+    }
+
+    public long getGuildId() {
+        return guildId;
+    }
+
+    public void setGuildId(long guildId) {
+        this.guildId = guildId;
+    }
+
+    public int getPoints() {
+        return points;
+    }
+
+    public void setPoints(int points) {
+        this.points = points;
     }
 }

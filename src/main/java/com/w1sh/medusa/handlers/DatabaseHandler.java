@@ -5,19 +5,24 @@ import com.w1sh.medusa.entity.services.IUserService;
 import com.w1sh.medusa.entity.services.impl.UserService;
 import discord4j.core.DiscordClient;
 import discord4j.core.object.entity.Guild;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.concurrent.TimeUnit;
 
+@Component
 public class DatabaseHandler {
 
-    private static final IUserService service = new UserService();
+    private final IUserService service;
 
-    private DatabaseHandler(){}
+    private DatabaseHandler(IUserService service){
+        this.service = service;
+    }
 
-    public static void initializeDatabase(DiscordClient client){
-
+    public void initializeDatabase(DiscordClient client){
         client.getGuilds()
                 .flatMap(Guild::getMembers)
                 .filter(member -> !member.isBot())
@@ -26,7 +31,7 @@ public class DatabaseHandler {
                 .subscribe();
     }
 
-    public static void initializeAutomaticPointIncrementation() {
+    public void initializeAutomaticPointIncrementation() {
         Schedulers.single().schedulePeriodically(() -> {
             // log, time to get points
             service.read()

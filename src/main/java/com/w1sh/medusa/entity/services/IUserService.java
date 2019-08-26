@@ -10,5 +10,5 @@ public interface IUserService {
 
     Flux<User> read();
 
-    Mono<Integer> update(User user);
+    Mono<Void> update(User user);
 }

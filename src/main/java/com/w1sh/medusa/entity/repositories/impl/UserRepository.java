@@ -2,35 +2,34 @@ package com.w1sh.medusa.entity.repositories.impl;
 
 import com.w1sh.medusa.entity.entities.User;
 import com.w1sh.medusa.entity.repositories.IUserRepository;
-import com.w1sh.medusa.entity.repositories.utils.TransactionManager;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
+import javax.persistence.PersistenceException;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.stream.Stream;
 
+@Repository
 public class UserRepository implements IUserRepository {
 
-    private final EntityManager entityManager;
+    private final EntityManager em;
     private final CriteriaBuilder criteriaBuilder;
-    private final TransactionManager transactionManager;
+    //private final TransactionManager transactionManager;
 
-    public UserRepository(){
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("PersistenceUnit");
-        this.entityManager = emf.createEntityManager();
-        this.transactionManager = new TransactionManager(entityManager);
-        this.criteriaBuilder = entityManager.getCriteriaBuilder();
+    public UserRepository(EntityManagerFactory em){
+        this.em = em.createEntityManager();
+        //this.sessionFactory = sessionFactory;
+        //this.transactionManager = new TransactionManager(entityManager);
+        this.criteriaBuilder = em.getCriteriaBuilder();
     }
 
     @Override
@@ -41,7 +40,7 @@ public class UserRepository implements IUserRepository {
         final Predicate predicateGuildId = criteriaBuilder.equal(root.get("guildId"), user.getGuildId());
         final Predicate predicate = criteriaBuilder.and(predicateDiscordId, predicateGuildId);
         criteriaQuery.select(criteriaBuilder.count(root)).where(predicate);
-        final TypedQuery<Long> typedQuery = entityManager.createQuery(criteriaQuery);
+        final TypedQuery<Long> typedQuery = em.createQuery(criteriaQuery);
         return Mono.just(typedQuery.getSingleResult());
     }
 
@@ -50,28 +49,43 @@ public class UserRepository implements IUserRepository {
         final CriteriaQuery<User> criteriaQuery = criteriaBuilder.createQuery(User.class);
         final Root<User> root = criteriaQuery.from(User.class);
         criteriaQuery.select(root);
-        final TypedQuery<User> typedQuery = entityManager.createQuery(criteriaQuery);
+        final TypedQuery<User> typedQuery = em.createQuery(criteriaQuery);
         return Flux.fromStream(typedQuery.getResultStream().distinct());
     }
 
     @Override
     public Mono<User> read(Long id) {
-        return null;
+        return Mono.just(em.find(User.class, id));
     }
 
     @Override
     public void persist(User entity) {
-        transactionManager.doRunnableWithTransaction(() -> entityManager.persist(entity));
+        em.persist(entity);
+        //transactionManager.doRunnableWithTransaction(() -> entityManager.persist(entity));
     }
 
     @Override
-    public Mono<Integer> update(User entity) {
-        return null;
+    public void update(User entity) {
+        try {
+            final CriteriaUpdate<User> criteriaUpdate = criteriaBuilder.createCriteriaUpdate(User.class);
+            final Root<User> root = criteriaUpdate.from(User.class);
+            final Predicate predicateId = criteriaBuilder.equal(root.get("id"), entity.getId());
+            criteriaUpdate.set("id", entity.getPoints()).where(predicateId);
+            em.createQuery(criteriaUpdate).executeUpdate();
+        } catch (PersistenceException e){
+            e.printStackTrace();
+        }
+        /*transactionManager.doRunnableWithTransaction(() -> {
+            final CriteriaUpdate<User> criteriaUpdate = criteriaBuilder.createCriteriaUpdate(User.class);
+            final Root<User> root = criteriaUpdate.from(User.class);
+            final Predicate predicateId = criteriaBuilder.equal(root.get("id"), entity.getId());
+            criteriaUpdate.set("id", entity.getPoints()).where(predicateId);
+            entityManager.createQuery(criteriaUpdate).executeUpdate();
+        });*/
     }
 
     @Override
-    public Mono<Integer> delete(User entity) {
-        return null;
+    public void delete(User entity) {
     }
 
     private Predicate createWhereClause(final Root<User> root, final Tuple2<String, Long>[] tuples){

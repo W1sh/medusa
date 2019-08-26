@@ -3,8 +3,6 @@ package com.w1sh.medusa.entity.repositories;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.stream.Stream;
-
 public interface IRepository<T, K> {
 
     Flux<T> read();
@@ -13,7 +11,7 @@ public interface IRepository<T, K> {
 
     void persist(T entity);
 
-    Mono<Integer> update(T entity);
+    void update(T entity);
 
-    Mono<Integer> delete(T entity);
+    void delete(T entity);
 }

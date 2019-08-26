@@ -29,6 +29,8 @@ public class TransactionManager {
             }
             // log
             throw Exceptions.propagate(e);
+        }finally {
+            entityManager.close();
         }
     }
 }
