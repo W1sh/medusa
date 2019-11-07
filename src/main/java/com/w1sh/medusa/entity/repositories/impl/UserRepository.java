@@ -2,55 +2,57 @@ package com.w1sh.medusa.entity.repositories.impl;
 
 import com.w1sh.medusa.entity.entities.User;
 import com.w1sh.medusa.entity.repositories.IUserRepository;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceException;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.*;
+import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaUpdate;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
 
 @Repository
 public class UserRepository implements IUserRepository {
 
+    //private static final Logger logger = LogManager.getLogger(UserRepository.class.getName());
     private final EntityManager em;
     private final CriteriaBuilder criteriaBuilder;
-    //private final TransactionManager transactionManager;
 
     public UserRepository(EntityManagerFactory em){
         this.em = em.createEntityManager();
-        //this.sessionFactory = sessionFactory;
-        //this.transactionManager = new TransactionManager(entityManager);
         this.criteriaBuilder = em.getCriteriaBuilder();
     }
 
     @Override
     public Mono<Long> isPresent(User user) {
-        final CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
-        final Root<User> root = criteriaQuery.from(User.class);
-        final Predicate predicateDiscordId = criteriaBuilder.equal(root.get("discordId"), user.getDiscordId());
-        final Predicate predicateGuildId = criteriaBuilder.equal(root.get("guildId"), user.getGuildId());
-        final Predicate predicate = criteriaBuilder.and(predicateDiscordId, predicateGuildId);
-        criteriaQuery.select(criteriaBuilder.count(root)).where(predicate);
-        final TypedQuery<Long> typedQuery = em.createQuery(criteriaQuery);
-        return Mono.just(typedQuery.getSingleResult());
+        try {
+            final Query query = em.createNamedQuery("User.isPresentInGuildById", User.class)
+                    .setParameter("gId", user.getGuildId())
+                    .setParameter("dId", user.getDiscordId());
+            //logger.info("Searching database for user with discordId: {} and guildId: {}", user.getDiscordId(), user.getGuildId());
+            return Mono.justOrEmpty((Long)query.getSingleResult());
+        } catch (PersistenceException e){
+            //logger.error("Failed to find user with discordId: {} and guildId: {}", user.getDiscordId(), user.getGuildId(), e);
+            return Mono.empty();
+        }
     }
 
     @Override
     public Flux<User> read() {
-        final CriteriaQuery<User> criteriaQuery = criteriaBuilder.createQuery(User.class);
-        final Root<User> root = criteriaQuery.from(User.class);
-        criteriaQuery.select(root);
-        final TypedQuery<User> typedQuery = em.createQuery(criteriaQuery);
-        return Flux.fromStream(typedQuery.getResultStream().distinct());
+        try {
+            final TypedQuery<User> query = em.createNamedQuery("User.isPresentInGuildById", User.class);
+            //logger.info("Searching for all users...");
+            return Flux.fromStream(query.getResultStream());
+        } catch (PersistenceException e){
+            //logger.error("Failed when searching for all users", e);
+            return Flux.empty();
+        }
     }
 
     @Override

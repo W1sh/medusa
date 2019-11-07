@@ -27,16 +27,22 @@ public class DatabaseHandler {
                 .flatMap(Guild::getMembers)
                 .filter(member -> !member.isBot())
                 .map(User::new)
-                .flatMap(user -> Mono.when(service.persist(user)))
+                .flatMap(user -> Mono.just(service.persist(user)))
                 .subscribe();
     }
 
     public void initializeAutomaticPointIncrementation() {
         Schedulers.single().schedulePeriodically(() -> {
             // log, time to get points
-            service.read()
-                    .flatMap(user -> Mono.when(service.update(user)))
-                    .subscribe();
+            try {
+                service.read()
+                        .flatMap(user -> Mono.when(service.update(user)))
+                        .doOnError(System.out::println)
+                        .subscribe();
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+
         }, 0, 1, TimeUnit.HOURS);
     }
 }

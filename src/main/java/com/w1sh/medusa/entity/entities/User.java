@@ -8,6 +8,8 @@ import javax.persistence.*;
 @Table(name = "users", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"discord_id", "guild_id"})
 })
+@NamedQuery(name = "User.findAll", query = "select u from User u")
+@NamedQuery(name = "User.isPresentInGuildById", query = "select count(u) from User u where u.guildId = :gId and u.discordId = :dId")
 public class User{
 
     @Id
