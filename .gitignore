@@ -28,5 +28,6 @@ local.properties
 # Misc
 logs/
 *.test
+application.properties
 config.properties
 persistence.xml

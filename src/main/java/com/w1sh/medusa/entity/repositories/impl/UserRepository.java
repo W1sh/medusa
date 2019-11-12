@@ -16,22 +16,21 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
-
 @Repository
 public class UserRepository implements IUserRepository {
 
     //private static final Logger logger = LogManager.getLogger(UserRepository.class.getName());
-    private final EntityManager em;
-    private final CriteriaBuilder criteriaBuilder;
+    //private final EntityManager em;
+    //private final CriteriaBuilder criteriaBuilder;
 
-    public UserRepository(EntityManagerFactory em){
-        this.em = em.createEntityManager();
-        this.criteriaBuilder = em.getCriteriaBuilder();
+    public UserRepository(){
+        //this.em = em.createEntityManager();
+        //this.criteriaBuilder = em.getCriteriaBuilder();
     }
 
     @Override
     public Mono<Long> isPresent(User user) {
-        try {
+        /*try {
             final Query query = em.createNamedQuery("User.isPresentInGuildById", User.class)
                     .setParameter("gId", user.getGuildId())
                     .setParameter("dId", user.getDiscordId());
@@ -40,35 +39,38 @@ public class UserRepository implements IUserRepository {
         } catch (PersistenceException e){
             //logger.error("Failed to find user with discordId: {} and guildId: {}", user.getDiscordId(), user.getGuildId(), e);
             return Mono.empty();
-        }
+        }*/
+        return Mono.empty();
     }
 
     @Override
     public Flux<User> read() {
-        try {
+        /*try {
             final TypedQuery<User> query = em.createNamedQuery("User.isPresentInGuildById", User.class);
             //logger.info("Searching for all users...");
             return Flux.fromStream(query.getResultStream());
         } catch (PersistenceException e){
             //logger.error("Failed when searching for all users", e);
             return Flux.empty();
-        }
+        }*/
+        return Flux.empty();
     }
 
     @Override
     public Mono<User> read(Long id) {
-        return Mono.just(em.find(User.class, id));
+        //return Mono.just(em.find(User.class, id));
+        return Mono.empty();
     }
 
     @Override
     public void persist(User entity) {
-        em.persist(entity);
+        //em.persist(entity);
         //transactionManager.doRunnableWithTransaction(() -> entityManager.persist(entity));
     }
 
     @Override
     public void update(User entity) {
-        try {
+        /*try {
             final CriteriaUpdate<User> criteriaUpdate = criteriaBuilder.createCriteriaUpdate(User.class);
             final Root<User> root = criteriaUpdate.from(User.class);
             final Predicate predicateId = criteriaBuilder.equal(root.get("id"), entity.getId());
@@ -76,7 +78,7 @@ public class UserRepository implements IUserRepository {
             em.createQuery(criteriaUpdate).executeUpdate();
         } catch (PersistenceException e){
             e.printStackTrace();
-        }
+        }*/
         /*transactionManager.doRunnableWithTransaction(() -> {
             final CriteriaUpdate<User> criteriaUpdate = criteriaBuilder.createCriteriaUpdate(User.class);
             final Root<User> root = criteriaUpdate.from(User.class);
@@ -87,11 +89,10 @@ public class UserRepository implements IUserRepository {
     }
 
     @Override
-    public void delete(User entity) {
-    }
+    public void delete(User entity) { }
 
     private Predicate createWhereClause(final Root<User> root, final Tuple2<String, Long>[] tuples){
-        if(tuples.length > 1){
+        /*if(tuples.length > 1){
             final List<Predicate> predicates = new ArrayList<>();
             for(Tuple2<String, Long> tuple : tuples){
                 final Predicate predicate = criteriaBuilder.equal(root.get(tuple.getT1()), tuple.getT2());
@@ -100,6 +101,7 @@ public class UserRepository implements IUserRepository {
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         }else{
             return criteriaBuilder.equal(root.get(tuples[0].getT1()), tuples[0].getT2());
-        }
+        }*/
+        return null;
     }
 }

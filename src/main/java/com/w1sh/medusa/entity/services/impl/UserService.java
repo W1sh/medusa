@@ -25,7 +25,7 @@ public class UserService implements IUserService {
                 .filterWhen(u -> userRepository.isPresent(u)
                         .hasElement()
                         .map(b -> !b))
-                .doOnNext(u -> userRepository.persist(user))
+                //.doOnNext(u -> userRepository.persist(user))
                 .then();
     }
 
@@ -40,7 +40,7 @@ public class UserService implements IUserService {
     public Mono<Void> update(final User user) {
         return Mono.just(user)
                 .doOnNext(u -> u.setPoints(u.getPoints() + 100))
-                .doOnNext(userRepository::update)
+                //.doOnNext(userRepository::update)
                 .doOnError(error -> System.out.println(error.getLocalizedMessage()))
                 .then();
     }

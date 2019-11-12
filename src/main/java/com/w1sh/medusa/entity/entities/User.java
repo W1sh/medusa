@@ -3,30 +3,30 @@ package com.w1sh.medusa.entity.entities;
 import discord4j.core.object.entity.Member;
 
 import javax.persistence.*;
-
+/*
 @Entity
 @Table(name = "users", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"discord_id", "guild_id"})
 })
 @NamedQuery(name = "User.findAll", query = "select u from User u")
-@NamedQuery(name = "User.isPresentInGuildById", query = "select count(u) from User u where u.guildId = :gId and u.discordId = :dId")
+@NamedQuery(name = "User.isPresentInGuildById", query = "select count(u) from User u where u.guildId = :gId and u.discordId = :dId")*/
 public class User{
 
-    @Id
+    /*@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(updatable = false, nullable = false)
+    @Column(updatable = false, nullable = false)*/
     private int id;
 
-    @Column(name = "discord_id", updatable = false, nullable = false)
+    //Column(name = "discord_id", updatable = false, nullable = false)
     private long discordId;
 
-    @Column(updatable = false, nullable = false)
+    //@Column(updatable = false, nullable = false)
     private String name;
 
-    @Column(updatable = false, nullable = false)
+    //@Column(updatable = false, nullable = false)
     private String discriminator;
 
-    @Column(name = "guild_id", updatable = false, nullable = false)
+    //@Column(name = "guild_id", updatable = false, nullable = false)
     private long guildId;
 
     private int points;

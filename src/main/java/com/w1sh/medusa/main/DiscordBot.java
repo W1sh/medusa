@@ -1,50 +1,67 @@
 package com.w1sh.medusa.main;
 
-import com.w1sh.medusa.entity.services.impl.UserService;
+import com.w1sh.medusa.handlers.DatabaseHandler;
+import com.w1sh.medusa.listeners.MessageCreateListener;
 import discord4j.core.DiscordClient;
-import discord4j.core.DiscordClientBuilder;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
 import discord4j.core.event.domain.guild.GuildDeleteEvent;
 import discord4j.core.event.domain.guild.MemberJoinEvent;
 import discord4j.core.event.domain.guild.MemberLeaveEvent;
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
-import com.w1sh.medusa.entity.entities.User;
-import com.w1sh.medusa.entity.repositories.impl.UserRepository;
-import com.w1sh.medusa.handlers.CommandHandler;
-import com.w1sh.medusa.handlers.DatabaseHandler;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import discord4j.core.object.entity.User;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
-import com.w1sh.medusa.utils.Vault;
 
+import javax.annotation.PostConstruct;
 import java.util.Objects;
 
+import static java.util.function.Predicate.not;
+
+@Slf4j
 @Component
 class DiscordBot {
 
     private final DatabaseHandler databaseHandler;
+    private final DiscordClient client;
+    private final MessageCreateListener messageCreateListener;
 
-    private final String token = Vault.fetch("discord_token");
-    private final DiscordClient client = new DiscordClientBuilder(token).build();
-
-    public DiscordBot(DatabaseHandler databaseHandler) {
+    public DiscordBot(DatabaseHandler databaseHandler, DiscordClient client, MessageCreateListener messageCreateListener) {
         this.databaseHandler = databaseHandler;
+        this.client = client;
+        this.messageCreateListener = messageCreateListener;
+    }
+
+    @PostConstruct
+    public void init(){
         setupEventDispatcher();
     }
 
     public void setupEventDispatcher(){
+        client.getEventDispatcher()
+                .on(messageCreateListener.getEventType())
+                .filter(event -> event.getMessage().getAuthor()
+                        .filter(not(User::isBot))
+                        .isPresent())
+                .filter(event -> event.getMessage().getContent()
+                        .map(s -> s.startsWith("!"))
+                        .orElse(false))
+                .flatMap(messageCreateListener::execute)
+                .subscribe(null, (throwable) -> log.error("Error when consuming MessageCreateEvent", throwable));
+
         client.getEventDispatcher().on(ReadyEvent.class)
                 .subscribe(ready -> {
                     // bad implementation
                     // should only be added to database after trying to betting
                     databaseHandler.initializeDatabase(client);
                     databaseHandler.initializeAutomaticPointIncrementation();
-                    CommandHandler.setupCommands(client);
-                    System.out.println("Logged in as " + ready.getSelf().getUsername());
-                    System.out.println("Currently serving " + ready.getGuilds().size() + " servers");
+                    //CommandHandler.setupCommands(client);
+                    log.info("Logged in as " + ready.getSelf().getUsername());
+                    log.info("Currently serving " + ready.getGuilds().size() + " servers");
+                }, error -> {
+
                 });
 
         client.getEventDispatcher().on(DisconnectEvent.class)
@@ -60,12 +77,13 @@ class DiscordBot {
         client.getEventDispatcher().on(GuildDeleteEvent.class)
                 .filter(guildDeleteEvent -> !guildDeleteEvent.isUnavailable())
                 .map(GuildDeleteEvent::getGuild)
-                //.doOnNext(/*register guild*/)
+                //.doOnNext(/*unregister guild*/)
                 .subscribe();
 
         client.getEventDispatcher().on(MemberJoinEvent.class)
+                //.doOnEach(memberJoinEventSignal ->)
                 .map(MemberJoinEvent::getMember)
-                .map(User::new)
+                //.map(User::new)
                 //.doOnNext(userRepository::persist)
                 .onErrorResume(e -> Mono.empty())
                 .subscribe();
