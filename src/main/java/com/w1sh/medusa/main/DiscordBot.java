@@ -42,12 +42,6 @@ class DiscordBot {
     public void setupEventDispatcher(){
         client.getEventDispatcher()
                 .on(messageCreateListener.getEventType())
-                .filter(event -> event.getMessage().getAuthor()
-                        .filter(not(User::isBot))
-                        .isPresent())
-                .filter(event -> event.getMessage().getContent()
-                        .map(s -> s.startsWith("!"))
-                        .orElse(false))
                 .flatMap(messageCreateListener::execute)
                 .subscribe(null, (throwable) -> log.error("Error when consuming MessageCreateEvent", throwable));
 

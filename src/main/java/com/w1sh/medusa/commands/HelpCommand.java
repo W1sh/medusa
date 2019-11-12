@@ -21,7 +21,8 @@ public class HelpCommand extends AbstractCommand {
     }
 
     @Override
-    public Mono<Void> execute(MessageCreateEvent event, Object context) {
+    public Mono<Void> execute(MessageCreateEvent event) {
         return null;
     }
+
 }

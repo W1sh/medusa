@@ -29,7 +29,7 @@ public class CommandHandler {
         }
     }
 
-    private static class SimpleCommandProvider implements CommandProvider {
+   /* private static class SimpleCommandProvider implements CommandProvider {
 
         @Override
         public Publisher<ProviderContext> provide(MessageCreateEvent context, String commandName, int commandStartIndex, int commandEndIndex) {
@@ -37,12 +37,12 @@ public class CommandHandler {
                     .map(command -> ProviderContext.of(new PingCommand()))
                     .flux();
         }
-    }
+    }*/
 
     public static void setupCommands(DiscordClient client) {
-        SimpleCommandDispatcher dispatcher = new SimpleCommandDispatcher(COMMAND_PREFIX); //Handles triggering com.w1sh.medusa.commands using our ! prefix
+        /*SimpleCommandDispatcher dispatcher = new SimpleCommandDispatcher(COMMAND_PREFIX); //Handles triggering com.w1sh.medusa.commands using our ! prefix
         CommandBootstrapper bootstrapper = new CommandBootstrapper(dispatcher); //This mediates all internal logic for com.w1sh.medusa.commands
         bootstrapper.addProvider(new SimpleCommandProvider()); //Register our command provider
-        bootstrapper.attach(client).subscribe(); //Attach the provider to the client and activate it
+        bootstrapper.attach(client).subscribe(); //Attach the provider to the client and activate it*/
     }
 }
