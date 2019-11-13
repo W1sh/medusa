@@ -2,6 +2,7 @@ package com.w1sh.medusa.core;
 
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.listeners.impl.DisconnectListener;
+import com.w1sh.medusa.listeners.impl.GenericEventListener;
 import com.w1sh.medusa.listeners.impl.MessageCreateListener;
 import com.w1sh.medusa.listeners.impl.ReadyListener;
 import discord4j.core.DiscordClient;
@@ -18,12 +19,14 @@ import javax.annotation.PostConstruct;
 public class DiscordBot {
 
     private final DiscordClient client;
+    private final GenericEventListener genericEventListener;
     private final MessageCreateListener messageCreateListener;
     private final ReadyListener readyListener;
     private final DisconnectListener disconnectListener;
 
     @PostConstruct
     public void init(){
+        setupEventDispatcher(genericEventListener);
         setupEventDispatcher(messageCreateListener);
         setupEventDispatcher(disconnectListener);
         setupEventDispatcher(readyListener);
