@@ -1,4 +1,4 @@
-package com.w1sh.medusa.main;
+package com.w1sh.medusa.configurations;
 
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;

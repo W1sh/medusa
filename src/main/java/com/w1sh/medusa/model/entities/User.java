@@ -1,8 +1,7 @@
-package com.w1sh.medusa.entity.entities;
+package com.w1sh.medusa.model.entities;
 
 import discord4j.core.object.entity.Member;
 
-import javax.persistence.*;
 /*
 @Entity
 @Table(name = "users", uniqueConstraints = {
@@ -10,7 +9,7 @@ import javax.persistence.*;
 })
 @NamedQuery(name = "User.findAll", query = "select u from User u")
 @NamedQuery(name = "User.isPresentInGuildById", query = "select count(u) from User u where u.guildId = :gId and u.discordId = :dId")*/
-public class User{
+public class User {
 
     /*@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

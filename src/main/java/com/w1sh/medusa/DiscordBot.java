@@ -1,4 +1,4 @@
-package com.w1sh.medusa.main;
+package com.w1sh.medusa;
 
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.listeners.impl.DisconnectListener;

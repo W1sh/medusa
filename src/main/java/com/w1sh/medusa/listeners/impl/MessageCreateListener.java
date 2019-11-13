@@ -1,7 +1,7 @@
 package com.w1sh.medusa.listeners.impl;
 
 import com.w1sh.medusa.listeners.EventListener;
-import com.w1sh.medusa.managers.CmdController;
+import com.w1sh.medusa.managers.CommandManager;
 import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
@@ -10,7 +10,6 @@ import discord4j.core.object.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 
 import java.util.Objects;
 
@@ -20,10 +19,10 @@ import static java.util.function.Predicate.*;
 @Component
 public class MessageCreateListener implements EventListener<MessageCreateEvent> {
 
-    private final CmdController cmdController;
+    private final CommandManager commandManager;
 
-    public MessageCreateListener(CmdController cmdController) {
-        this.cmdController = cmdController;
+    public MessageCreateListener(CommandManager commandManager) {
+        this.commandManager = commandManager;
     }
 
     @Override
@@ -43,7 +42,7 @@ public class MessageCreateListener implements EventListener<MessageCreateEvent> 
                             .doOnEach(role -> log.info("Role {}", role.get()))
                             .any(role -> role.toLowerCase().contains("admin")))
                 .flatMap(m -> Mono.just(event))
-                .doOnNext(cmdController::process)
+                .doOnNext(commandManager::process)
                 //.map(Tuple2::getT2)
                 /*.doOnNext(channel -> channel.createMessage("Welcome")
                         .elapsed()

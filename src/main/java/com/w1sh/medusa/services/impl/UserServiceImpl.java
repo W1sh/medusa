@@ -1,22 +1,22 @@
-package com.w1sh.medusa.entity.services.impl;
+package com.w1sh.medusa.services.impl;
 
-import com.w1sh.medusa.entity.entities.User;
-import com.w1sh.medusa.entity.repositories.IUserRepository;
-import com.w1sh.medusa.entity.services.IUserService;
+import com.w1sh.medusa.model.entities.User;
+import com.w1sh.medusa.repositories.UserRepository;
+import com.w1sh.medusa.services.UserService;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@Slf4j
+@AllArgsConstructor
 @Service
-public class UserService implements IUserService {
+public class UserServiceImpl implements UserService {
 
-    private final IUserRepository userRepository;
-
-    public UserService(IUserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    private final UserRepository userRepository;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)

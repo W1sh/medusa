@@ -12,11 +12,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class CmdController {
+public class CommandManager {
 
     private final Map<String, AbstractCommand> commandsMap;
 
-    public CmdController() {
+    public CommandManager() {
         this.commandsMap = new HashMap<>();
         commandsMap.put("!ping", new PingCommand());
     }

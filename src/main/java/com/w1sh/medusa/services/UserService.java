@@ -1,10 +1,10 @@
-package com.w1sh.medusa.entity.services;
+package com.w1sh.medusa.services;
 
-import com.w1sh.medusa.entity.entities.User;
+import com.w1sh.medusa.model.entities.User;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public interface IUserService {
+public interface UserService {
 
     Mono<Void> persist(User user);
 

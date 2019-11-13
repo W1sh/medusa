@@ -1,29 +1,23 @@
-package com.w1sh.medusa.entity.repositories.impl;
+package com.w1sh.medusa.repositories.impl;
 
-import com.w1sh.medusa.entity.entities.User;
-import com.w1sh.medusa.entity.repositories.IUserRepository;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.w1sh.medusa.model.entities.User;
+import com.w1sh.medusa.repositories.UserRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
-import javax.persistence.*;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaUpdate;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.util.ArrayList;
-import java.util.List;
+
 @Repository
-public class UserRepository implements IUserRepository {
+public class UserRepositoryImpl implements UserRepository {
 
     //private static final Logger logger = LogManager.getLogger(UserRepository.class.getName());
     //private final EntityManager em;
     //private final CriteriaBuilder criteriaBuilder;
 
-    public UserRepository(){
+    public UserRepositoryImpl(){
         //this.em = em.createEntityManager();
         //this.criteriaBuilder = em.getCriteriaBuilder();
     }
