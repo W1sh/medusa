@@ -1,6 +1,7 @@
 package com.w1sh.medusa.main;
 
 import com.w1sh.medusa.handlers.DatabaseHandler;
+import com.w1sh.medusa.listeners.impl.DisconnectListener;
 import com.w1sh.medusa.listeners.impl.MessageCreateListener;
 import com.w1sh.medusa.listeners.impl.ReadyListener;
 import discord4j.core.DiscordClient;
@@ -9,7 +10,6 @@ import discord4j.core.event.domain.guild.GuildDeleteEvent;
 import discord4j.core.event.domain.guild.MemberJoinEvent;
 import discord4j.core.event.domain.guild.MemberLeaveEvent;
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
-import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -26,12 +26,15 @@ class DiscordBot {
     private final DiscordClient client;
     private final MessageCreateListener messageCreateListener;
     private final ReadyListener readyListener;
+    private final DisconnectListener disconnectListener;
 
-    public DiscordBot(DatabaseHandler databaseHandler, DiscordClient client, MessageCreateListener messageCreateListener, ReadyListener readyListener) {
+    public DiscordBot(DatabaseHandler databaseHandler, DiscordClient client, MessageCreateListener messageCreateListener,
+                      ReadyListener readyListener, DisconnectListener disconnectListener) {
         this.databaseHandler = databaseHandler;
         this.client = client;
         this.messageCreateListener = messageCreateListener;
         this.readyListener = readyListener;
+        this.disconnectListener = disconnectListener;
     }
 
     @PostConstruct
@@ -50,6 +53,11 @@ class DiscordBot {
                 .flatMap(readyListener::execute)
                 .subscribe(null, (throwable) -> log.error("Error when consuming ReadyEvent", throwable));
 
+        client.getEventDispatcher()
+                .on(disconnectListener.getEventType())
+                .flatMap(disconnectListener::execute)
+                .subscribe(null, (throwable) -> log.error("Error when consuming DisconnectEvent", throwable));
+
         /*client.getEventDispatcher().on(ReadyEvent.class)
                 .subscribe(ready -> {
                     // bad implementation
@@ -63,9 +71,9 @@ class DiscordBot {
 
                 });*/
 
-        client.getEventDispatcher().on(DisconnectEvent.class)
+        /*client.getEventDispatcher().on(DisconnectEvent.class)
                 //.doOnNext(disconnectEvent -> em.getTransaction().commit())
-                .subscribe();
+                .subscribe();*/
 
         client.getEventDispatcher().on(GuildCreateEvent.class)
                 .map(event -> Tuples.of("guildId", event.getGuild().getId().asLong()))
