@@ -1,26 +1,20 @@
 package com.w1sh.medusa.main;
 
-import com.w1sh.medusa.handlers.DatabaseHandler;
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.listeners.impl.DisconnectListener;
 import com.w1sh.medusa.listeners.impl.MessageCreateListener;
 import com.w1sh.medusa.listeners.impl.ReadyListener;
 import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.Event;
-import discord4j.core.event.domain.guild.GuildCreateEvent;
-import discord4j.core.event.domain.guild.GuildDeleteEvent;
-import discord4j.core.event.domain.guild.MemberJoinEvent;
-import discord4j.core.event.domain.guild.MemberLeaveEvent;
-import discord4j.core.event.domain.lifecycle.DisconnectEvent;
+import discord4j.core.object.presence.Presence;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
-import reactor.util.function.Tuples;
 
 import javax.annotation.PostConstruct;
-import java.util.Objects;
 
 @Slf4j
+@AllArgsConstructor
 @Component
 class DiscordBot {
 
@@ -28,14 +22,6 @@ class DiscordBot {
     private final MessageCreateListener messageCreateListener;
     private final ReadyListener readyListener;
     private final DisconnectListener disconnectListener;
-
-    public DiscordBot(DiscordClient client, MessageCreateListener messageCreateListener, ReadyListener readyListener,
-                      DisconnectListener disconnectListener) {
-        this.client = client;
-        this.messageCreateListener = messageCreateListener;
-        this.readyListener = readyListener;
-        this.disconnectListener = disconnectListener;
-    }
 
     @PostConstruct
     public void init(){
@@ -49,7 +35,7 @@ class DiscordBot {
     private <T extends Event> void setupEventDispatcher(EventListener<T> eventListener){
         client.getEventDispatcher()
                 .on(eventListener.getEventType())
-                .flatMap(eventListener::execute)
+                .flatMap(event -> eventListener.execute(client, event))
                 .subscribe(null, throwable -> log.error("Error when consuming events", throwable));
     }
 
