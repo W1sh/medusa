@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
-public class DisconnectListener implements EventListener<DisconnectEvent> {
+public class DisconnectListener implements EventListener<DisconnectEvent, Void> {
 
     @Override
     public Class<DisconnectEvent> getEventType() {

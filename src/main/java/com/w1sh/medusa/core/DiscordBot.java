@@ -26,7 +26,6 @@ public class DiscordBot {
 
     @PostConstruct
     public void init(){
-        setupEventDispatcher(genericEventListener);
         setupEventDispatcher(messageCreateListener);
         setupEventDispatcher(disconnectListener);
         setupEventDispatcher(readyListener);
@@ -34,9 +33,11 @@ public class DiscordBot {
         client.login().block();
     }
 
-    private <T extends Event> void setupEventDispatcher(EventListener<T> eventListener){
+    private <T extends Event, S> void setupEventDispatcher(EventListener<T, S> eventListener){
         client.getEventDispatcher()
                 .on(eventListener.getEventType())
+                .flatMap(event -> genericEventListener.execute(client, event))
+                .ofType(eventListener.getEventType())
                 .flatMap(event -> eventListener.execute(client, event))
                 .subscribe(null, throwable -> log.error("Error when consuming events", throwable));
 }

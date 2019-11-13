@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
-public class GenericEventListener implements EventListener<Event> {
+public class GenericEventListener implements EventListener<Event, Event> {
 
     @Override
     public Class<Event> getEventType() {
@@ -17,9 +17,7 @@ public class GenericEventListener implements EventListener<Event> {
     }
 
     @Override
-    public Mono<Void> execute(DiscordClient client, Event event) {
-        return Mono.just(event)
-                .doOnNext(e -> log.info("Event received: {}", event.getClass().getSimpleName()))
-                .then();
+    public Mono<Event> execute(DiscordClient client, Event event) {
+        return Mono.just(event).doOnNext(e -> log.info("Event received: {}", event.getClass().getSimpleName()));
     }
 }

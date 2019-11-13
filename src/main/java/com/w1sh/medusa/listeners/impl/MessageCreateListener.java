@@ -17,7 +17,7 @@ import static java.util.function.Predicate.*;
 
 @Slf4j
 @Component
-public class MessageCreateListener implements EventListener<MessageCreateEvent> {
+public class MessageCreateListener implements EventListener<MessageCreateEvent, Void> {
 
     private final CommandManager commandManager;
 

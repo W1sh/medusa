@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
-public class ReadyListener implements EventListener<ReadyEvent> {
+public class ReadyListener implements EventListener<ReadyEvent, Void> {
 
     @Override
     public Class<ReadyEvent> getEventType() {
