@@ -1,5 +1,6 @@
-package com.w1sh.medusa.listeners;
+package com.w1sh.medusa.listeners.impl;
 
+import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.managers.CmdController;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;

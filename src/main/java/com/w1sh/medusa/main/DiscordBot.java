@@ -1,7 +1,8 @@
 package com.w1sh.medusa.main;
 
 import com.w1sh.medusa.handlers.DatabaseHandler;
-import com.w1sh.medusa.listeners.MessageCreateListener;
+import com.w1sh.medusa.listeners.impl.MessageCreateListener;
+import com.w1sh.medusa.listeners.impl.ReadyListener;
 import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
 import discord4j.core.event.domain.guild.GuildDeleteEvent;
@@ -9,7 +10,6 @@ import discord4j.core.event.domain.guild.MemberJoinEvent;
 import discord4j.core.event.domain.guild.MemberLeaveEvent;
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
-import discord4j.core.object.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -18,8 +18,6 @@ import reactor.util.function.Tuples;
 import javax.annotation.PostConstruct;
 import java.util.Objects;
 
-import static java.util.function.Predicate.not;
-
 @Slf4j
 @Component
 class DiscordBot {
@@ -27,11 +25,13 @@ class DiscordBot {
     private final DatabaseHandler databaseHandler;
     private final DiscordClient client;
     private final MessageCreateListener messageCreateListener;
+    private final ReadyListener readyListener;
 
-    public DiscordBot(DatabaseHandler databaseHandler, DiscordClient client, MessageCreateListener messageCreateListener) {
+    public DiscordBot(DatabaseHandler databaseHandler, DiscordClient client, MessageCreateListener messageCreateListener, ReadyListener readyListener) {
         this.databaseHandler = databaseHandler;
         this.client = client;
         this.messageCreateListener = messageCreateListener;
+        this.readyListener = readyListener;
     }
 
     @PostConstruct
@@ -45,7 +45,12 @@ class DiscordBot {
                 .flatMap(messageCreateListener::execute)
                 .subscribe(null, (throwable) -> log.error("Error when consuming MessageCreateEvent", throwable));
 
-        client.getEventDispatcher().on(ReadyEvent.class)
+        client.getEventDispatcher()
+                .on(readyListener.getEventType())
+                .flatMap(readyListener::execute)
+                .subscribe(null, (throwable) -> log.error("Error when consuming ReadyEvent", throwable));
+
+        /*client.getEventDispatcher().on(ReadyEvent.class)
                 .subscribe(ready -> {
                     // bad implementation
                     // should only be added to database after trying to betting
@@ -56,7 +61,7 @@ class DiscordBot {
                     log.info("Currently serving " + ready.getGuilds().size() + " servers");
                 }, error -> {
 
-                });
+                });*/
 
         client.getEventDispatcher().on(DisconnectEvent.class)
                 //.doOnNext(disconnectEvent -> em.getTransaction().commit())
