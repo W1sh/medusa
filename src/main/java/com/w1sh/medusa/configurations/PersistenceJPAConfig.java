@@ -1,4 +1,4 @@
-package com.w1sh.medusa;
+package com.w1sh.medusa.configurations;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;

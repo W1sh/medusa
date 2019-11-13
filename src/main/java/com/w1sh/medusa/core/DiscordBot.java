@@ -1,4 +1,4 @@
-package com.w1sh.medusa;
+package com.w1sh.medusa.core;
 
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.listeners.impl.DisconnectListener;
@@ -6,7 +6,6 @@ import com.w1sh.medusa.listeners.impl.MessageCreateListener;
 import com.w1sh.medusa.listeners.impl.ReadyListener;
 import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.Event;
-import discord4j.core.object.presence.Presence;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,7 +15,7 @@ import javax.annotation.PostConstruct;
 @Slf4j
 @AllArgsConstructor
 @Component
-class DiscordBot {
+public class DiscordBot {
 
     private final DiscordClient client;
     private final MessageCreateListener messageCreateListener;
@@ -37,7 +36,7 @@ class DiscordBot {
                 .on(eventListener.getEventType())
                 .flatMap(event -> eventListener.execute(client, event))
                 .subscribe(null, throwable -> log.error("Error when consuming events", throwable));
-    }
+}
 
     public void setupEventDispatcher(){
         /*client.getEventDispatcher()
