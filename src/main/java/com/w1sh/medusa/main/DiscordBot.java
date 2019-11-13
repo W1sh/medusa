@@ -1,10 +1,12 @@
 package com.w1sh.medusa.main;
 
 import com.w1sh.medusa.handlers.DatabaseHandler;
+import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.listeners.impl.DisconnectListener;
 import com.w1sh.medusa.listeners.impl.MessageCreateListener;
 import com.w1sh.medusa.listeners.impl.ReadyListener;
 import discord4j.core.DiscordClient;
+import discord4j.core.event.domain.Event;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
 import discord4j.core.event.domain.guild.GuildDeleteEvent;
 import discord4j.core.event.domain.guild.MemberJoinEvent;
@@ -22,15 +24,13 @@ import java.util.Objects;
 @Component
 class DiscordBot {
 
-    private final DatabaseHandler databaseHandler;
     private final DiscordClient client;
     private final MessageCreateListener messageCreateListener;
     private final ReadyListener readyListener;
     private final DisconnectListener disconnectListener;
 
-    public DiscordBot(DatabaseHandler databaseHandler, DiscordClient client, MessageCreateListener messageCreateListener,
-                      ReadyListener readyListener, DisconnectListener disconnectListener) {
-        this.databaseHandler = databaseHandler;
+    public DiscordBot(DiscordClient client, MessageCreateListener messageCreateListener, ReadyListener readyListener,
+                      DisconnectListener disconnectListener) {
         this.client = client;
         this.messageCreateListener = messageCreateListener;
         this.readyListener = readyListener;
@@ -39,11 +39,22 @@ class DiscordBot {
 
     @PostConstruct
     public void init(){
-        setupEventDispatcher();
+        setupEventDispatcher(messageCreateListener);
+        setupEventDispatcher(disconnectListener);
+        setupEventDispatcher(readyListener);
+
+        client.login().block();
+    }
+
+    private <T extends Event> void setupEventDispatcher(EventListener<T> eventListener){
+        client.getEventDispatcher()
+                .on(eventListener.getEventType())
+                .flatMap(eventListener::execute)
+                .subscribe(null, throwable -> log.error("Error when consuming events", throwable));
     }
 
     public void setupEventDispatcher(){
-        client.getEventDispatcher()
+        /*client.getEventDispatcher()
                 .on(messageCreateListener.getEventType())
                 .flatMap(messageCreateListener::execute)
                 .subscribe(null, (throwable) -> log.error("Error when consuming MessageCreateEvent", throwable));
@@ -56,7 +67,7 @@ class DiscordBot {
         client.getEventDispatcher()
                 .on(disconnectListener.getEventType())
                 .flatMap(disconnectListener::execute)
-                .subscribe(null, (throwable) -> log.error("Error when consuming DisconnectEvent", throwable));
+                .subscribe(null, (throwable) -> log.error("Error when consuming DisconnectEvent", throwable));*/
 
         /*client.getEventDispatcher().on(ReadyEvent.class)
                 .subscribe(ready -> {
@@ -75,27 +86,27 @@ class DiscordBot {
                 //.doOnNext(disconnectEvent -> em.getTransaction().commit())
                 .subscribe();*/
 
-        client.getEventDispatcher().on(GuildCreateEvent.class)
+        /*client.getEventDispatcher().on(GuildCreateEvent.class)
                 .map(event -> Tuples.of("guildId", event.getGuild().getId().asLong()))
                 //.filter(tuple -> !userRepository.isPresent(tuple))
                 //.doOnNext(tuple -> )
-                .subscribe();
+                .subscribe();*/
 
-        client.getEventDispatcher().on(GuildDeleteEvent.class)
+        /*client.getEventDispatcher().on(GuildDeleteEvent.class)
                 .filter(guildDeleteEvent -> !guildDeleteEvent.isUnavailable())
                 .map(GuildDeleteEvent::getGuild)
-                //.doOnNext(/*unregister guild*/)
-                .subscribe();
+                //.doOnNext(unregister guild)
+                .subscribe();*/
 
-        client.getEventDispatcher().on(MemberJoinEvent.class)
+        /*client.getEventDispatcher().on(MemberJoinEvent.class)
                 //.doOnEach(memberJoinEventSignal ->)
                 .map(MemberJoinEvent::getMember)
                 //.map(User::new)
                 //.doOnNext(userRepository::persist)
                 .onErrorResume(e -> Mono.empty())
-                .subscribe();
+                .subscribe();*/
 
-        client.getEventDispatcher().on(MemberLeaveEvent.class)
+        /*client.getEventDispatcher().on(MemberLeaveEvent.class)
                 .map(event -> {
                     if(event.getMember().isPresent()){
                         return Tuples.of(event.getGuildId().asLong(),
@@ -104,12 +115,10 @@ class DiscordBot {
                     return null;
                 })
                 .filter(Objects::nonNull)
-                /*.doOnNext(tuple-> userRepository.delete(
+                .doOnNext(tuple-> userRepository.delete(
                         Tuples.of("discordId", tuple.getT2()),
-                        Tuples.of("guildId", tuple.getT1())))*/
+                        Tuples.of("guildId", tuple.getT1())))
                 .onErrorResume(e -> Mono.empty())
-                .subscribe();
-
-        client.login().block();
+                .subscribe();*/
     }
 }
