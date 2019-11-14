@@ -2,13 +2,13 @@ package com.w1sh.medusa.commands;
 
 import com.w1sh.medusa.managers.AudioManager;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.VoiceState;
-import discord4j.core.object.entity.Member;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Component
-public class JoinVoiceChannelCommand extends AbstractCommand {
+public class LeaveVoiceChannelCommand extends AbstractCommand {
 
     @Override
     public String getName() {
@@ -27,10 +27,8 @@ public class JoinVoiceChannelCommand extends AbstractCommand {
 
     @Override
     public Mono<Void> execute(MessageCreateEvent event) {
-        return Mono.justOrEmpty(event.getMember())
-                .flatMap(Member::getVoiceState)
-                .flatMap(VoiceState::getChannel)
-                .flatMap(AudioManager.getInstance()::joinVoiceChannel)
+        return Mono.justOrEmpty(event.getGuildId())
+                .flatMap(AudioManager.getInstance()::leaveVoiceChannel)
                 .then();
     }
 }
