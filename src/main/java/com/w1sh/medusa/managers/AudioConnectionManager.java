@@ -42,7 +42,7 @@ public class AudioConnectionManager {
                 .map(tuple -> tuple.getT1().getVoiceConnection());
     }
 
-    public Mono<Void> leaveVoiceChannel(Snowflake guildIdSnowflake) {
+    public Mono<Boolean> leaveVoiceChannel(Snowflake guildIdSnowflake) {
         return Mono.just(guildIdSnowflake)
                 .flatMap(this::getAudioChannelManager)
                 .filter(Objects::nonNull)
@@ -51,7 +51,7 @@ public class AudioConnectionManager {
                 .map(Tuple2::getT1)
                 .doOnNext(AudioChannelManager::destroy)
                 .doOnError(throwable -> log.error("Failed to leave voice channel", throwable))
-                .then();
+                .then(Mono.just(true)); // find new return type to represent completion
     }
 
     public Mono<AudioChannelManager> getAudioChannelManager(Snowflake guildIdSnowflake) {

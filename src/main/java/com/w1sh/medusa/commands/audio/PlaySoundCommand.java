@@ -1,7 +1,8 @@
-package com.w1sh.medusa.commands;
+package com.w1sh.medusa.commands.audio;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.w1sh.medusa.audio.TrackScheduler;
+import com.w1sh.medusa.commands.AbstractCommand;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;

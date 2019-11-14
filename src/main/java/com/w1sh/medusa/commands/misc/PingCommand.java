@@ -1,5 +1,6 @@
-package com.w1sh.medusa.commands;
+package com.w1sh.medusa.commands.misc;
 
+import com.w1sh.medusa.commands.AbstractCommand;
 import com.w1sh.medusa.utils.Messager;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import lombok.AllArgsConstructor;

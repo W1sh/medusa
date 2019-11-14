@@ -1,5 +1,6 @@
-package com.w1sh.medusa.commands;
+package com.w1sh.medusa.commands.audio;
 
+import com.w1sh.medusa.commands.AbstractCommand;
 import com.w1sh.medusa.managers.AudioConnectionManager;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import lombok.AllArgsConstructor;
@@ -8,7 +9,7 @@ import reactor.core.publisher.Mono;
 
 @AllArgsConstructor
 @Component
-public class StopSoundCommand extends AbstractCommand{
+public class StopSoundCommand extends AbstractCommand {
 
     @Override
     public String getName() {

@@ -1,5 +1,6 @@
-package com.w1sh.medusa.commands;
+package com.w1sh.medusa.commands.misc;
 
+import com.w1sh.medusa.commands.AbstractCommand;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
 
