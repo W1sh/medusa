@@ -34,4 +34,6 @@ public class TrackScheduler implements AudioLoadResultHandler {
     public void loadFailed(final FriendlyException exception) {
         // LavaPlayer could not parse an audio source for some reason
     }
+
+    public void destroy(){}
 }

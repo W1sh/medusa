@@ -1,6 +1,6 @@
 package com.w1sh.medusa.commands;
 
-import com.w1sh.medusa.managers.AudioManager;
+import com.w1sh.medusa.managers.AudioConnectionManager;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
@@ -30,7 +30,7 @@ public class JoinVoiceChannelCommand extends AbstractCommand {
         return Mono.justOrEmpty(event.getMember())
                 .flatMap(Member::getVoiceState)
                 .flatMap(VoiceState::getChannel)
-                .flatMap(AudioManager.getInstance()::joinVoiceChannel)
+                .flatMap(AudioConnectionManager.getInstance()::joinVoiceChannel)
                 .then();
     }
 }

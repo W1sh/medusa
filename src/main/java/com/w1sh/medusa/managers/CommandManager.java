@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
-@DependsOn({"audioManager"})
+@DependsOn({"audioConnectionManager"})
 @Component
 public class CommandManager {
 

@@ -1,6 +1,6 @@
 package com.w1sh.medusa.commands;
 
-import com.w1sh.medusa.managers.AudioManager;
+import com.w1sh.medusa.managers.AudioConnectionManager;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -28,7 +28,7 @@ public class LeaveVoiceChannelCommand extends AbstractCommand {
     @Override
     public Mono<Void> execute(MessageCreateEvent event) {
         return Mono.justOrEmpty(event.getGuildId())
-                .flatMap(AudioManager.getInstance()::leaveVoiceChannel)
+                .flatMap(AudioConnectionManager.getInstance()::leaveVoiceChannel)
                 .then();
     }
 }
