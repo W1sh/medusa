@@ -42,8 +42,7 @@ public class AppConfiguration {
 
     @Bean
     @Scope(value = "prototype")
-    public TrackEventListener trackEventListener(Long guildId){
-        return new TrackEventListener(guildId);
+    public TrackEventListener trackEventListener(Long guildId) { return new TrackEventListener(guildId);
     }
 
     @Bean

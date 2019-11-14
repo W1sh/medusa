@@ -24,14 +24,14 @@ public class AudioConnectionManager {
     private static AtomicReference<AudioConnectionManager> instance = new AtomicReference<>();
     private final LavaPlayerAudioProvider audioProvider;
     private final AutowireCapableBeanFactory factory;
-    private final Map<Snowflake, AudioConnection> audioChannelMap;
+    private final Map<Snowflake, AudioConnection> audioConnections;
 
     public AudioConnectionManager(LavaPlayerAudioProvider audioProvider, AutowireCapableBeanFactory factory) {
         final AudioConnectionManager previous = instance.getAndSet(this);
         if(previous != null) throw new IllegalArgumentException("Cannot created second AudioManager");
         this.audioProvider = audioProvider;
         this.factory = factory;
-        this.audioChannelMap = new HashMap<>();
+        this.audioConnections = new HashMap<>();
     }
 
     public Mono<VoiceConnection> joinVoiceChannel(VoiceChannel channel) {
@@ -57,7 +57,7 @@ public class AudioConnectionManager {
     }
 
     public Mono<AudioConnection> getAudioChannelManager(Snowflake guildIdSnowflake) {
-        return Mono.just(audioChannelMap.get(guildIdSnowflake));
+        return Mono.just(audioConnections.get(guildIdSnowflake));
     }
 
     public static AudioConnectionManager getInstance() {
@@ -73,8 +73,8 @@ public class AudioConnectionManager {
                     tuple.getT1().addListener(tuple.getT2());
                 })
                 .map(tuple -> {
-                    audioChannelMap.put(snowflake.getT2(), tuple.getT1());
-                    return audioChannelMap.get(snowflake.getT2());
+                    audioConnections.put(snowflake.getT2(), tuple.getT1());
+                    return audioConnections.get(snowflake.getT2());
                 })
                 .zipWith(Mono.just(snowflake.getT2()));
     }
