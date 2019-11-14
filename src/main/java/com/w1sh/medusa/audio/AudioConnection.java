@@ -1,21 +1,28 @@
-package com.w1sh.medusa.managers;
+package com.w1sh.medusa.audio;
 
+import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.w1sh.medusa.audio.TrackScheduler;
+import discord4j.core.object.util.Snowflake;
 import discord4j.voice.VoiceConnection;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
 
-@Component
-public class AudioChannelManager {
+import javax.annotation.PostConstruct;
 
-    @Getter
+@Component
+public class AudioConnection {
+
     private final TrackScheduler trackScheduler;
     @Getter @Setter
     private VoiceConnection voiceConnection;
 
-    public AudioChannelManager(TrackScheduler trackScheduler) {
+    public AudioConnection(TrackScheduler trackScheduler) {
         this.trackScheduler = trackScheduler;
+    }
+
+    public void addListener(AudioEventAdapter listener){
+        trackScheduler.getPlayer().addListener(listener);
     }
 
     public void destroy(){

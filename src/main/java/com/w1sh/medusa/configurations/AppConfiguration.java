@@ -8,6 +8,7 @@ import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
 import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBuffer;
 import com.w1sh.medusa.audio.LavaPlayerAudioProvider;
 import com.w1sh.medusa.gateways.CustomGatewayObserver;
+import com.w1sh.medusa.listeners.impl.TrackEventListener;
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.object.presence.Activity;
@@ -16,6 +17,7 @@ import discord4j.voice.AudioProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 
 @Configuration
 public class AppConfiguration {
@@ -36,6 +38,12 @@ public class AppConfiguration {
     @Bean
     public MutableAudioFrame mutableAudioFrame() {
         return new MutableAudioFrame();
+    }
+
+    @Bean
+    @Scope(value = "prototype")
+    public TrackEventListener trackEventListener(Long guildId){
+        return new TrackEventListener(guildId);
     }
 
     @Bean

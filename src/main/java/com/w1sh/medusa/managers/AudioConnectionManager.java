@@ -1,6 +1,8 @@
 package com.w1sh.medusa.managers;
 
+import com.w1sh.medusa.audio.AudioConnection;
 import com.w1sh.medusa.audio.LavaPlayerAudioProvider;
+import com.w1sh.medusa.listeners.impl.TrackEventListener;
 import discord4j.core.object.entity.VoiceChannel;
 import discord4j.core.object.util.Snowflake;
 import discord4j.voice.VoiceConnection;
@@ -22,7 +24,7 @@ public class AudioConnectionManager {
     private static AtomicReference<AudioConnectionManager> instance = new AtomicReference<>();
     private final LavaPlayerAudioProvider audioProvider;
     private final AutowireCapableBeanFactory factory;
-    private final Map<Snowflake, AudioChannelManager> audioChannelMap;
+    private final Map<Snowflake, AudioConnection> audioChannelMap;
 
     public AudioConnectionManager(LavaPlayerAudioProvider audioProvider, AutowireCapableBeanFactory factory) {
         final AudioConnectionManager previous = instance.getAndSet(this);
@@ -49,12 +51,12 @@ public class AudioConnectionManager {
                 .zipWith(Mono.just(guildIdSnowflake))
                 .doOnNext(tuple -> log.info("Client leaving voice channel in guild <{}>", tuple.getT2().asBigInteger()))
                 .map(Tuple2::getT1)
-                .doOnNext(AudioChannelManager::destroy)
+                .doOnNext(AudioConnection::destroy)
                 .doOnError(throwable -> log.error("Failed to leave voice channel", throwable))
                 .then(Mono.just(true)); // find new return type to represent completion
     }
 
-    public Mono<AudioChannelManager> getAudioChannelManager(Snowflake guildIdSnowflake) {
+    public Mono<AudioConnection> getAudioChannelManager(Snowflake guildIdSnowflake) {
         return Mono.just(audioChannelMap.get(guildIdSnowflake));
     }
 
@@ -62,12 +64,16 @@ public class AudioConnectionManager {
         return instance.get();
     }
 
-    private Mono<Tuple2<AudioChannelManager, Snowflake>> createAudioChannelManager(Tuple2<VoiceConnection, Snowflake> snowflake){
-        return Mono.just(factory.createBean(AudioChannelManager.class))
+    private Mono<Tuple2<AudioConnection, Snowflake>> createAudioChannelManager(Tuple2<VoiceConnection, Snowflake> snowflake){
+        return Mono.just(factory.createBean(AudioConnection.class))
+                .zipWith(Mono.just(factory.getBean(TrackEventListener.class, snowflake.getT2().asLong())))
                 .doOnNext(factory::autowireBean)
-                .doOnNext(tuple -> tuple.setVoiceConnection(snowflake.getT1()))
-                .map(manager -> {
-                    audioChannelMap.put(snowflake.getT2(), manager);
+                .doOnNext(tuple -> {
+                    tuple.getT1().setVoiceConnection(snowflake.getT1());
+                    tuple.getT1().addListener(tuple.getT2());
+                })
+                .map(tuple -> {
+                    audioChannelMap.put(snowflake.getT2(), tuple.getT1());
                     return audioChannelMap.get(snowflake.getT2());
                 })
                 .zipWith(Mono.just(snowflake.getT2()));
