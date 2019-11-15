@@ -15,6 +15,7 @@ import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.voice.AudioProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -41,9 +42,8 @@ public class AppConfiguration {
     }
 
     @Bean
-    @Scope(value = "prototype")
-    public TrackEventListener trackEventListener(Long guildId) { return new TrackEventListener(guildId);
-    }
+    @Scope(BeanDefinition.SCOPE_PROTOTYPE)
+    public TrackEventListener trackEventListener(Long guildId) { return new TrackEventListener(guildId); }
 
     @Bean
     public DiscordClient discordClient(@Value("${discord.token}") String token,

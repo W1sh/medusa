@@ -1,12 +1,11 @@
 package com.w1sh.medusa.core;
 
 import com.w1sh.medusa.listeners.EventListener;
-import com.w1sh.medusa.listeners.impl.DisconnectListener;
-import com.w1sh.medusa.listeners.impl.GenericEventListener;
-import com.w1sh.medusa.listeners.impl.MessageCreateListener;
-import com.w1sh.medusa.listeners.impl.ReadyListener;
+import com.w1sh.medusa.listeners.impl.*;
 import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.Event;
+import discord4j.core.event.domain.VoiceStateUpdateEvent;
+import discord4j.core.event.domain.channel.VoiceChannelUpdateEvent;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -21,6 +20,7 @@ public class DiscordBot {
     private final DiscordClient client;
     private final GenericEventListener genericEventListener;
     private final MessageCreateListener messageCreateListener;
+    private final VoiceStateUpdateListener voiceStateUpdateListener;
     private final ReadyListener readyListener;
     private final DisconnectListener disconnectListener;
 
@@ -29,6 +29,7 @@ public class DiscordBot {
         setupEventDispatcher(messageCreateListener);
         setupEventDispatcher(disconnectListener);
         setupEventDispatcher(readyListener);
+        setupEventDispatcher(voiceStateUpdateListener);
 
         client.login().block();
     }
