@@ -3,15 +3,16 @@ package com.w1sh.medusa.commands.misc;
 import com.w1sh.medusa.commands.AbstractCommand;
 import com.w1sh.medusa.utils.Messager;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
-@Slf4j
 @Component
 public class PingCommand extends AbstractCommand {
+
+    private static final Logger logger = LoggerFactory.getLogger(PingCommand.class);
 
     @Override
     public String getName() {
@@ -34,7 +35,7 @@ public class PingCommand extends AbstractCommand {
                 .doOnNext(channel -> Messager.send(event.getClient(), channel, "Pong!")
                         .elapsed()
                         .map(Tuple2::getT1)
-                        .doOnNext(elapsed -> log.info("Answered request in {} milliseconds", elapsed))
+                        .doOnNext(elapsed -> logger.info("Answered request in {} milliseconds", elapsed))
                         .subscribe())
                 .then();
     }

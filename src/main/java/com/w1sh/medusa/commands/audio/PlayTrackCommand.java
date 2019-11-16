@@ -4,18 +4,21 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.w1sh.medusa.audio.TrackScheduler;
 import com.w1sh.medusa.commands.AbstractCommand;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
 
-@AllArgsConstructor
 @Component
 public class PlayTrackCommand extends AbstractCommand {
 
     private final AudioPlayerManager playerManager;
     private final TrackScheduler trackScheduler;
+
+    public PlayTrackCommand(AudioPlayerManager playerManager, TrackScheduler trackScheduler) {
+        this.playerManager = playerManager;
+        this.trackScheduler = trackScheduler;
+    }
 
     @Override
     public String getName() {

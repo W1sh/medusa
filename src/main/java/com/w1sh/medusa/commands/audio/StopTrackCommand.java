@@ -3,11 +3,9 @@ package com.w1sh.medusa.commands.audio;
 import com.w1sh.medusa.commands.AbstractCommand;
 import com.w1sh.medusa.managers.AudioConnectionManager;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-@AllArgsConstructor
 @Component
 public class StopTrackCommand extends AbstractCommand {
 

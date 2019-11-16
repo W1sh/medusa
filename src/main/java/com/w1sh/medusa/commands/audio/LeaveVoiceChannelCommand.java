@@ -4,11 +4,9 @@ import com.w1sh.medusa.commands.AbstractCommand;
 import com.w1sh.medusa.managers.AudioConnectionManager;
 import com.w1sh.medusa.utils.Messager;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-@Slf4j
 @Component
 public class LeaveVoiceChannelCommand extends AbstractCommand {
 

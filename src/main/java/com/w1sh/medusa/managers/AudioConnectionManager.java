@@ -6,7 +6,8 @@ import com.w1sh.medusa.listeners.impl.TrackEventListener;
 import discord4j.core.object.entity.VoiceChannel;
 import discord4j.core.object.util.Snowflake;
 import discord4j.voice.VoiceConnection;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -17,9 +18,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
-@Slf4j
 @Component
 public class AudioConnectionManager {
+
+    private static final Logger logger = LoggerFactory.getLogger(AudioConnectionManager.class);
 
     private static AtomicReference<AudioConnectionManager> instance = new AtomicReference<>();
     private final LavaPlayerAudioProvider audioProvider;
@@ -38,9 +40,9 @@ public class AudioConnectionManager {
         return Mono.just(channel)
                 .flatMap(chan -> chan.join(spec1 -> spec1.setProvider(audioProvider)))
                 .zipWith(Mono.justOrEmpty(channel.getGuildId()))
-                .doOnNext(tuple -> log.info("Client joined voice channel in guild <{}>", tuple.getT2().asBigInteger()))
+                .doOnNext(tuple -> logger.info("Client joined voice channel in guild <{}>", tuple.getT2().asBigInteger()))
                 .flatMap(this::createAudioChannelManager)
-                .doOnError(throwable -> log.error("Failed to leave voice channel", throwable))
+                .doOnError(throwable -> logger.error("Failed to leave voice channel", throwable))
                 .map(tuple -> tuple.getT1().getVoiceConnection());
     }
 
@@ -49,10 +51,10 @@ public class AudioConnectionManager {
                 .flatMap(this::getAudioChannelManager)
                 .filter(Objects::nonNull)
                 .zipWith(Mono.just(guildIdSnowflake))
-                .doOnNext(tuple -> log.info("Client leaving voice channel in guild <{}>", tuple.getT2().asBigInteger()))
+                .doOnNext(tuple -> logger.info("Client leaving voice channel in guild <{}>", tuple.getT2().asBigInteger()))
                 .map(Tuple2::getT1)
                 .doOnNext(AudioConnection::destroy)
-                .doOnError(throwable -> log.error("Failed to leave voice channel", throwable))
+                .doOnError(throwable -> logger.error("Failed to leave voice channel", throwable))
                 .then(Mono.just(true)); // find new return type to represent completion
     }
 

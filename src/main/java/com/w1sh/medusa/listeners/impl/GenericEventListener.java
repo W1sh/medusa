@@ -3,13 +3,15 @@ package com.w1sh.medusa.listeners.impl;
 import com.w1sh.medusa.listeners.EventListener;
 import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.Event;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-@Slf4j
 @Component
 public class GenericEventListener implements EventListener<Event, Event> {
+
+    private static final Logger logger = LoggerFactory.getLogger(GenericEventListener.class);
 
     @Override
     public Class<Event> getEventType() {
@@ -18,6 +20,6 @@ public class GenericEventListener implements EventListener<Event, Event> {
 
     @Override
     public Mono<Event> execute(DiscordClient client, Event event) {
-        return Mono.just(event).doOnNext(e -> log.info("Event received: {}", event.getClass().getSimpleName()));
+        return Mono.just(event).doOnNext(e -> logger.info("Event received: {}", event.getClass().getSimpleName()));
     }
 }

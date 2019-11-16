@@ -7,13 +7,15 @@ import discord4j.core.object.entity.MessageChannel;
 import discord4j.core.object.util.Permission;
 import discord4j.rest.http.client.ClientException;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-@Slf4j
 @Component
 public class Messager {
+
+    private static final Logger logger = LoggerFactory.getLogger(Messager.class);
 
     private Messager(){}
 
@@ -22,12 +24,12 @@ public class Messager {
                 .map(permissions -> permissions.contains(Permission.SEND_MESSAGES))
                 .flatMap(hasPermission -> {
                     if(Boolean.TRUE.equals(hasPermission)) return channel.createMessage(content);
-                    log.warn("Missing permission in channel <{}> with ID <{}>, cannot send messages!",
+                    logger.warn("Missing permission in channel <{}> with ID <{}>, cannot send messages!",
                             ((GuildChannel) channel).getName(), channel.getId().asBigInteger());
                     return Mono.empty();
                 })
                 .onErrorResume(ClientException.isStatusCode(HttpResponseStatus.FORBIDDEN.code()), err -> {
-                    log.error("Failed to send message, bot is not ith the guild", err);
+                    logger.error("Failed to send message, bot is not ith the guild", err);
                     return Mono.empty();
                 });
     }

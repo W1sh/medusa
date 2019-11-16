@@ -8,17 +8,19 @@ import com.w1sh.medusa.commands.audio.LeaveVoiceChannelCommand;
 import com.w1sh.medusa.commands.audio.PlayTrackCommand;
 import com.w1sh.medusa.commands.misc.PingCommand;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Slf4j
 @DependsOn({"audioConnectionManager"})
 @Component
 public class CommandManager {
+
+    private static final Logger logger = LoggerFactory.getLogger(CommandManager.class);
 
     private final PingCommand pingCommand;
     private final JoinVoiceChannelCommand joinVoiceChannelCommand;
@@ -47,6 +49,6 @@ public class CommandManager {
     public void process(MessageCreateEvent messageCreateEvent){
         commandsMap.get(messageCreateEvent.getMessage().getContent().orElse(""))
                 .execute(messageCreateEvent)
-                .subscribe(null, throwable -> log.error("", throwable));
+                .subscribe(null, throwable -> logger.error("", throwable));
     }
 }

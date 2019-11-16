@@ -7,17 +7,19 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.Role;
 import discord4j.core.object.entity.User;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.util.Objects;
 
-import static java.util.function.Predicate.*;
+import static java.util.function.Predicate.not;
 
-@Slf4j
 @Component
 public class MessageCreateListener implements EventListener<MessageCreateEvent, Void> {
+
+    private static final Logger logger = LoggerFactory.getLogger(MessageCreateListener.class);
 
     private final CommandManager commandManager;
 
@@ -37,10 +39,10 @@ public class MessageCreateListener implements EventListener<MessageCreateEvent, 
                 .flatMap(Message::getAuthorAsMember)
                 .filter(not(User::isBot))
                 .filterWhen(member -> member.getRoles()
-                            .filter(Objects::nonNull)
-                            .map(Role::getName)
-                            .doOnEach(role -> log.info("Role {}", role.get()))
-                            .any(role -> role.toLowerCase().contains("admin")))
+                        .filter(Objects::nonNull)
+                        .map(Role::getName)
+                        .doOnEach(role -> logger.info("Role {}", role.get()))
+                        .any(role -> role.toLowerCase().contains("admin")))
                 .flatMap(m -> Mono.just(event))
                 .doOnNext(commandManager::process)
                 //.map(Tuple2::getT2)
