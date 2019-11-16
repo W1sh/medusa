@@ -1,4 +1,4 @@
-package com.w1sh.medusa.gateways;
+package com.w1sh.medusa.core.gateways;
 
 import discord4j.gateway.GatewayObserver;
 import discord4j.gateway.IdentifyOptions;
