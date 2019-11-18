@@ -4,6 +4,7 @@ import com.w1sh.medusa.audio.AudioConnection;
 import com.w1sh.medusa.audio.LavaPlayerAudioProvider;
 import com.w1sh.medusa.listeners.TrackEventListenerFactory;
 import com.w1sh.medusa.listeners.impl.TrackEventListener;
+import com.w1sh.medusa.utils.Messager;
 import discord4j.core.object.entity.VoiceChannel;
 import discord4j.core.object.util.Snowflake;
 import discord4j.voice.VoiceConnection;
@@ -61,10 +62,13 @@ public class AudioConnectionManager {
                 .then(Mono.just(true)); // find new return type to represent completion
     }
 
-    public Mono<Snowflake> scheduleLeave(Snowflake guildIdSnowflake) {
+    public Mono<Boolean> scheduleLeave(Snowflake guildIdSnowflake) {
+        final Duration timeout = Duration.ofSeconds(5);
         return Mono.just(guildIdSnowflake)
-                .timeout(Duration.ofSeconds(5))
-                .doOnNext(this::leaveVoiceChannel);
+                .doOnNext(snowflake -> log.info("Scheduling client to leave voice channel in guild <{}> after <{}> seconds",
+                        snowflake.asLong(), timeout.getSeconds()))
+                .delayElement(timeout)
+                .flatMap(this::leaveVoiceChannel);
     }
 
     public Mono<AudioConnection> getAudioConnection(Snowflake guildIdSnowflake) {
