@@ -12,9 +12,12 @@ import discord4j.core.DiscordClientBuilder;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+
+import java.security.SecureRandom;
 
 @Configuration
 public class AppConfiguration {
@@ -33,9 +36,11 @@ public class AppConfiguration {
     }
 
     @Bean
-    @Scope(value = "prototype")
-    public TrackEventListener trackEventListener(Long guildId) { return new TrackEventListener(guildId);
-    }
+    public SecureRandom secureRandom() { return new SecureRandom(); }
+
+    @Bean
+    @Scope(BeanDefinition.SCOPE_PROTOTYPE)
+    public TrackEventListener trackEventListener(Long guildId) { return new TrackEventListener(guildId); }
 
     @Bean
     public DiscordClient discordClient(@Value("${discord.token}") String token,
