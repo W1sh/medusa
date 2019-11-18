@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -58,6 +59,12 @@ public class AudioConnectionManager {
                 .doOnNext(AudioConnection::destroy)
                 .doOnError(throwable -> log.error("Failed to leave voice channel", throwable))
                 .then(Mono.just(true)); // find new return type to represent completion
+    }
+
+    public Mono<Snowflake> scheduleLeave(Snowflake guildIdSnowflake) {
+        return Mono.just(guildIdSnowflake)
+                .timeout(Duration.ofSeconds(5))
+                .doOnNext(this::leaveVoiceChannel);
     }
 
     public Mono<AudioConnection> getAudioConnection(Snowflake guildIdSnowflake) {
