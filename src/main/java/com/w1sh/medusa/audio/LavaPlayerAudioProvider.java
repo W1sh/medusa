@@ -2,6 +2,7 @@ package com.w1sh.medusa.audio;
 
 import com.sedmelluq.discord.lavaplayer.format.StandardAudioDataFormats;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
 import discord4j.voice.AudioProvider;
 import org.springframework.stereotype.Component;
@@ -15,11 +16,11 @@ public final class LavaPlayerAudioProvider extends AudioProvider {
     private final AudioPlayer player;
     private final MutableAudioFrame mutableAudioFrame;
 
-    public LavaPlayerAudioProvider(final AudioPlayer player, MutableAudioFrame mutableAudioFrame) {
+    public LavaPlayerAudioProvider(final AudioPlayerManager playerManager, MutableAudioFrame mutableAudioFrame) {
         // Allocate a ByteBuffer for Discord4J's AudioProvider to hold audio data for Discord
         super(ByteBuffer.allocate(StandardAudioDataFormats.DISCORD_OPUS.maximumChunkSize()));
         this.mutableAudioFrame = mutableAudioFrame;
-        this.player = player;
+        this.player = playerManager.createPlayer();
     }
 
     @PostConstruct

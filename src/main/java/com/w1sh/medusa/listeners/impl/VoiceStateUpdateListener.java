@@ -7,14 +7,16 @@ import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.VoiceChannel;
 import discord4j.core.object.util.Snowflake;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@Slf4j
 @Component
 public class VoiceStateUpdateListener implements EventListener<VoiceStateUpdateEvent, Void> {
+
+    private static final Logger logger = LoggerFactory.getLogger(VoiceStateUpdateListener.class);
 
     @Override
     public Class<VoiceStateUpdateEvent> getEventType() {
@@ -33,11 +35,11 @@ public class VoiceStateUpdateListener implements EventListener<VoiceStateUpdateE
                 .flatMapMany(channel -> channel.getVoiceStates()
                         .map(VoiceState::getUserId))
                 .switchIfEmpty(Flux.just(Snowflake.of(0L)))
-                .doOnNext(snowflake -> log.info("Snowflake <{}> | Client <{}>", snowflake.asLong(), client.getSelfId().map(Snowflake::asLong).orElse(0L)))
+                .doOnNext(snowflake -> logger.info("Snowflake <{}> | Client <{}>", snowflake.asLong(), client.getSelfId().map(Snowflake::asLong).orElse(0L)))
                 .all(snowflake -> snowflake.equals(client.getSelfId()
                         .orElse(Snowflake.of(0L))))
                 .doOnNext(bool -> {
-                    log.info("Verified all snowflakes with result <{}>", bool);
+                    logger.info("Verified all snowflakes with result <{}>", bool);
                     if(Boolean.TRUE.equals(bool)) {
                         AudioConnectionManager.getInstance().leaveVoiceChannel(event.getCurrent().getGuildId());
                     }

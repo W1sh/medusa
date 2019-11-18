@@ -22,4 +22,4 @@ dependencies {
     /*implementation 'com.discord4j:stores-redis:3.0.10'*/
     compile group: 'org.springframework.boot', name: 'spring-boot-starter', version: '2.2.0.RELEASE'
     testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.5.2'
-
+}

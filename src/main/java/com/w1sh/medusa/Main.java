@@ -1,8 +1,6 @@
 package com.w1sh.medusa;
 
 import com.w1sh.medusa.core.DiscordBot;
-import lombok.AllArgsConstructor;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;

@@ -2,11 +2,13 @@ package com.w1sh.medusa.managers;
 
 import com.w1sh.medusa.audio.AudioConnection;
 import com.w1sh.medusa.audio.LavaPlayerAudioProvider;
+import com.w1sh.medusa.listeners.TrackEventListenerFactory;
 import com.w1sh.medusa.listeners.impl.TrackEventListener;
 import discord4j.core.object.entity.VoiceChannel;
 import discord4j.core.object.util.Snowflake;
 import discord4j.voice.VoiceConnection;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -53,7 +55,7 @@ public class AudioConnectionManager {
                 .flatMap(this::getAudioConnection)
                 .filter(Objects::nonNull)
                 .zipWith(Mono.just(guildIdSnowflake))
-                .doOnNext(tuple -> log.info("Client leaving voice channel in guild <{}>", tuple.getT2().asBigInteger()))
+                .doOnNext(tuple -> logger.info("Client leaving voice channel in guild <{}>", tuple.getT2().asBigInteger()))
                 .map(Tuple2::getT1)
                 .doOnNext(AudioConnection::destroy)
                 .doOnError(throwable -> logger.error("Failed to leave voice channel", throwable))
@@ -63,20 +65,20 @@ public class AudioConnectionManager {
     public Mono<Boolean> scheduleLeave(Snowflake guildIdSnowflake) {
         final Duration timeout = Duration.ofSeconds(5);
         return Mono.just(guildIdSnowflake)
-                .doOnNext(snowflake -> log.info("Scheduling client to leave voice channel in guild <{}> after <{}> seconds",
+                .doOnNext(snowflake -> logger.info("Scheduling client to leave voice channel in guild <{}> after <{}> seconds",
                         snowflake.asLong(), timeout.getSeconds()))
                 .delayElement(timeout)
                 .flatMap(this::leaveVoiceChannel);
     }
 
     public void shutdown(){
-        log.info("Starting shutdown of AudioConnectionManager");
-        log.info("Shutting down <{}> audio connections", audioConnections.size());
+        logger.info("Starting shutdown of AudioConnectionManager");
+        logger.info("Shutting down <{}> audio connections", audioConnections.size());
         audioConnections.values().forEach(AudioConnection::destroy);
     }
 
     private Mono<AudioConnection> createAudioChannelManager(Tuple2<VoiceConnection, Snowflake> snowflake){
-        log.info("Creating new audio connection in guild <{}>", snowflake.getT2().asLong());
+        logger.info("Creating new audio connection in guild <{}>", snowflake.getT2().asLong());
         final AudioConnection audioConnection = factory.createBean(AudioConnection.class);
         final TrackEventListener trackEventListener = TrackEventListenerFactory.build(snowflake.getT2().asLong());
         audioConnection.setVoiceConnection(snowflake.getT1());
@@ -90,7 +92,7 @@ public class AudioConnectionManager {
     }
 
     private Mono<AudioConnection> getAudioConnection(Snowflake guildIdSnowflake) {
-        log.info("Retrieving audio connection for guild with id <{}>", guildIdSnowflake.asLong());
+        logger.info("Retrieving audio connection for guild with id <{}>", guildIdSnowflake.asLong());
         return Mono.just(audioConnections.get(guildIdSnowflake));
     }
 }
