@@ -30,7 +30,7 @@ public class AudioConnectionManager {
     private final AutowireCapableBeanFactory factory;
     private final Map<Snowflake, AudioConnection> audioConnections;
 
-    public AudioConnectionManager(LavaPlayerAudioProvider audioProvider, TrackEventListenerFactory trackListenerFactory, AutowireCapableBeanFactory factory) {
+    public AudioConnectionManager(LavaPlayerAudioProvider audioProvider, AutowireCapableBeanFactory factory) {
         final AudioConnectionManager previous = instance.getAndSet(this);
         if(previous != null) throw new IllegalArgumentException("Cannot created second AudioManager");
         this.audioProvider = audioProvider;
@@ -71,15 +71,6 @@ public class AudioConnectionManager {
                 .flatMap(this::leaveVoiceChannel);
     }
 
-    public Mono<AudioConnection> getAudioConnection(Snowflake guildIdSnowflake) {
-        log.info("Retrieving audio connection for guild with id <{}>", guildIdSnowflake.asLong());
-        return Mono.just(audioConnections.get(guildIdSnowflake));
-    }
-
-    public static AudioConnectionManager getInstance() {
-        return instance.get();
-    }
-
     private Mono<AudioConnection> createAudioChannelManager(Tuple2<VoiceConnection, Snowflake> snowflake){
         final AudioConnection audioConnection = factory.createBean(AudioConnection.class);
         TrackEventListener trackEventListener = TrackEventListenerFactory.build(snowflake.getT2().asLong());
@@ -88,4 +79,14 @@ public class AudioConnectionManager {
         audioConnections.put(snowflake.getT2(), audioConnection);
         return Mono.just(audioConnections.get(snowflake.getT2()));
     }
+
+    public static AudioConnectionManager getInstance() {
+        return instance.get();
+    }
+
+    private Mono<AudioConnection> getAudioConnection(Snowflake guildIdSnowflake) {
+        log.info("Retrieving audio connection for guild with id <{}>", guildIdSnowflake.asLong());
+        return Mono.just(audioConnections.get(guildIdSnowflake));
+    }
+
 }
