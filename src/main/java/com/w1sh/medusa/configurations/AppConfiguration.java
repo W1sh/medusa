@@ -1,6 +1,5 @@
 package com.w1sh.medusa.configurations;
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
@@ -26,11 +25,6 @@ public class AppConfiguration {
         playerManager.getConfiguration().setFrameBufferFactory(NonAllocatingAudioFrameBuffer::new);
         AudioSourceManagers.registerRemoteSources(playerManager);
         return playerManager;
-    }
-
-    @Bean
-    public AudioPlayer audioPlayer(AudioPlayerManager audioPlayerManager) {
-        return audioPlayerManager.createPlayer();
     }
 
     @Bean

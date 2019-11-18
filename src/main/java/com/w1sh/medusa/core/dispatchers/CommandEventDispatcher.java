@@ -6,11 +6,14 @@ import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxProcessor;
 import reactor.core.publisher.SignalType;
 import reactor.core.scheduler.Scheduler;
+import reactor.scheduler.forkjoin.ForkJoinPoolScheduler;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component
@@ -21,9 +24,9 @@ public class CommandEventDispatcher {
     private final FluxProcessor<CommandEvent, CommandEvent> processor;
     private final Scheduler scheduler;
 
-    public CommandEventDispatcher(FluxProcessor<CommandEvent, CommandEvent> processor, Scheduler scheduler) {
-        this.processor = processor;
-        this.scheduler = scheduler;
+    public CommandEventDispatcher() {
+        this.processor = EmitterProcessor.create(false);
+        this.scheduler = ForkJoinPoolScheduler.create("medusa-events");
     }
 
     public <E extends CommandEvent> Flux<E> on(Class<E> eventClass) {
@@ -52,10 +55,10 @@ public class CommandEventDispatcher {
 
     public void publish(Event event) {
         logger.debug("Received new event of type <{}>", event.getClass().getSimpleName());
-        processor.onNext(fromEvent(event));
+        fromEvent(event).ifPresent(processor::onNext);
     }
 
-    private <T extends CommandEvent> T fromEvent(Event event){
-        return null;
+    private <T extends CommandEvent> Optional<T>fromEvent(Event event){
+        return Optional.empty();
     }
 }
