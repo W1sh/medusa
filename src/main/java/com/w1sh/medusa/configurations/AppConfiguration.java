@@ -18,6 +18,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
+import java.security.SecureRandom;
+
 @Configuration
 public class AppConfiguration {
 
@@ -38,6 +40,9 @@ public class AppConfiguration {
     public MutableAudioFrame mutableAudioFrame() {
         return new MutableAudioFrame();
     }
+
+    @Bean
+    public SecureRandom secureRandom() { return new SecureRandom(); }
 
     @Bean
     @Scope(BeanDefinition.SCOPE_PROTOTYPE)
