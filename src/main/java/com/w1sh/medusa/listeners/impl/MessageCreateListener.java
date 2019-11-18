@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.Objects;
 
-import static java.util.function.Predicate.*;
+import static java.util.function.Predicate.not;
 
 @Slf4j
 @Component
