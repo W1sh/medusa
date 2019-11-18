@@ -4,12 +4,10 @@ import com.w1sh.medusa.audio.AudioConnection;
 import com.w1sh.medusa.audio.LavaPlayerAudioProvider;
 import com.w1sh.medusa.listeners.TrackEventListenerFactory;
 import com.w1sh.medusa.listeners.impl.TrackEventListener;
-import com.w1sh.medusa.utils.Messager;
 import discord4j.core.object.entity.VoiceChannel;
 import discord4j.core.object.util.Snowflake;
 import discord4j.voice.VoiceConnection;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -69,6 +67,11 @@ public class AudioConnectionManager {
                         snowflake.asLong(), timeout.getSeconds()))
                 .delayElement(timeout)
                 .flatMap(this::leaveVoiceChannel);
+    }
+
+    public void shutdown(){
+        log.info("Starting shutdown of AudioConnectionManager");
+        audioConnections.values().forEach(AudioConnection::destroy);
     }
 
     private Mono<AudioConnection> createAudioChannelManager(Tuple2<VoiceConnection, Snowflake> snowflake){
