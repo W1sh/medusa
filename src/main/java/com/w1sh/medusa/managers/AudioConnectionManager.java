@@ -71,12 +71,14 @@ public class AudioConnectionManager {
 
     public void shutdown(){
         log.info("Starting shutdown of AudioConnectionManager");
+        log.info("Shutting down <{}> audio connections", audioConnections.size());
         audioConnections.values().forEach(AudioConnection::destroy);
     }
 
     private Mono<AudioConnection> createAudioChannelManager(Tuple2<VoiceConnection, Snowflake> snowflake){
+        log.info("Creating new audio connection in guild <{}>", snowflake.getT2().asLong());
         final AudioConnection audioConnection = factory.createBean(AudioConnection.class);
-        TrackEventListener trackEventListener = TrackEventListenerFactory.build(snowflake.getT2().asLong());
+        final TrackEventListener trackEventListener = TrackEventListenerFactory.build(snowflake.getT2().asLong());
         audioConnection.setVoiceConnection(snowflake.getT1());
         audioConnection.addListener(trackEventListener);
         audioConnections.put(snowflake.getT2(), audioConnection);
