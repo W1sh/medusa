@@ -1,7 +1,7 @@
 package com.w1sh.medusa.core.events;
 
-import com.w1sh.medusa.core.events.impl.PingEvent;
-import com.w1sh.medusa.core.events.impl.UnsupportedEvent;
+import com.w1sh.medusa.api.misc.events.PingEvent;
+import com.w1sh.medusa.api.misc.events.UnsupportedEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

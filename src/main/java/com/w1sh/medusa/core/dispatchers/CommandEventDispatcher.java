@@ -61,7 +61,7 @@ public class CommandEventDispatcher {
     }
 
     public <T extends Event, S> void registerListener(EventListener<T, S> eventListener){
-        logger.info("Registering new listener to main dispatcher of type <{}>", eventListener.getClass().getSimpleName());
+        logger.info("Registering new listener to command event dispatcher of type <{}>", eventListener.getClass().getSimpleName());
         on(eventListener.getEventType())
                 .flatMap(eventListener::execute)
                 .subscribe();

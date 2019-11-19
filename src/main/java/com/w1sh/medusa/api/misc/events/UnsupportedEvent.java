@@ -1,4 +1,4 @@
-package com.w1sh.medusa.core.events.impl;
+package com.w1sh.medusa.api.misc.events;
 
 import com.w1sh.medusa.core.events.CommandEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
