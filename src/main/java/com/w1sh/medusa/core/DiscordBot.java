@@ -1,10 +1,9 @@
 package com.w1sh.medusa.core;
 
+import com.w1sh.medusa.api.CommandEvent;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.events.CommandEvent;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.core.listeners.impl.DisconnectListener;
-import com.w1sh.medusa.core.listeners.impl.GenericEventListener;
 import com.w1sh.medusa.core.listeners.impl.ReadyListener;
 import com.w1sh.medusa.core.listeners.impl.VoiceStateUpdateListener;
 import discord4j.core.DiscordClient;
@@ -22,16 +21,15 @@ public class DiscordBot {
     private static final Logger logger = LoggerFactory.getLogger(DiscordBot.class);
 
     private final DiscordClient client;
-    private final GenericEventListener genericEventListener;
     private final VoiceStateUpdateListener voiceStateUpdateListener;
     private final ReadyListener readyListener;
     private final DisconnectListener disconnectListener;
     private final CommandEventDispatcher commandEventDispatcher;
 
-    public DiscordBot(DiscordClient client, GenericEventListener genericEventListener, VoiceStateUpdateListener voiceStateUpdateListener,
-                      ReadyListener readyListener, DisconnectListener disconnectListener, CommandEventDispatcher commandEventDispatcher) {
+    public DiscordBot(DiscordClient client, VoiceStateUpdateListener voiceStateUpdateListener,
+                      ReadyListener readyListener, DisconnectListener disconnectListener,
+                      CommandEventDispatcher commandEventDispatcher) {
         this.client = client;
-        this.genericEventListener = genericEventListener;
         this.voiceStateUpdateListener = voiceStateUpdateListener;
         this.readyListener = readyListener;
         this.disconnectListener = disconnectListener;
@@ -54,8 +52,6 @@ public class DiscordBot {
         logger.info("Registering new listener to main dispatcher of type <{}>", eventListener.getClass().getSimpleName());
         client.getEventDispatcher()
                 .on(eventListener.getEventType())
-                .flatMap(genericEventListener::execute)
-                .ofType(eventListener.getEventType())
                 .flatMap(eventListener::execute)
                 .subscribe(null, throwable -> logger.error("Error when consuming events", throwable));
     }

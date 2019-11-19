@@ -1,4 +1,4 @@
-package com.w1sh.medusa.core.events;
+package com.w1sh.medusa.api;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.util.Snowflake;

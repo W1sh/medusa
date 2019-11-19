@@ -1,4 +1,4 @@
-package com.w1sh.medusa.core.events;
+package com.w1sh.medusa.api;
 
 import com.w1sh.medusa.api.misc.events.PingEvent;
 import com.w1sh.medusa.api.misc.events.UnsupportedEvent;
