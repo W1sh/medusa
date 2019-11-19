@@ -1,9 +1,7 @@
-package com.w1sh.medusa.listeners;
+package com.w1sh.medusa.core.listeners;
 
-import com.w1sh.medusa.listeners.impl.TrackEventListener;
-import org.springframework.stereotype.Component;
+import com.w1sh.medusa.core.listeners.impl.TrackEventListener;
 
-@Component
 public class TrackEventListenerFactory {
 
     private TrackEventListenerFactory(){}

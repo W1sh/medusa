@@ -1,4 +1,4 @@
-package com.w1sh.medusa.listeners.impl;
+package com.w1sh.medusa.core.listeners.impl;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;

@@ -1,4 +1,4 @@
-package com.w1sh.medusa.listeners;
+package com.w1sh.medusa.core.listeners;
 
 import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.Event;

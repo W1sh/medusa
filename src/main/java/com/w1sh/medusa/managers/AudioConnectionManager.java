@@ -2,8 +2,8 @@ package com.w1sh.medusa.managers;
 
 import com.w1sh.medusa.audio.AudioConnection;
 import com.w1sh.medusa.audio.LavaPlayerAudioProvider;
-import com.w1sh.medusa.listeners.TrackEventListenerFactory;
-import com.w1sh.medusa.listeners.impl.TrackEventListener;
+import com.w1sh.medusa.core.listeners.TrackEventListenerFactory;
+import com.w1sh.medusa.core.listeners.impl.TrackEventListener;
 import discord4j.core.object.entity.VoiceChannel;
 import discord4j.core.object.util.Snowflake;
 import discord4j.voice.VoiceConnection;

@@ -1,7 +1,9 @@
 package com.w1sh.medusa.core.dispatchers;
 
-import com.w1sh.medusa.commands.CommandEvent;
+import com.w1sh.medusa.core.events.CommandEvent;
+import com.w1sh.medusa.core.events.CommandEventFactory;
 import discord4j.core.event.domain.Event;
+import discord4j.core.event.domain.message.MessageCreateEvent;
 import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +15,6 @@ import reactor.core.publisher.SignalType;
 import reactor.core.scheduler.Scheduler;
 import reactor.scheduler.forkjoin.ForkJoinPoolScheduler;
 
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component
@@ -29,7 +30,7 @@ public class CommandEventDispatcher {
         this.scheduler = ForkJoinPoolScheduler.create("medusa-events");
     }
 
-    public <E extends CommandEvent> Flux<E> on(Class<E> eventClass) {
+    public <E extends Event> Flux<E> on(Class<E> eventClass) {
         AtomicReference<Subscription> subscription = new AtomicReference<>();
         return processor.publishOn(scheduler)
                 .ofType(eventClass)
@@ -53,12 +54,9 @@ public class CommandEventDispatcher {
                 });
     }
 
-    public void publish(Event event) {
-        logger.debug("Received new event of type <{}>", event.getClass().getSimpleName());
-        fromEvent(event).ifPresent(processor::onNext);
+    public void publish(MessageCreateEvent event) {
+        logger.info("Received new event of type <{}>", event.getClass().getSimpleName());
+        CommandEventFactory.createEvent(event).ifPresent(processor::onNext);
     }
 
-    private <T extends CommandEvent> Optional<T>fromEvent(Event event){
-        return Optional.empty();
-    }
 }

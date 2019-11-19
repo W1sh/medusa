@@ -1,6 +1,6 @@
-package com.w1sh.medusa.listeners.impl;
+package com.w1sh.medusa.core.listeners.impl;
 
-import com.w1sh.medusa.listeners.EventListener;
+import com.w1sh.medusa.core.listeners.EventListener;
 import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.Event;
 import org.slf4j.Logger;
