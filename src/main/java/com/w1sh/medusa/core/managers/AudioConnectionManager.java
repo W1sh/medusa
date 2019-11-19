@@ -1,5 +1,6 @@
-package com.w1sh.medusa.managers;
+package com.w1sh.medusa.core.managers;
 
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.w1sh.medusa.audio.AudioConnection;
 import com.w1sh.medusa.audio.LavaPlayerAudioProvider;
 import com.w1sh.medusa.core.listeners.TrackEventListenerFactory;
@@ -27,15 +28,28 @@ public class AudioConnectionManager {
 
     private static AtomicReference<AudioConnectionManager> instance = new AtomicReference<>();
     private final LavaPlayerAudioProvider audioProvider;
+    private final AudioPlayerManager playerManager;
     private final AutowireCapableBeanFactory factory;
     private final Map<Snowflake, AudioConnection> audioConnections;
 
-    public AudioConnectionManager(LavaPlayerAudioProvider audioProvider, AutowireCapableBeanFactory factory) {
+    public AudioConnectionManager(LavaPlayerAudioProvider audioProvider, AudioPlayerManager playerManager, AutowireCapableBeanFactory factory) {
         final AudioConnectionManager previous = instance.getAndSet(this);
         if(previous != null) throw new IllegalArgumentException("Cannot created second AudioManager");
         this.audioProvider = audioProvider;
+        this.playerManager = playerManager;
         this.factory = factory;
         this.audioConnections = new HashMap<>();
+    }
+
+    public void requestTrack(String message, Snowflake snowflake){
+        Mono.just(message)
+                .map(msg -> msg.split(" "))
+                .filter(splitMsg -> splitMsg.length > 1)
+                .zipWith(Mono.just(audioConnections.get(snowflake).getTrackScheduler()))
+                .doOnNext(tuple -> playerManager.loadItem(tuple.getT1()[1], tuple.getT2()))
+                .doOnSuccess(tuple -> logger.info("Loaded song request to voice channel in guild <{}>", snowflake.asLong()))
+                .doOnError(throwable -> logger.error("Failed to load requested track", throwable))
+                .subscribe(null, throwable -> logger.error("Failed "));
     }
 
     public Mono<VoiceConnection> joinVoiceChannel(VoiceChannel channel) {

@@ -3,7 +3,7 @@ package com.w1sh.medusa.api.audio.listeners;
 import com.w1sh.medusa.api.audio.events.JoinVoiceChannelEvent;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.core.listeners.EventListener;
-import com.w1sh.medusa.managers.AudioConnectionManager;
+import com.w1sh.medusa.core.managers.AudioConnectionManager;
 import com.w1sh.medusa.utils.Messager;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 
 @DependsOn({"audioConnectionManager"})
 @Component
-public class JoinVoiceChannelListener implements EventListener<JoinVoiceChannelEvent, Void> {
+public class JoinVoiceChannelListener implements EventListener<JoinVoiceChannelEvent> {
 
     public JoinVoiceChannelListener(CommandEventDispatcher eventDispatcher) {
         eventDispatcher.registerListener(this);

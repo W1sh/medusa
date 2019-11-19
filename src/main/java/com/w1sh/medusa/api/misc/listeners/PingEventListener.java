@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
 @Component
-public class PingEventListener implements EventListener<PingEvent, Void> {
+public class PingEventListener implements EventListener<PingEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(PingEventListener.class);
 

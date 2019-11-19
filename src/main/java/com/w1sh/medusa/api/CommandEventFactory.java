@@ -2,6 +2,7 @@ package com.w1sh.medusa.api;
 
 import com.w1sh.medusa.api.audio.events.JoinVoiceChannelEvent;
 import com.w1sh.medusa.api.audio.events.LeaveVoiceChannelEvent;
+import com.w1sh.medusa.api.audio.events.PlayTrackEvent;
 import com.w1sh.medusa.api.misc.events.PingEvent;
 import com.w1sh.medusa.api.misc.events.UnsupportedEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -22,6 +23,7 @@ public class CommandEventFactory {
         EVENTS.put("ping", PingEvent.class);
         EVENTS.put("join", JoinVoiceChannelEvent.class);
         EVENTS.put("leave", LeaveVoiceChannelEvent.class);
+        EVENTS.put("play", PlayTrackEvent.class);
     }
 
     private CommandEventFactory(){}
@@ -29,7 +31,7 @@ public class CommandEventFactory {
     public static Optional<CommandEvent> createEvent(MessageCreateEvent event){
         try {
             Class<?> clazz = EVENTS.getOrDefault(event.getMessage().getContent()
-                            .map(msg -> msg.substring(1))
+                            .map(msg -> msg.split(" ")[0].substring(1))
                             .orElse(""), UnsupportedEvent.class);
             Object instance = clazz.getConstructor(MessageCreateEvent.class).newInstance(event);
             return Optional.of((CommandEvent) instance);

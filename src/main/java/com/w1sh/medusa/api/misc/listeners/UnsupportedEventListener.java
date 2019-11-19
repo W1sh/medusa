@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class UnsupportedEventListener implements EventListener<UnsupportedEvent, Void> {
+public class UnsupportedEventListener implements EventListener<UnsupportedEvent> {
 
     public UnsupportedEventListener(CommandEventDispatcher eventDispatcher) {
         eventDispatcher.registerListener(this);

@@ -48,7 +48,7 @@ public class DiscordBot {
         client.login().block();
     }
 
-    private <T extends Event, S> void setupEventDispatcher(EventListener<T, S> eventListener){
+    private <T extends Event> void setupEventDispatcher(EventListener<T> eventListener){
         logger.info("Registering new listener to main dispatcher of type <{}>", eventListener.getClass().getSimpleName());
         client.getEventDispatcher()
                 .on(eventListener.getEventType())

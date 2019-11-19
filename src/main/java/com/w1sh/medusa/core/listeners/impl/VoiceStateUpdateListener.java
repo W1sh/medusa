@@ -1,7 +1,7 @@
 package com.w1sh.medusa.core.listeners.impl;
 
 import com.w1sh.medusa.core.listeners.EventListener;
-import com.w1sh.medusa.managers.AudioConnectionManager;
+import com.w1sh.medusa.core.managers.AudioConnectionManager;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.VoiceChannel;
@@ -13,7 +13,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
-public class VoiceStateUpdateListener implements EventListener<VoiceStateUpdateEvent, Void> {
+public class VoiceStateUpdateListener implements EventListener<VoiceStateUpdateEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(VoiceStateUpdateListener.class);
 

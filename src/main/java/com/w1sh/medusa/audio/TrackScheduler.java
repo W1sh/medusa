@@ -6,14 +6,12 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import org.springframework.stereotype.Component;
 
-@Component
 public class TrackScheduler implements AudioLoadResultHandler {
 
     private final AudioPlayer player;
 
-    public TrackScheduler(AudioPlayerManager playerManager) {
+    TrackScheduler(AudioPlayerManager playerManager) {
         this.player = playerManager.createPlayer();
     }
 

@@ -60,7 +60,7 @@ public class CommandEventDispatcher {
         CommandEventFactory.createEvent(event).ifPresent(processor::onNext);
     }
 
-    public <T extends Event, S> void registerListener(EventListener<T, S> eventListener){
+    public <T extends Event> void registerListener(EventListener<T> eventListener){
         logger.info("Registering new listener to command event dispatcher of type <{}>", eventListener.getClass().getSimpleName());
         on(eventListener.getEventType())
                 .flatMap(eventListener::execute)
