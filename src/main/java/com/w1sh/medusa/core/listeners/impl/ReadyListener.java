@@ -1,7 +1,6 @@
 package com.w1sh.medusa.core.listeners.impl;
 
 import com.w1sh.medusa.core.listeners.EventListener;
-import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import org.slf4j.Logger;
@@ -20,15 +19,15 @@ public class ReadyListener implements EventListener<ReadyEvent, Void> {
     }
 
     @Override
-    public Mono<Void> execute(DiscordClient client, ReadyEvent event) {
+    public Mono<Void> execute(ReadyEvent event) {
         return Mono.justOrEmpty(event)
                 .map(ev -> ev.getGuilds().size())
-                .flatMap(size -> client.getEventDispatcher()
+                .flatMap(size -> event.getClient().getEventDispatcher()
                         .on(GuildCreateEvent.class)
                         .take(size)
                         .last())
                 .doOnNext(ev -> logger.info("All guilds have been received, the client is fully connected"))
-                .flatMap(ev -> client.getGuilds().count())
+                .flatMap(ev -> event.getClient().getGuilds().count())
                 .doOnNext(guilds -> logger.info("Currently serving {} guilds", guilds.longValue()))
                 .then();
     }

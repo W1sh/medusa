@@ -2,6 +2,7 @@ package com.w1sh.medusa.core.dispatchers;
 
 import com.w1sh.medusa.core.events.CommandEvent;
 import com.w1sh.medusa.core.events.CommandEventFactory;
+import com.w1sh.medusa.core.listeners.EventListener;
 import discord4j.core.event.domain.Event;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import org.reactivestreams.Subscription;
@@ -57,6 +58,13 @@ public class CommandEventDispatcher {
     public void publish(MessageCreateEvent event) {
         logger.info("Received new event of type <{}>", event.getClass().getSimpleName());
         CommandEventFactory.createEvent(event).ifPresent(processor::onNext);
+    }
+
+    public <T extends Event, S> void registerListener(EventListener<T, S> eventListener){
+        logger.info("Registering new listener to main dispatcher of type <{}>", eventListener.getClass().getSimpleName());
+        on(eventListener.getEventType())
+                .flatMap(eventListener::execute)
+                .subscribe();
     }
 
 }

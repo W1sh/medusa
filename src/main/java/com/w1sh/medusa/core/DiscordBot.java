@@ -3,7 +3,10 @@ package com.w1sh.medusa.core;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.core.events.CommandEvent;
 import com.w1sh.medusa.core.listeners.EventListener;
-import com.w1sh.medusa.core.listeners.impl.*;
+import com.w1sh.medusa.core.listeners.impl.DisconnectListener;
+import com.w1sh.medusa.core.listeners.impl.GenericEventListener;
+import com.w1sh.medusa.core.listeners.impl.ReadyListener;
+import com.w1sh.medusa.core.listeners.impl.VoiceStateUpdateListener;
 import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.Event;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -48,12 +51,12 @@ public class DiscordBot {
     }
 
     private <T extends Event, S> void setupEventDispatcher(EventListener<T, S> eventListener){
-        logger.info("Adding new listener to main dispatcher of type <{}>", eventListener.getClass().getSimpleName());
+        logger.info("Registering new listener to main dispatcher of type <{}>", eventListener.getClass().getSimpleName());
         client.getEventDispatcher()
                 .on(eventListener.getEventType())
-                .flatMap(event -> genericEventListener.execute(client, event))
+                .flatMap(genericEventListener::execute)
                 .ofType(eventListener.getEventType())
-                .flatMap(event -> eventListener.execute(client, event))
+                .flatMap(eventListener::execute)
                 .subscribe(null, throwable -> logger.error("Error when consuming events", throwable));
     }
 
@@ -63,7 +66,6 @@ public class DiscordBot {
                 .filter(event -> event.getMember().isPresent())
                 .filter(event -> event.getMember().map(user -> !user.isBot()).orElse(false))
                 .filter(event -> event.getMessage().getContent().orElse("").startsWith(CommandEvent.PREFIX))
-                .doOnNext(commandEventDispatcher::publish)
-                .subscribe(null, throwable -> logger.error("Error when publishing to commandEventDispatcher", throwable));
+                .subscribe(commandEventDispatcher::publish);
     }
 }

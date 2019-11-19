@@ -2,7 +2,6 @@ package com.w1sh.medusa.core.listeners.impl;
 
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.managers.CommandManager;
-import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.Role;
@@ -33,7 +32,7 @@ public class MessageCreateListener implements EventListener<MessageCreateEvent, 
     }
 
     @Override
-    public Mono<Void> execute(DiscordClient client, MessageCreateEvent event) {
+    public Mono<Void> execute(MessageCreateEvent event) {
         return Mono.justOrEmpty(event.getMessage())
                 .filter(m -> m.getContent().map(msg -> msg.startsWith("!")).orElse(false))
                 .flatMap(Message::getAuthorAsMember)

@@ -1,7 +1,6 @@
 package com.w1sh.medusa.core.listeners.impl;
 
 import com.w1sh.medusa.core.listeners.EventListener;
-import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +18,7 @@ public class GenericEventListener implements EventListener<Event, Event> {
     }
 
     @Override
-    public Mono<Event> execute(DiscordClient client, Event event) {
+    public Mono<Event> execute(Event event) {
         return Mono.just(event).doOnNext(e -> logger.info("Event received: {}", event.getClass().getSimpleName()));
     }
 }
