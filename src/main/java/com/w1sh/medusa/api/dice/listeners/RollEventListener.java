@@ -29,16 +29,31 @@ public class RollEventListener implements EventListener<RollEvent> {
 
     @Override
     public Mono<Void> execute(RollEvent event) {
-        return Mono.justOrEmpty(event.getMessage().getContent())
-                .map(content -> content.split(" "))
-                .filter(split -> split.length == 2)
-                .map(strings -> strings[1].split("-"))
-                .filter(split -> split.length == 2)
+        return Mono.just(event)
+                .flatMap(this::validateMessageFormatting)
                 .map(this::parseAndRoll)
                 .doOnNext(roll -> event.getMessage().getChannel()
                         .flatMap(channel -> Messager.send(event.getClient(), channel, String.format("You rolled `%d`", roll)))
                         .subscribe())
                 .then();
+    }
+
+    private Mono<String[]> validateMessageFormatting(RollEvent event){
+        return Mono.justOrEmpty(event.getMessage().getContent())
+                .map(content -> content.split(" "))
+                .filter(split -> filterSplit(split, event))
+                .map(strings -> strings[1].split("-"))
+                .filter(split -> filterSplit(split, event));
+    }
+
+    private boolean filterSplit(String[] strings, RollEvent event){
+        if(strings.length != 2){
+            event.getMessage().getChannel()
+                    .flatMap(channel -> Messager.sendInvalidCommand(event.getClient(), channel))
+                    .subscribe();
+            return false;
+        }
+        return true;
     }
 
     private Integer parseAndRoll(String[] strings){
