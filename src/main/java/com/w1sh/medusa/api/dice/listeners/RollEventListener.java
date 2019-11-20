@@ -3,11 +3,9 @@ package com.w1sh.medusa.api.dice.listeners;
 import com.w1sh.medusa.api.dice.Dice;
 import com.w1sh.medusa.api.dice.events.RollEvent;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.listeners.EventListener;
+import com.w1sh.medusa.core.listeners.MultipleArgsEventListener;
 import com.w1sh.medusa.utils.Messager;
 import discord4j.core.object.entity.Member;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -15,9 +13,8 @@ import reactor.core.publisher.Mono;
 
 @PropertySource(value = "text-constants.properties")
 @Component
-public class RollEventListener implements EventListener<RollEvent> {
+public class RollEventListener implements MultipleArgsEventListener<RollEvent> {
 
-    private static final Logger logger = LoggerFactory.getLogger(RollEventListener.class);
     private final Dice dice;
 
     @Value("${event.roll.result}")

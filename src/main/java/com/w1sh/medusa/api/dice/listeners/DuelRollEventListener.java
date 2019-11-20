@@ -3,7 +3,7 @@ package com.w1sh.medusa.api.dice.listeners;
 import com.w1sh.medusa.api.dice.Dice;
 import com.w1sh.medusa.api.dice.events.DuelRollEvent;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.listeners.EventListener;
+import com.w1sh.medusa.core.listeners.MultipleArgsEventListener;
 import com.w1sh.medusa.utils.Messager;
 import discord4j.core.object.entity.Member;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 
 @PropertySource(value = "text-constants.properties")
 @Component
-public class DuelRollEventListener implements EventListener<DuelRollEvent> {
+public class DuelRollEventListener implements MultipleArgsEventListener<DuelRollEvent> {
 
     private final Dice dice;
 
