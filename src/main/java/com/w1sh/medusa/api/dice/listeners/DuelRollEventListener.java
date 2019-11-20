@@ -17,6 +17,8 @@ public class DuelRollEventListener implements MultipleArgsEventListener<DuelRoll
 
     private final Dice dice;
 
+    @Value("${event.roll.start}")
+    private String rollStart;
     @Value("${event.roll.result}")
     private String rollResult;
     @Value("${event.roll.win}")
@@ -47,6 +49,8 @@ public class DuelRollEventListener implements MultipleArgsEventListener<DuelRoll
                         .take(1)
                         .last())
                 .doOnNext(tuple -> {
+                    Messager.send(event, rollStart).subscribe();
+
                     /* Send roll results */
                     Messager.send(event, String.format(rollResult, event.getMember()
                             .map(Member::getNicknameMention)

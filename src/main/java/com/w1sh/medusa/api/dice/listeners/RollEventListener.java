@@ -17,6 +17,8 @@ public class RollEventListener implements MultipleArgsEventListener<RollEvent> {
 
     private final Dice dice;
 
+    @Value("${event.roll.start}")
+    private String rollStart;
     @Value("${event.roll.result}")
     private String rollResult;
 
@@ -39,10 +41,13 @@ public class RollEventListener implements MultipleArgsEventListener<RollEvent> {
                     return splitContent[1].split("-");
                 })
                 .map(strings -> dice.roll(strings[0], strings[1]))
-                .doOnNext(roll -> Messager.send(event, String.format(rollResult, event.getMember()
-                        .map(Member::getNicknameMention)
-                        .orElse("You"), roll))
-                        .subscribe())
+                .doOnNext(roll -> {
+                    Messager.send(event, rollStart).subscribe();
+                    Messager.send(event, String.format(rollResult, event.getMember()
+                            .map(Member::getNicknameMention)
+                            .orElse("You"), roll))
+                            .subscribe();
+                })
                 .then();
     }
 
