@@ -5,6 +5,8 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 
 public class PingEvent extends CommandEvent {
 
+    public static final String KEYWORD = "ping";
+
     public PingEvent(MessageCreateEvent event) {
         super(event);
     }

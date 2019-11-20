@@ -5,6 +5,8 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 
 public class JoinVoiceChannelEvent extends CommandEvent {
 
+    public static final String KEYWORD = "join";
+
     public JoinVoiceChannelEvent(MessageCreateEvent event) {
         super(event);
     }

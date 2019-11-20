@@ -5,6 +5,8 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 
 public class StopTrackEvent extends CommandEvent {
 
+    public static final String KEYWORD = "stop";
+
     public StopTrackEvent(MessageCreateEvent event) {
         super(event);
     }

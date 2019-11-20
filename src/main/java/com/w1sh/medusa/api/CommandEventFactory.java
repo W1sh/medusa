@@ -21,11 +21,11 @@ public class CommandEventFactory {
     private static final Map<String, Class<? extends CommandEvent>> EVENTS = new HashMap<>();
 
     static {
-        EVENTS.put("ping", PingEvent.class);
-        EVENTS.put("join", JoinVoiceChannelEvent.class);
-        EVENTS.put("leave", LeaveVoiceChannelEvent.class);
-        EVENTS.put("play", PlayTrackEvent.class);
-        EVENTS.put("roll", RollEvent.class);
+        EVENTS.put(PingEvent.KEYWORD, PingEvent.class);
+        EVENTS.put(JoinVoiceChannelEvent.KEYWORD, JoinVoiceChannelEvent.class);
+        EVENTS.put(LeaveVoiceChannelEvent.KEYWORD, LeaveVoiceChannelEvent.class);
+        EVENTS.put(PlayTrackEvent.KEYWORD, PlayTrackEvent.class);
+        EVENTS.put(RollEvent.KEYWORD, RollEvent.class);
     }
 
     private CommandEventFactory(){}

@@ -5,6 +5,8 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 
 public class NextTrackEvent extends CommandEvent {
 
+    public static final String KEYWORD = "next";
+
     public NextTrackEvent(MessageCreateEvent event) {
         super(event);
     }
