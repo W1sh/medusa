@@ -5,7 +5,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 
 public class DuelRollEvent extends CommandEvent {
 
-    public static final String KEYWORD = "droll";
+    public static final String KEYWORD = "duelroll";
 
     public DuelRollEvent(MessageCreateEvent event) {
         super(event);

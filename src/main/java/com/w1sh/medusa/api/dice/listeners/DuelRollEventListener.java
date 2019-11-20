@@ -6,16 +6,23 @@ import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.utils.Messager;
 import discord4j.core.object.entity.Member;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+@PropertySource(value = "text-constants.properties")
 @Component
 public class DuelRollEventListener implements EventListener<DuelRollEvent> {
 
-    private static final Logger logger = LoggerFactory.getLogger(DuelRollEventListener.class);
     private final Dice dice;
+
+    @Value("${event.roll.result}")
+    private String rollResult;
+    @Value("${event.roll.win}")
+    private String rollWin;
+    @Value("${event.roll.draw}")
+    private String rollDraw;
 
     public DuelRollEventListener(CommandEventDispatcher eventDispatcher, Dice dice) {
         this.dice = dice;
@@ -30,66 +37,46 @@ public class DuelRollEventListener implements EventListener<DuelRollEvent> {
     @Override
     public Mono<Void> execute(DuelRollEvent event) {
         return Mono.just(event)
-                .flatMap(this::validateMessageFormatting)
+                .filterWhen(this::validate)
+                .map(ev -> {
+                    String[] splitContent = ev.getMessage().getContent().orElse("").split(" ");
+                    return splitContent[2].split("-");
+                })
                 .map(this::rollTwice)
                 .zipWith(event.getMessage().getUserMentions()
                         .take(1)
                         .last())
                 .doOnNext(tuple -> {
-                    event.getMessage().getChannel()
-                            .flatMap(channel -> Messager.send(event.getClient(), channel,
-                                    String.format("%s rolled `%d`!", event.getMember()
-                                            .map(Member::getNicknameMention)
-                                            .orElse("You"), tuple.getT1()[0])))
+                    /* Send roll results */
+                    Messager.send(event, String.format(rollResult, event.getMember()
+                            .map(Member::getNicknameMention)
+                            .orElse("You"), tuple.getT1()[0])).subscribe();
+                    Messager.send(event, String.format(rollResult, tuple.getT2().getMention(), tuple.getT1()[1]))
                             .subscribe();
-                    event.getMessage().getChannel()
-                            .flatMap(channel -> Messager.send(event.getClient(), channel,
-                                    String.format("%s rolled `%d`!", tuple.getT2().getMention(), tuple.getT1()[1])))
-                            .subscribe();
+
+                    /* Decide winner */
                     if (tuple.getT1()[0] > tuple.getT1()[1]) {
-                        event.getMessage().getChannel()
-                                .flatMap(channel -> Messager.send(event.getClient(), channel,
-                                        String.format("%s wins the duel!", event.getMember()
-                                                .map(Member::getNicknameMention)
-                                                .orElse("You"))))
+                        Messager.send(event, String.format(rollWin, event.getMember()
+                                .map(Member::getNicknameMention)
+                                .orElse("You")))
                                 .subscribe();
                     } else if (tuple.getT1()[0] < tuple.getT1()[1]) {
-                        event.getMessage().getChannel()
-                                .flatMap(channel -> Messager.send(event.getClient(), channel,
-                                        String.format("%s wins the duel!", tuple.getT2().getMention())))
+                        Messager.send(event, String.format(rollWin, tuple.getT2().getMention()))
                                 .subscribe();
                     } else {
-                        event.getMessage().getChannel()
-                                .flatMap(channel -> Messager.send(event.getClient(), channel,"Duel ended with a draw!"))
-                                .subscribe();
+                        Messager.send(event, rollDraw).subscribe();
                     }
                 })
                 .then();
     }
 
-    private int[] rollTwice(String[] strings){
-        return new int[]{ parseAndRoll(strings), parseAndRoll(strings) };
-    }
-
-    private Integer parseAndRoll(String[] strings){
-        try {
-            Integer min = Integer.parseInt(strings[0]);
-            Integer max = Integer.parseInt(strings[1]);
-            return dice.roll(min, max);
-        } catch (NumberFormatException e){
-            logger.info("Failed to parse string to number", e);
-            return 0;
-        }
-    }
-
-    private Mono<String[]> validateMessageFormatting(DuelRollEvent event){
+    @Override
+    public Mono<Boolean> validate(DuelRollEvent event) {
         return Mono.justOrEmpty(event.getMessage().getContent())
                 .map(content -> content.split(" "))
                 .filter(split -> {
                     if(split.length != 3) {
-                        event.getMessage().getChannel()
-                                .flatMap(channel -> Messager.sendInvalidCommand(event.getClient(), channel))
-                                .subscribe();
+                        Messager.invalid(event).subscribe();
                         return false;
                     } else return true;
                 })
@@ -97,11 +84,14 @@ public class DuelRollEventListener implements EventListener<DuelRollEvent> {
                 .map(strings -> strings[2].split("-"))
                 .filter(split -> {
                     if(split.length != 2) {
-                        event.getMessage().getChannel()
-                                .flatMap(channel -> Messager.sendInvalidCommand(event.getClient(), channel))
-                                .subscribe();
+                        Messager.invalid(event).subscribe();
                         return false;
                     } else return true;
-                });
+                })
+                .hasElement();
+    }
+
+    private int[] rollTwice(String[] strings){
+        return new int[]{ dice.roll(strings[0], strings[1]), dice.roll(strings[0], strings[1]) };
     }
 }

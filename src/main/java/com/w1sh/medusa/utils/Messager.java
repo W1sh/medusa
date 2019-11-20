@@ -3,6 +3,7 @@ package com.w1sh.medusa.utils;
 import com.w1sh.medusa.api.CommandEvent;
 import com.w1sh.medusa.core.data.Emoji;
 import discord4j.core.DiscordClient;
+import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.GuildChannel;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.MessageChannel;
@@ -21,10 +22,18 @@ public class Messager {
 
     private Messager(){}
 
-    public static Mono<Message> sendInvalidCommand(DiscordClient client, MessageChannel channel){
-        return send(client, channel, String.format(
-                "%s Unsupported command! Use `%shelp` to find out what commands are supported",
-                Emoji.CROSS_MARK.getShortcode(), CommandEvent.PREFIX));
+    public static Mono<Message> send(MessageCreateEvent event, String content){
+        return Mono.just(event)
+                .flatMap(ev -> ev.getMessage().getChannel())
+                .flatMap(channel -> send(event.getClient(), channel, content));
+    }
+
+    public static Mono<Message> invalid(MessageCreateEvent event){
+        return Mono.just(event)
+                .flatMap(ev -> ev.getMessage().getChannel())
+                .flatMap(channel -> send(event.getClient(), channel,
+                        String.format("%s Unsupported command! Use `%shelp` to find out what commands are supported",
+                        Emoji.CROSS_MARK.getShortcode(), CommandEvent.PREFIX)));
     }
 
     public static Mono<Message> send(DiscordClient client, MessageChannel channel, String content){

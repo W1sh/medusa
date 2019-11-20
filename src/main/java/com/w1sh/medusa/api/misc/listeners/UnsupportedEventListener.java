@@ -24,7 +24,7 @@ public class UnsupportedEventListener implements EventListener<UnsupportedEvent>
     @Override
     public Mono<Void> execute(UnsupportedEvent event) {
         return event.getMessage().getChannel()
-                .doOnNext(channel -> Messager.sendInvalidCommand(event.getClient(), channel).subscribe())
+                .doOnNext(channel -> Messager.invalid(event).subscribe())
                 .then();
     }
 }

@@ -8,14 +8,20 @@ import com.w1sh.medusa.utils.Messager;
 import discord4j.core.object.entity.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+@PropertySource(value = "text-constants.properties")
 @Component
 public class RollEventListener implements EventListener<RollEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(RollEventListener.class);
     private final Dice dice;
+
+    @Value("${event.roll.result}")
+    private String rollResult;
 
     public RollEventListener(CommandEventDispatcher eventDispatcher, Dice dice) {
         this.dice = dice;
@@ -30,43 +36,34 @@ public class RollEventListener implements EventListener<RollEvent> {
     @Override
     public Mono<Void> execute(RollEvent event) {
         return Mono.just(event)
-                .flatMap(this::validateMessageFormatting)
-                .map(this::parseAndRoll)
-                .doOnNext(roll -> event.getMessage().getChannel()
-                        .flatMap(channel -> Messager.send(event.getClient(), channel,
-                                String.format("%s rolled `%d`!", event.getMember()
-                                        .map(Member::getNicknameMention)
-                                        .orElse("You"), roll)))
+                .filterWhen(this::validate)
+                .map(ev -> {
+                    String[] splitContent = ev.getMessage().getContent().orElse("").split(" ");
+                    return splitContent[1].split("-");
+                })
+                .map(strings -> dice.roll(strings[0], strings[1]))
+                .doOnNext(roll -> Messager.send(event, String.format(rollResult, event.getMember()
+                        .map(Member::getNicknameMention)
+                        .orElse("You"), roll))
                         .subscribe())
                 .then();
     }
 
-    private Mono<String[]> validateMessageFormatting(RollEvent event){
+    @Override
+    public Mono<Boolean> validate(RollEvent event) {
         return Mono.justOrEmpty(event.getMessage().getContent())
                 .map(content -> content.split(" "))
                 .filter(split -> filterSplit(split, event))
                 .map(strings -> strings[1].split("-"))
-                .filter(split -> filterSplit(split, event));
+                .filter(split -> filterSplit(split, event))
+                .hasElement();
     }
 
     private boolean filterSplit(String[] strings, RollEvent event){
         if(strings.length != 2){
-            event.getMessage().getChannel()
-                    .flatMap(channel -> Messager.sendInvalidCommand(event.getClient(), channel))
-                    .subscribe();
+            Messager.invalid(event).subscribe();
             return false;
         }
         return true;
-    }
-
-    private Integer parseAndRoll(String[] strings){
-        try {
-            Integer min = Integer.parseInt(strings[0]);
-            Integer max = Integer.parseInt(strings[1]);
-            return dice.roll(min, max);
-        } catch (NumberFormatException e){
-            logger.info("Failed to parse string to number", e);
-            return 0;
-        }
     }
 }
