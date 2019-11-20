@@ -15,7 +15,6 @@ import reactor.core.publisher.Mono;
 public class RollEventListener implements EventListener<RollEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(RollEventListener.class);
-
     private final Dice dice;
 
     public RollEventListener(CommandEventDispatcher eventDispatcher, Dice dice) {
