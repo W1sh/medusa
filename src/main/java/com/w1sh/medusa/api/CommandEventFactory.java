@@ -33,6 +33,7 @@ public class CommandEventFactory {
     public static Optional<CommandEvent> createEvent(MessageCreateEvent event){
         try {
             Class<?> clazz = EVENTS.getOrDefault(event.getMessage().getContent()
+                            .map(String::toLowerCase)
                             .map(msg -> msg.split(" ")[0].substring(1))
                             .orElse(""), UnsupportedEvent.class);
             Object instance = clazz.getConstructor(MessageCreateEvent.class).newInstance(event);
