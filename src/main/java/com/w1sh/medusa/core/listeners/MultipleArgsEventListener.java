@@ -1,9 +1,9 @@
 package com.w1sh.medusa.core.listeners;
 
-import com.w1sh.medusa.api.CommandEvent;
+import com.w1sh.medusa.api.MultipleArgumentsEvent;
 import reactor.core.publisher.Mono;
 
-public interface MultipleArgsEventListener<T extends CommandEvent> extends EventListener<T> {
+public interface MultipleArgsEventListener<T extends MultipleArgumentsEvent> extends EventListener<T> {
 
     Mono<Boolean> validate(T event);
 }

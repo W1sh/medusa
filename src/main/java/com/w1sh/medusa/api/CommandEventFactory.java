@@ -19,7 +19,7 @@ import java.util.Optional;
 public class CommandEventFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(CommandEventFactory.class);
-    private static final Map<String, Class<? extends CommandEvent>> EVENTS = new HashMap<>();
+    private static final Map<String, Class<? extends MessageCreateEvent>> EVENTS = new HashMap<>();
 
     static {
         EVENTS.put(PingEvent.KEYWORD, PingEvent.class);
@@ -32,14 +32,14 @@ public class CommandEventFactory {
 
     private CommandEventFactory(){}
 
-    public static Optional<CommandEvent> createEvent(MessageCreateEvent event){
+    public static Optional<MessageCreateEvent> createEvent(MessageCreateEvent event){
         try {
             Class<?> clazz = EVENTS.getOrDefault(event.getMessage().getContent()
                             .map(String::toLowerCase)
                             .map(msg -> msg.split(" ")[0].substring(1))
                             .orElse(""), UnsupportedEvent.class);
             Object instance = clazz.getConstructor(MessageCreateEvent.class).newInstance(event);
-            return Optional.of((CommandEvent) instance);
+            return Optional.of((MessageCreateEvent) instance);
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException e) {
             logger.error("Could not access or instantiate constructor", e);
         } catch (InvocationTargetException e) {
