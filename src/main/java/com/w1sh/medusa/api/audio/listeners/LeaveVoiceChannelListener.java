@@ -26,8 +26,7 @@ public class LeaveVoiceChannelListener implements EventListener<LeaveVoiceChanne
     public Mono<Void> execute(LeaveVoiceChannelEvent event) {
         return Mono.justOrEmpty(event.getGuildId())
                 .flatMap(AudioConnectionManager.getInstance()::leaveVoiceChannel)
-                .flatMap(v -> event.getMessage().getChannel())
-                .flatMap(channel -> Messager.send(channel.getClient(), channel, "Leaving voice channel!"))
+                .flatMap(channel -> Messager.send(event, "Leaving voice channel!"))
                 .then();
     }
 }

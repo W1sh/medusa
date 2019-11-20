@@ -36,7 +36,7 @@ public class Messager {
                         Emoji.CROSS_MARK.getShortcode(), CommandEvent.PREFIX)));
     }
 
-    public static Mono<Message> send(DiscordClient client, MessageChannel channel, String content){
+    private static Mono<Message> send(DiscordClient client, MessageChannel channel, String content){
         return ((GuildChannel) channel).getEffectivePermissions(client.getSelfId().orElseThrow())
                 .map(permissions -> permissions.contains(Permission.SEND_MESSAGES))
                 .flatMap(hasPermission -> {

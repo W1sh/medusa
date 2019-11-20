@@ -30,8 +30,7 @@ public class JoinVoiceChannelListener implements EventListener<JoinVoiceChannelE
                 .flatMap(Member::getVoiceState)
                 .flatMap(VoiceState::getChannel)
                 .flatMap(AudioConnectionManager.getInstance()::joinVoiceChannel)
-                .flatMap(conn -> event.getMessage().getChannel())
-                .flatMap(channel -> Messager.send(channel.getClient(), channel, "Joining voice channel!"))
+                .flatMap(channel -> Messager.send(event, "Joining voice channel!"))
                 .then();
     }
 }

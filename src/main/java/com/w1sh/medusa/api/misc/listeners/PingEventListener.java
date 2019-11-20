@@ -26,11 +26,11 @@ public class PingEventListener implements EventListener<PingEvent> {
 
     @Override
     public Mono<Void> execute(PingEvent event) {
-        return event.getMessage().getChannel()
-                .doOnNext(channel -> Messager.send(event.getClient(), channel, "Pong!")
+        return Mono.just(event)
+                .doOnNext(ev -> Messager.send(ev, "Pong!")
                         .elapsed()
                         .map(Tuple2::getT1)
-                        .doOnNext(elapsed -> logger.info("Answered request in {} milliseconds", elapsed))
+                        .doOnNext(elapsed -> logger.info("Answered ping request in {} milliseconds", elapsed))
                         .subscribe())
                 .then();
     }
