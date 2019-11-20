@@ -5,6 +5,7 @@ import com.w1sh.medusa.api.dice.events.RollEvent;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.utils.Messager;
+import discord4j.core.object.entity.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -33,7 +34,10 @@ public class RollEventListener implements EventListener<RollEvent> {
                 .flatMap(this::validateMessageFormatting)
                 .map(this::parseAndRoll)
                 .doOnNext(roll -> event.getMessage().getChannel()
-                        .flatMap(channel -> Messager.send(event.getClient(), channel, String.format("You rolled `%d`", roll)))
+                        .flatMap(channel -> Messager.send(event.getClient(), channel,
+                                String.format("%s rolled `%d`!", event.getMember()
+                                        .map(Member::getNicknameMention)
+                                        .orElse("You"), roll)))
                         .subscribe())
                 .then();
     }
