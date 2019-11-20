@@ -3,6 +3,7 @@ package com.w1sh.medusa.api;
 import com.w1sh.medusa.api.audio.events.JoinVoiceChannelEvent;
 import com.w1sh.medusa.api.audio.events.LeaveVoiceChannelEvent;
 import com.w1sh.medusa.api.audio.events.PlayTrackEvent;
+import com.w1sh.medusa.api.dice.events.RollEvent;
 import com.w1sh.medusa.api.misc.events.PingEvent;
 import com.w1sh.medusa.api.misc.events.UnsupportedEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -24,6 +25,7 @@ public class CommandEventFactory {
         EVENTS.put("join", JoinVoiceChannelEvent.class);
         EVENTS.put("leave", LeaveVoiceChannelEvent.class);
         EVENTS.put("play", PlayTrackEvent.class);
+        EVENTS.put("roll", RollEvent.class);
     }
 
     private CommandEventFactory(){}
