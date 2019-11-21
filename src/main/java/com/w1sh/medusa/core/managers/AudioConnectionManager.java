@@ -35,7 +35,7 @@ public class AudioConnectionManager {
 
     public AudioConnectionManager(SimpleAudioProvider audioProvider, AudioPlayerManager playerManager, AutowireCapableBeanFactory factory) {
         final AudioConnectionManager previous = instance.getAndSet(this);
-        if(previous != null) throw new IllegalArgumentException("Cannot created second AudioManager");
+        if(previous != null) throw new IllegalArgumentException("Cannot created second AudioConnectionManager");
         this.audioProvider = audioProvider;
         this.playerManager = playerManager;
         this.factory = factory;
