@@ -8,7 +8,6 @@ import com.w1sh.medusa.core.managers.PermissionManager;
 import com.w1sh.medusa.utils.Messager;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
-import discord4j.core.object.util.Permission;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
@@ -18,6 +17,8 @@ import reactor.core.publisher.Mono;
 @Component
 public class JoinVoiceChannelListener implements EventListener<JoinVoiceChannelEvent> {
 
+    @Value("${event.voice.missing-permissions.join}")
+    private String voiceMissingPermissions;
     @Value("${event.voice.join}")
     private String voiceJoin;
 
@@ -33,7 +34,10 @@ public class JoinVoiceChannelListener implements EventListener<JoinVoiceChannelE
     @Override
     public Mono<Void> execute(JoinVoiceChannelEvent event) {
         return Mono.justOrEmpty(event)
-                .filterWhen(ev-> PermissionManager.getInstance().hasPermission(ev, Permission.CONNECT))
+                .filterWhen(ev -> PermissionManager.getInstance().hasPermissions(ev, ev.getPermissions())
+                        .doOnNext(bool -> {
+                            if(Boolean.FALSE.equals(bool)) Messager.send(event, voiceMissingPermissions).subscribe();
+                        }))
                 .flatMap(ev -> Mono.justOrEmpty(ev.getMember()))
                 .flatMap(Member::getVoiceState)
                 .flatMap(VoiceState::getChannel)
