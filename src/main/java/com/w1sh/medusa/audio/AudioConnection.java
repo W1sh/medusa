@@ -1,18 +1,19 @@
 package com.w1sh.medusa.audio;
 
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import discord4j.voice.VoiceConnection;
 import org.springframework.stereotype.Component;
 
-@Component
 public class AudioConnection {
 
     private final TrackScheduler trackScheduler;
     private VoiceConnection voiceConnection;
 
-    public AudioConnection(AudioPlayerManager playerManager) {
-        this.trackScheduler = new TrackScheduler(playerManager);
+    public AudioConnection(AudioPlayer player, VoiceConnection voiceConnection) {
+        this.trackScheduler = new TrackScheduler(player);
+        this.voiceConnection = voiceConnection;
     }
 
     public void addListener(AudioEventAdapter listener){
@@ -32,7 +33,4 @@ public class AudioConnection {
         return voiceConnection;
     }
 
-    public void setVoiceConnection(VoiceConnection voiceConnection) {
-        this.voiceConnection = voiceConnection;
-    }
 }

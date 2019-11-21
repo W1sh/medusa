@@ -7,11 +7,9 @@ import com.w1sh.medusa.core.listeners.MultipleArgsEventListener;
 import com.w1sh.medusa.utils.Messager;
 import discord4j.core.object.entity.Member;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-@PropertySource(value = "text-constants.properties")
 @Component
 public class DuelRollEventListener implements MultipleArgsEventListener<DuelRollEvent> {
 

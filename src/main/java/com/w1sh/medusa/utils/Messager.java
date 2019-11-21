@@ -1,6 +1,6 @@
 package com.w1sh.medusa.utils;
 
-import com.w1sh.medusa.api.SingleArgumentEvent;
+import com.w1sh.medusa.api.CommandEventFactory;
 import com.w1sh.medusa.core.data.Emoji;
 import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -33,7 +33,7 @@ public class Messager {
                 .flatMap(ev -> ev.getMessage().getChannel())
                 .flatMap(channel -> send(event.getClient(), channel,
                         String.format("%s Unsupported command! Use `%shelp` to find out what commands are supported",
-                        Emoji.CROSS_MARK.getShortcode(), SingleArgumentEvent.PREFIX)));
+                        Emoji.CROSS_MARK.getShortcode(), CommandEventFactory.PREFIX)));
     }
 
     private static Mono<Message> send(DiscordClient client, MessageChannel channel, String content){

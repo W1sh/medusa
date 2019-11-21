@@ -1,8 +1,9 @@
 package com.w1sh.medusa.core.managers;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.w1sh.medusa.audio.AudioConnection;
-import com.w1sh.medusa.audio.LavaPlayerAudioProvider;
+import com.w1sh.medusa.audio.SimpleAudioProvider;
 import com.w1sh.medusa.core.listeners.TrackEventListenerFactory;
 import com.w1sh.medusa.core.listeners.impl.TrackEventListener;
 import discord4j.core.object.entity.VoiceChannel;
@@ -27,12 +28,12 @@ public class AudioConnectionManager {
     private static final Logger logger = LoggerFactory.getLogger(AudioConnectionManager.class);
 
     private static AtomicReference<AudioConnectionManager> instance = new AtomicReference<>();
-    private final LavaPlayerAudioProvider audioProvider;
+    private final SimpleAudioProvider audioProvider;
     private final AudioPlayerManager playerManager;
     private final AutowireCapableBeanFactory factory;
     private final Map<Snowflake, AudioConnection> audioConnections;
 
-    public AudioConnectionManager(LavaPlayerAudioProvider audioProvider, AudioPlayerManager playerManager, AutowireCapableBeanFactory factory) {
+    public AudioConnectionManager(SimpleAudioProvider audioProvider, AudioPlayerManager playerManager, AutowireCapableBeanFactory factory) {
         final AudioConnectionManager previous = instance.getAndSet(this);
         if(previous != null) throw new IllegalArgumentException("Cannot created second AudioManager");
         this.audioProvider = audioProvider;
@@ -41,15 +42,20 @@ public class AudioConnectionManager {
         this.audioConnections = new HashMap<>();
     }
 
-    public void requestTrack(String message, Snowflake snowflake){
-        Mono.just(message)
+    public Mono<Void> requestTrack(String message, Snowflake snowflake){
+        return Mono.just(message)
                 .map(msg -> msg.split(" "))
                 .filter(splitMsg -> splitMsg.length > 1)
                 .zipWith(Mono.just(audioConnections.get(snowflake).getTrackScheduler()))
                 .doOnNext(tuple -> playerManager.loadItem(tuple.getT1()[1], tuple.getT2()))
                 .doOnSuccess(tuple -> logger.info("Loaded song request to voice channel in guild <{}>", snowflake.asLong()))
                 .doOnError(throwable -> logger.error("Failed to load requested track", throwable))
-                .subscribe(null, throwable -> logger.error("Failed "));
+                .map(Tuple2::getT2)
+                .then();
+                /*.map(trackScheduler -> {
+                    logger.info("Current playing track <{}>", trackScheduler.getPlayer().getPlayingTrack());
+                    return trackScheduler.getPlayer().getPlayingTrack();
+                });*/
     }
 
     public Mono<VoiceConnection> joinVoiceChannel(VoiceChannel channel) {
@@ -93,9 +99,8 @@ public class AudioConnectionManager {
 
     private Mono<AudioConnection> createAudioChannelManager(Tuple2<VoiceConnection, Snowflake> snowflake){
         logger.info("Creating new audio connection in guild <{}>", snowflake.getT2().asLong());
-        final AudioConnection audioConnection = factory.createBean(AudioConnection.class);
+        final AudioConnection audioConnection = new AudioConnection(playerManager.createPlayer(), snowflake.getT1());
         final TrackEventListener trackEventListener = TrackEventListenerFactory.build(snowflake.getT2().asLong());
-        audioConnection.setVoiceConnection(snowflake.getT1());
         audioConnection.addListener(trackEventListener);
         audioConnections.put(snowflake.getT2(), audioConnection);
         return Mono.just(audioConnections.get(snowflake.getT2()));

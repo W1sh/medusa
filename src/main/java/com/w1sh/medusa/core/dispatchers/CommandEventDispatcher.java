@@ -30,30 +30,6 @@ public class CommandEventDispatcher {
         this.scheduler = ForkJoinPoolScheduler.create("medusa-events");
     }
 
-    public <E extends Event> Flux<E> on(Class<E> eventClass) {
-        AtomicReference<Subscription> subscription = new AtomicReference<>();
-        return processor.publishOn(scheduler)
-                .ofType(eventClass)
-                //.map(this::fromEvent)
-                /*.doOnNext(event -> {
-                    int shard = event.getClient().getConfig().getShardCount();
-                    if (log.isDebugEnabled()) {
-                        log.debug("{}", event);
-                    }
-                })*/
-                .doOnSubscribe(sub -> {
-                    subscription.set(sub);
-                    logger.debug("{} subscription created", sub);
-                    logger.debug("Dispatching {}", eventClass.getSimpleName());
-                })
-                .doFinally(signal -> {
-                    if (signal == SignalType.CANCEL) {
-                        logger.debug("{} subscription cancelled", subscription.get());
-                        logger.debug("Dispatching cancelled for {}", eventClass.getSimpleName());
-                    }
-                });
-    }
-
     public void publish(MessageCreateEvent event) {
         logger.info("Received new event of type <{}>", event.getClass().getSimpleName());
         CommandEventFactory.createEvent(event).ifPresent(processor::onNext);
@@ -66,4 +42,20 @@ public class CommandEventDispatcher {
                 .subscribe();
     }
 
+    private  <E extends Event> Flux<E> on(Class<E> eventClass) {
+        AtomicReference<Subscription> subscription = new AtomicReference<>();
+        return processor.publishOn(scheduler)
+                .ofType(eventClass)
+                .doOnSubscribe(sub -> {
+                    subscription.set(sub);
+                    logger.debug("{} subscription created", sub);
+                    logger.debug("Dispatching event of type <{}>", eventClass.getSimpleName());
+                })
+                .doFinally(signal -> {
+                    if (signal == SignalType.CANCEL) {
+                        logger.debug("{} subscription cancelled", subscription.get());
+                        logger.debug("Dispatching cancelled for event of type <{}>", eventClass.getSimpleName());
+                    }
+                });
+    }
 }

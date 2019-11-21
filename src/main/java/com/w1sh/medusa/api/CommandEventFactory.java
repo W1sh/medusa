@@ -20,6 +20,7 @@ public class CommandEventFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(CommandEventFactory.class);
     private static final Map<String, Class<? extends MessageCreateEvent>> EVENTS = new HashMap<>();
+    public static final String PREFIX = "!";
 
     static {
         EVENTS.put(PingEvent.KEYWORD, PingEvent.class);

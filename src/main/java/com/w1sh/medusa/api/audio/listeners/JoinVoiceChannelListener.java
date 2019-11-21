@@ -7,6 +7,7 @@ import com.w1sh.medusa.core.managers.AudioConnectionManager;
 import com.w1sh.medusa.utils.Messager;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -14,6 +15,9 @@ import reactor.core.publisher.Mono;
 @DependsOn({"audioConnectionManager"})
 @Component
 public class JoinVoiceChannelListener implements EventListener<JoinVoiceChannelEvent> {
+
+    @Value("${event.voice.join}")
+    private String voiceJoin;
 
     public JoinVoiceChannelListener(CommandEventDispatcher eventDispatcher) {
         eventDispatcher.registerListener(this);
@@ -30,7 +34,7 @@ public class JoinVoiceChannelListener implements EventListener<JoinVoiceChannelE
                 .flatMap(Member::getVoiceState)
                 .flatMap(VoiceState::getChannel)
                 .flatMap(AudioConnectionManager.getInstance()::joinVoiceChannel)
-                .flatMap(channel -> Messager.send(event, "Joining voice channel!"))
+                .flatMap(channel -> Messager.send(event, voiceJoin))
                 .then();
     }
 }
