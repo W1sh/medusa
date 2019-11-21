@@ -3,7 +3,7 @@ package com.w1sh.medusa.api.misc.listeners;
 import com.w1sh.medusa.api.misc.events.PingEvent;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.core.listeners.EventListener;
-import com.w1sh.medusa.utils.Messager;
+import com.w1sh.medusa.utils.Messenger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -27,7 +27,7 @@ public class PingEventListener implements EventListener<PingEvent> {
     @Override
     public Mono<Void> execute(PingEvent event) {
         return Mono.just(event)
-                .doOnNext(ev -> Messager.send(ev, "Pong!")
+                .doOnNext(ev -> Messenger.send(ev, "Pong!")
                         .elapsed()
                         .map(Tuple2::getT1)
                         .doOnNext(elapsed -> logger.info("Answered ping request in {} milliseconds", elapsed))

@@ -4,7 +4,7 @@ import com.w1sh.medusa.api.dice.Dice;
 import com.w1sh.medusa.api.dice.events.RollEvent;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.core.listeners.MultipleArgsEventListener;
-import com.w1sh.medusa.utils.Messager;
+import com.w1sh.medusa.utils.Messenger;
 import discord4j.core.object.entity.Member;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,6 +19,8 @@ public class RollEventListener implements MultipleArgsEventListener<RollEvent> {
     private String rollStart;
     @Value("${event.roll.result}")
     private String rollResult;
+    @Value("${event.unsupported}")
+    private String unsupported;
 
     public RollEventListener(CommandEventDispatcher eventDispatcher, Dice dice) {
         this.dice = dice;
@@ -40,8 +42,8 @@ public class RollEventListener implements MultipleArgsEventListener<RollEvent> {
                 })
                 .map(strings -> dice.roll(strings[0], strings[1]))
                 .doOnNext(roll -> {
-                    Messager.send(event, rollStart).subscribe();
-                    Messager.send(event, String.format(rollResult, event.getMember()
+                    Messenger.send(event, rollStart).subscribe();
+                    Messenger.send(event, String.format(rollResult, event.getMember()
                             .map(Member::getNicknameMention)
                             .orElse("You"), roll))
                             .subscribe();
@@ -61,7 +63,7 @@ public class RollEventListener implements MultipleArgsEventListener<RollEvent> {
 
     private boolean filterSplit(String[] strings, RollEvent event){
         if(strings.length != 2){
-            Messager.invalid(event).subscribe();
+            Messenger.send(event, unsupported).subscribe();
             return false;
         }
         return true;

@@ -2,16 +2,13 @@ package com.w1sh.medusa.api.audio.listeners;
 
 import com.w1sh.medusa.api.audio.events.PlayTrackEvent;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.core.listeners.MultipleArgsEventListener;
 import com.w1sh.medusa.core.managers.AudioConnectionManager;
-import com.w1sh.medusa.utils.Messager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.SignalType;
 
 @Component
 public class PlayTrackListener implements MultipleArgsEventListener<PlayTrackEvent> {

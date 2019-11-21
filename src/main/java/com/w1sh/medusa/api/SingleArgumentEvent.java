@@ -15,6 +15,7 @@ public abstract class SingleArgumentEvent extends MessageCreateEvent {
         super(event.getClient(), event.getMessage(), event.getGuildId().map(Snowflake::asLong).orElse(null),
                 event.getMember().orElse(null));
         this.permissions = new ArrayList<>();
+        this.permissions.add(Permission.SEND_MESSAGES);
     }
 
     public SingleArgumentEvent(MessageCreateEvent event, List<Permission> permissions){

@@ -4,7 +4,7 @@ import com.w1sh.medusa.api.dice.Dice;
 import com.w1sh.medusa.api.dice.events.DuelRollEvent;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.core.listeners.MultipleArgsEventListener;
-import com.w1sh.medusa.utils.Messager;
+import com.w1sh.medusa.utils.Messenger;
 import discord4j.core.object.entity.Member;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -23,6 +23,8 @@ public class DuelRollEventListener implements MultipleArgsEventListener<DuelRoll
     private String rollWin;
     @Value("${event.roll.draw}")
     private String rollDraw;
+    @Value("${event.unsupported}")
+    private String unsupported;
 
     public DuelRollEventListener(CommandEventDispatcher eventDispatcher, Dice dice) {
         this.dice = dice;
@@ -47,26 +49,26 @@ public class DuelRollEventListener implements MultipleArgsEventListener<DuelRoll
                         .take(1)
                         .last())
                 .doOnNext(tuple -> {
-                    Messager.send(event, rollStart).subscribe();
+                    Messenger.send(event, rollStart).subscribe();
 
                     /* Send roll results */
-                    Messager.send(event, String.format(rollResult, event.getMember()
+                    Messenger.send(event, String.format(rollResult, event.getMember()
                             .map(Member::getNicknameMention)
                             .orElse("You"), tuple.getT1()[0])).subscribe();
-                    Messager.send(event, String.format(rollResult, tuple.getT2().getMention(), tuple.getT1()[1]))
+                    Messenger.send(event, String.format(rollResult, tuple.getT2().getMention(), tuple.getT1()[1]))
                             .subscribe();
 
                     /* Decide winner */
                     if (tuple.getT1()[0] > tuple.getT1()[1]) {
-                        Messager.send(event, String.format(rollWin, event.getMember()
+                        Messenger.send(event, String.format(rollWin, event.getMember()
                                 .map(Member::getNicknameMention)
                                 .orElse("You")))
                                 .subscribe();
                     } else if (tuple.getT1()[0] < tuple.getT1()[1]) {
-                        Messager.send(event, String.format(rollWin, tuple.getT2().getMention()))
+                        Messenger.send(event, String.format(rollWin, tuple.getT2().getMention()))
                                 .subscribe();
                     } else {
-                        Messager.send(event, rollDraw).subscribe();
+                        Messenger.send(event, rollDraw).subscribe();
                     }
                 })
                 .then();
@@ -78,7 +80,7 @@ public class DuelRollEventListener implements MultipleArgsEventListener<DuelRoll
                 .map(content -> content.split(" "))
                 .filter(split -> {
                     if(split.length != 3) {
-                        Messager.invalid(event).subscribe();
+                        Messenger.send(event, unsupported).subscribe();
                         return false;
                     } else return true;
                 })
@@ -86,7 +88,7 @@ public class DuelRollEventListener implements MultipleArgsEventListener<DuelRoll
                 .map(strings -> strings[2].split("-"))
                 .filter(split -> {
                     if(split.length != 2) {
-                        Messager.invalid(event).subscribe();
+                        Messenger.send(event, unsupported).subscribe();
                         return false;
                     } else return true;
                 })

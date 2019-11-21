@@ -4,7 +4,7 @@ import com.w1sh.medusa.api.audio.events.LeaveVoiceChannelEvent;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.core.managers.AudioConnectionManager;
-import com.w1sh.medusa.utils.Messager;
+import com.w1sh.medusa.utils.Messenger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
@@ -30,7 +30,7 @@ public class LeaveVoiceChannelListener implements EventListener<LeaveVoiceChanne
     public Mono<Void> execute(LeaveVoiceChannelEvent event) {
         return Mono.justOrEmpty(event.getGuildId())
                 .flatMap(AudioConnectionManager.getInstance()::leaveVoiceChannel)
-                .flatMap(channel -> Messager.send(event, voiceLeave))
+                .flatMap(channel -> Messenger.send(event, voiceLeave))
                 .then();
     }
 }
