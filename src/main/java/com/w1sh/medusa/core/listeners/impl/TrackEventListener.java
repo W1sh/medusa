@@ -30,21 +30,25 @@ public class TrackEventListener extends AudioEventAdapter {
 
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
+        logger.info("Starting track <{}> in guild with <{}>", track.getInfo().title, guildId);
         super.onTrackStart(player, track);
     }
 
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
+        logger.info("Track <{}> on guild <{}> ended with reason <{}>", track.getInfo().title, guildId, endReason);
         super.onTrackEnd(player, track, endReason);
     }
 
     @Override
     public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
+        logger.error("Track <{}> on guild <{}> failed with exception", track.getInfo().title, guildId, exception);
         super.onTrackException(player, track, exception);
     }
 
     @Override
     public void onTrackStuck(AudioPlayer player, AudioTrack track, long thresholdMs) {
+        logger.info("Track <{}> on guild <{}> was stuck for <{}>", track.getInfo().title, guildId, thresholdMs);
         super.onTrackStuck(player, track, thresholdMs);
     }
 }

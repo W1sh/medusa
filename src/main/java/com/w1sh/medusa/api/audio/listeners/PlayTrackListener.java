@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 @Component
 public class PlayTrackListener implements MultipleArgsEventListener<PlayTrackEvent> {
 
-    private static final Logger logger = LoggerFactory.getLogger(PlayTrackEvent.class);
+    private static final Logger logger = LoggerFactory.getLogger(PlayTrackListener.class);
 
     @Value("${event.voice.play}")
     private String voicePlay;

@@ -1,5 +1,6 @@
 package com.w1sh.medusa.core.managers;
 
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.w1sh.medusa.audio.AudioConnection;
@@ -8,6 +9,7 @@ import com.w1sh.medusa.core.listeners.TrackEventListenerFactory;
 import com.w1sh.medusa.core.listeners.impl.TrackEventListener;
 import discord4j.core.object.entity.VoiceChannel;
 import discord4j.core.object.util.Snowflake;
+import discord4j.voice.AudioProvider;
 import discord4j.voice.VoiceConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,17 +30,13 @@ public class AudioConnectionManager {
     private static final Logger logger = LoggerFactory.getLogger(AudioConnectionManager.class);
 
     private static AtomicReference<AudioConnectionManager> instance = new AtomicReference<>();
-    private final SimpleAudioProvider audioProvider;
     private final AudioPlayerManager playerManager;
-    private final AutowireCapableBeanFactory factory;
-    private final Map<Snowflake, AudioConnection> audioConnections;
+    private final Map<Long, AudioConnection> audioConnections;
 
-    public AudioConnectionManager(SimpleAudioProvider audioProvider, AudioPlayerManager playerManager, AutowireCapableBeanFactory factory) {
+    public AudioConnectionManager(AudioPlayerManager playerManager) {
         final AudioConnectionManager previous = instance.getAndSet(this);
         if(previous != null) throw new IllegalArgumentException("Cannot created second AudioConnectionManager");
-        this.audioProvider = audioProvider;
         this.playerManager = playerManager;
-        this.factory = factory;
         this.audioConnections = new HashMap<>();
     }
 
@@ -46,25 +44,22 @@ public class AudioConnectionManager {
         return Mono.just(message)
                 .map(msg -> msg.split(" "))
                 .filter(splitMsg -> splitMsg.length > 1)
-                .zipWith(Mono.just(audioConnections.get(snowflake).getTrackScheduler()))
+                .zipWith(Mono.just(audioConnections.get(snowflake.asLong()).getTrackScheduler()))
                 .doOnNext(tuple -> playerManager.loadItem(tuple.getT1()[1], tuple.getT2()))
                 .doOnSuccess(tuple -> logger.info("Loaded song request to voice channel in guild <{}>", snowflake.asLong()))
                 .doOnError(throwable -> logger.error("Failed to load requested track", throwable))
                 .map(Tuple2::getT2)
                 .then();
-                /*.map(trackScheduler -> {
-                    logger.info("Current playing track <{}>", trackScheduler.getPlayer().getPlayingTrack());
-                    return trackScheduler.getPlayer().getPlayingTrack();
-                });*/
     }
 
     public Mono<VoiceConnection> joinVoiceChannel(VoiceChannel channel) {
         return Mono.just(channel)
-                .flatMap(chan -> chan.join(spec1 -> spec1.setProvider(audioProvider)))
-                .zipWith(Mono.justOrEmpty(channel.getGuildId()))
-                .flatMap(tuple -> {
-                    logger.info("Client joined voice channel in guild <{}>", tuple.getT2().asBigInteger());
-                    return this.createAudioChannelManager(tuple);
+                .flatMap(chan -> {
+                    final AudioPlayer audioPlayer = playerManager.createPlayer();
+                    final SimpleAudioProvider audioProvider = new SimpleAudioProvider(audioPlayer);
+                    logger.info("Client joined voice channel in guild <{}>", channel.getGuildId().asLong());
+                    return chan.join(spec1 -> spec1.setProvider(audioProvider))
+                            .flatMap(connection -> createAudioConnection(connection, audioProvider, chan.getGuildId().asLong(), audioPlayer));
                 })
                 .doOnError(throwable -> logger.error("Failed to leave voice channel", throwable))
                 .map(AudioConnection::getVoiceConnection);
@@ -97,21 +92,22 @@ public class AudioConnectionManager {
         audioConnections.values().forEach(AudioConnection::destroy);
     }
 
-    private Mono<AudioConnection> createAudioChannelManager(Tuple2<VoiceConnection, Snowflake> snowflake){
-        logger.info("Creating new audio connection in guild <{}>", snowflake.getT2().asLong());
-        final AudioConnection audioConnection = new AudioConnection(playerManager.createPlayer(), snowflake.getT1());
-        final TrackEventListener trackEventListener = TrackEventListenerFactory.build(snowflake.getT2().asLong());
-        audioConnection.addListener(trackEventListener);
-        audioConnections.put(snowflake.getT2(), audioConnection);
-        return Mono.just(audioConnections.get(snowflake.getT2()));
+    private Mono<AudioConnection> createAudioConnection(VoiceConnection voiceConnection, SimpleAudioProvider provider,
+                                                        Long guildId, AudioPlayer audioPlayer){
+        logger.info("Creating new audio connection in guild <{}>", guildId);
+
+        final AudioConnection audioConnection = new AudioConnection(provider, audioPlayer, voiceConnection, guildId);
+        audioConnections.put(guildId, audioConnection);
+        return Mono.just(audioConnections.get(guildId));
+    }
+
+    public Mono<AudioConnection> getAudioConnection(Snowflake guildIdSnowflake) {
+        logger.info("Retrieving audio connection for guild with id <{}>", guildIdSnowflake.asLong());
+        return Mono.just(audioConnections.get(guildIdSnowflake.asLong()));
     }
 
     public static AudioConnectionManager getInstance() {
         return instance.get();
     }
 
-    private Mono<AudioConnection> getAudioConnection(Snowflake guildIdSnowflake) {
-        logger.info("Retrieving audio connection for guild with id <{}>", guildIdSnowflake.asLong());
-        return Mono.just(audioConnections.get(guildIdSnowflake));
-    }
 }

@@ -28,11 +28,6 @@ public class AppConfiguration {
     }
 
     @Bean
-    public MutableAudioFrame mutableAudioFrame() {
-        return new MutableAudioFrame();
-    }
-
-    @Bean
     public SecureRandom secureRandom() { return new SecureRandom(); }
 
     @Bean

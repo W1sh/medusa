@@ -14,14 +14,13 @@ public class TrackScheduler implements AudioLoadResultHandler {
 
     private final AudioPlayer player;
 
-    TrackScheduler(AudioPlayer player) {
+    TrackScheduler(final AudioPlayer player) {
         this.player = player;
     }
 
     @Override
     public void trackLoaded(final AudioTrack track) {
         // LavaPlayer found an audio source for us to play
-        logger.info("Starting track <{}>", track.getInfo().title);
         player.playTrack(track);
     }
 

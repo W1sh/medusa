@@ -2,6 +2,7 @@ package com.w1sh.medusa.api;
 
 import com.w1sh.medusa.api.audio.events.JoinVoiceChannelEvent;
 import com.w1sh.medusa.api.audio.events.LeaveVoiceChannelEvent;
+import com.w1sh.medusa.api.audio.events.NextTrackEvent;
 import com.w1sh.medusa.api.audio.events.PlayTrackEvent;
 import com.w1sh.medusa.api.dice.events.DuelRollEvent;
 import com.w1sh.medusa.api.dice.events.RollEvent;
@@ -26,6 +27,7 @@ public class CommandEventFactory {
         EVENTS.put(PingEvent.KEYWORD, PingEvent.class);
         EVENTS.put(JoinVoiceChannelEvent.KEYWORD, JoinVoiceChannelEvent.class);
         EVENTS.put(LeaveVoiceChannelEvent.KEYWORD, LeaveVoiceChannelEvent.class);
+        EVENTS.put(NextTrackEvent.KEYWORD, NextTrackEvent.class);
         EVENTS.put(PlayTrackEvent.KEYWORD, PlayTrackEvent.class);
         EVENTS.put(RollEvent.KEYWORD, RollEvent.class);
         EVENTS.put(DuelRollEvent.KEYWORD, DuelRollEvent.class);

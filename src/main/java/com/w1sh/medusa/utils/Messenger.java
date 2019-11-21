@@ -27,7 +27,7 @@ public class Messenger {
         return Mono.just(channel)
                 .flatMap(c -> c.createMessage(content))
                 .onErrorResume(ClientException.isStatusCode(HttpResponseStatus.FORBIDDEN.code()), err -> {
-                    logger.error("Failed to send message, bot is not ith the guild", err);
+                    logger.error("Failed to send message, bot is not in the guild", err);
                     return Mono.empty();
                 });
     }
