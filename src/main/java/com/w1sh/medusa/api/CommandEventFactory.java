@@ -27,6 +27,7 @@ public class CommandEventFactory {
         EVENTS.put(NextTrackEvent.KEYWORD, NextTrackEvent.class);
         EVENTS.put(PlayTrackEvent.KEYWORD, PlayTrackEvent.class);
         EVENTS.put(PauseTrackEvent.KEYWORD, PauseTrackEvent.class);
+        EVENTS.put(QueueTrackEvent.KEYWORD, QueueTrackEvent.class);
         EVENTS.put(ResumeTrackEvent.KEYWORD, ResumeTrackEvent.class);
         EVENTS.put(RollEvent.KEYWORD, RollEvent.class);
         EVENTS.put(DuelRollEvent.KEYWORD, DuelRollEvent.class);

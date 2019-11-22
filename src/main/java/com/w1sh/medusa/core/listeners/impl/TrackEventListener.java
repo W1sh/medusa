@@ -12,6 +12,7 @@ import discord4j.core.object.util.Snowflake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.util.concurrent.TimeUnit;
 
 public final class TrackEventListener extends AudioEventAdapter {
@@ -49,7 +50,8 @@ public final class TrackEventListener extends AudioEventAdapter {
                 .map(AudioConnection::getMessageChannel)
                 .flatMap(c -> Messenger.send(c, embedCreateSpec ->
                         embedCreateSpec.setTitle(":musical_note:\tCurrently playing")
-                                .setDescription(String.format("%n**%s**%n%n[%s](%s) | %d:%d",
+                                .setColor(Color.GREEN)
+                                .setDescription(String.format("**%s**%n%n[%s](%s) | %d:%d",
                                         track.getInfo().author,
                                         track.getInfo().title,
                                         track.getInfo().uri,
