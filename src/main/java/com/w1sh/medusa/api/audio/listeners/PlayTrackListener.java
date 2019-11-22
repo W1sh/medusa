@@ -19,6 +19,8 @@ public class PlayTrackListener implements MultipleArgsEventListener<PlayTrackEve
 
     @Value("${event.voice.play}")
     private String voicePlay;
+    @Value("${event.unsupported}")
+    private String unsupported;
 
     public PlayTrackListener(CommandEventDispatcher eventDispatcher) {
         eventDispatcher.registerListener(this);
@@ -44,6 +46,15 @@ public class PlayTrackListener implements MultipleArgsEventListener<PlayTrackEve
 
     @Override
     public Mono<Boolean> validate(PlayTrackEvent event) {
-        return Mono.just(true);
+        return Mono.justOrEmpty(event.getMessage().getContent())
+                .map(content -> content.split(" "))
+                .filter(split -> {
+                    if(split.length != 2){
+                        Messenger.send(event, unsupported).subscribe();
+                        return false;
+                    }
+                    return true;
+                })
+                .hasElement();
     }
 }
