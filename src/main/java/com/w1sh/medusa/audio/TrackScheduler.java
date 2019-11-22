@@ -22,12 +22,6 @@ public class TrackScheduler implements AudioLoadResultHandler {
 
     }
 
-    public void pause(){
-        if(!player.isPaused()) {
-            player.setPaused(true);
-        }
-    }
-
     @Override
     public void trackLoaded(final AudioTrack track) {
         // LavaPlayer found an audio source for us to play
@@ -48,6 +42,14 @@ public class TrackScheduler implements AudioLoadResultHandler {
     public void loadFailed(final FriendlyException exception) {
         // LavaPlayer could not parse an audio source for some reason
         logger.error("Failed to load track", exception);
+    }
+
+    public void pause(){
+        if(!player.isPaused()) player.setPaused(true);
+    }
+
+    public void resume(){
+        if(player.isPaused()) player.setPaused(false);
     }
 
     public void destroy(){}
