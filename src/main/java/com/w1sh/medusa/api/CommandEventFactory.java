@@ -26,7 +26,6 @@ public class CommandEventFactory {
         EVENTS.put(LeaveVoiceChannelEvent.KEYWORD, LeaveVoiceChannelEvent.class);
         EVENTS.put(NextTrackEvent.KEYWORD, NextTrackEvent.class);
         EVENTS.put(PlayTrackEvent.KEYWORD, PlayTrackEvent.class);
-        EVENTS.put(PlayingTrackEvent.KEYWORD, PlayingTrackEvent.class);
         EVENTS.put(RollEvent.KEYWORD, RollEvent.class);
         EVENTS.put(DuelRollEvent.KEYWORD, DuelRollEvent.class);
     }
@@ -36,9 +35,9 @@ public class CommandEventFactory {
     public static Optional<MessageCreateEvent> createEvent(MessageCreateEvent event){
         try {
             Class<?> clazz = EVENTS.getOrDefault(event.getMessage().getContent()
-                            .map(String::toLowerCase)
-                            .map(msg -> msg.split(" ")[0].substring(1))
-                            .orElse(""), UnsupportedEvent.class);
+                    .map(String::toLowerCase)
+                    .map(msg -> msg.split(" ")[0].substring(1))
+                    .orElse(""), UnsupportedEvent.class);
             Object instance = clazz.getConstructor(MessageCreateEvent.class).newInstance(event);
             return Optional.of((MessageCreateEvent) instance);
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException e) {
