@@ -27,8 +27,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class AudioConnectionManager {
 
     private static final Logger logger = LoggerFactory.getLogger(AudioConnectionManager.class);
+    private static final AtomicReference<AudioConnectionManager> instance = new AtomicReference<>();
 
-    private static AtomicReference<AudioConnectionManager> instance = new AtomicReference<>();
     private final AudioPlayerManager playerManager;
     private final Map<Long, AudioConnection> audioConnections;
 

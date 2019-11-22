@@ -12,6 +12,8 @@ import discord4j.core.object.util.Snowflake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.TimeUnit;
+
 public final class TrackEventListener extends AudioEventAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(TrackEventListener.class);
@@ -45,7 +47,15 @@ public final class TrackEventListener extends AudioEventAdapter {
         logger.info("Starting track <{}> in guild with id <{}>", track.getInfo().title, guildId);
         AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
                 .map(AudioConnection::getMessageChannel)
-                .flatMap(c -> Messenger.send(c, String.format(":musical_note: Currently playing: **%s**", track.getInfo().title)))
+                .flatMap(c -> Messenger.send(c, embedCreateSpec ->
+                        embedCreateSpec.setTitle(":musical_note:\tCurrently playing")
+                                .setDescription(String.format("%n**%s**%n%n[%s](%s) | %d:%d",
+                                        track.getInfo().author,
+                                        track.getInfo().title,
+                                        track.getInfo().uri,
+                                        TimeUnit.MILLISECONDS.toMinutes(track.getInfo().length),
+                                        TimeUnit.MILLISECONDS.toSeconds(track.getInfo().length) -
+                                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(track.getInfo().length))))))
                 .subscribe();
     }
 
