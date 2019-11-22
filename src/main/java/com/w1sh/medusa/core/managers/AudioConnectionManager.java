@@ -5,6 +5,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.w1sh.medusa.audio.AudioConnection;
 import com.w1sh.medusa.audio.SimpleAudioProvider;
+import com.w1sh.medusa.audio.TrackScheduler;
 import com.w1sh.medusa.core.listeners.TrackEventListenerFactory;
 import com.w1sh.medusa.core.listeners.impl.TrackEventListener;
 import discord4j.core.object.entity.VoiceChannel;
@@ -40,7 +41,7 @@ public class AudioConnectionManager {
         this.audioConnections = new HashMap<>();
     }
 
-    public Mono<Void> requestTrack(String message, Snowflake snowflake){
+    public Mono<TrackScheduler> requestTrack(String message, Snowflake snowflake){
         return Mono.just(message)
                 .map(msg -> msg.split(" "))
                 .filter(splitMsg -> splitMsg.length > 1)
@@ -48,8 +49,7 @@ public class AudioConnectionManager {
                 .doOnNext(tuple -> playerManager.loadItem(tuple.getT1()[1], tuple.getT2()))
                 .doOnSuccess(tuple -> logger.info("Loaded song request to voice channel in guild <{}>", snowflake.asLong()))
                 .doOnError(throwable -> logger.error("Failed to load requested track", throwable))
-                .map(Tuple2::getT2)
-                .then();
+                .map(Tuple2::getT2);
     }
 
     public Mono<VoiceConnection> joinVoiceChannel(VoiceChannel channel) {

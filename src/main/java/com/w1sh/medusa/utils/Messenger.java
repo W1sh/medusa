@@ -23,6 +23,11 @@ public class Messenger {
                 .flatMap(channel -> send(channel, content));
     }
 
+    public static Mono<Void> delete(Message message){
+        message.getEmbeds().clear();
+        return message.delete();
+    }
+
     private static Mono<Message> send(MessageChannel channel, String content){
         return Mono.just(channel)
                 .flatMap(c -> c.createMessage(content))
