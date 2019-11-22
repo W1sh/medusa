@@ -18,6 +18,10 @@ public class TrackScheduler implements AudioLoadResultHandler {
         this.player = player;
     }
 
+    public void nextTrack(){
+
+    }
+
     @Override
     public void trackLoaded(final AudioTrack track) {
         // LavaPlayer found an audio source for us to play
