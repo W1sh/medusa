@@ -12,7 +12,7 @@ import discord4j.core.object.util.Snowflake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TrackEventListener extends AudioEventAdapter {
+public final class TrackEventListener extends AudioEventAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(TrackEventListener.class);
 

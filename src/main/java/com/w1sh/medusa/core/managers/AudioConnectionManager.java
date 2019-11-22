@@ -39,18 +39,22 @@ public class AudioConnectionManager {
         this.audioConnections = new HashMap<>();
     }
 
-    public Mono<TrackScheduler> requestTrack(String message, Snowflake snowflake){
-        return Mono.just(message)
+    public Mono<TrackScheduler> requestTrack(MessageCreateEvent event){
+        Long guildId = event.getGuildId().map(Snowflake::asLong).orElse(0L);
+        return Mono.justOrEmpty(event.getMessage().getContent())
                 .map(msg -> msg.split(" "))
                 .filter(splitMsg -> splitMsg.length > 1)
-                .zipWith(Mono.just(audioConnections.get(snowflake.asLong()).getTrackScheduler()))
+                .zipWith(Mono.justOrEmpty(audioConnections.get(guildId))
+                        .defaultIfEmpty(joinVoiceChannel(event)
+                                .block(Duration.ofSeconds(5)))
+                        .map(AudioConnection::getTrackScheduler))
                 .doOnNext(tuple -> playerManager.loadItem(tuple.getT1()[1], tuple.getT2()))
-                .doOnSuccess(tuple -> logger.info("Loaded song request to voice channel in guild <{}>", snowflake.asLong()))
+                .doOnSuccess(tuple -> logger.info("Loaded song request to voice channel in guild <{}>", guildId))
                 .doOnError(throwable -> logger.error("Failed to load requested track", throwable))
                 .map(Tuple2::getT2);
     }
 
-    public Mono<VoiceConnection> joinVoiceChannel(MessageCreateEvent event) {
+    public Mono<AudioConnection> joinVoiceChannel(MessageCreateEvent event) {
         return Mono.just(event)
                 .flatMap(ev -> Mono.justOrEmpty(ev.getMember()))
                 .flatMap(Member::getVoiceState)
@@ -63,8 +67,7 @@ public class AudioConnectionManager {
                             .zipWith(event.getMessage().getChannel())
                             .flatMap(tuple -> createAudioConnection(audioProvider, audioPlayer, tuple.getT1(), ((GuildChannel) tuple.getT2())));
                 })
-                .doOnError(throwable -> logger.error("Failed to leave voice channel", throwable))
-                .map(AudioConnection::getVoiceConnection);
+                .doOnError(throwable -> logger.error("Failed to leave voice channel", throwable));
     }
 
     public Mono<Boolean> leaveVoiceChannel(Snowflake guildIdSnowflake) {
@@ -96,7 +99,7 @@ public class AudioConnectionManager {
 
     public Mono<AudioConnection> getAudioConnection(Snowflake guildIdSnowflake) {
         logger.info("Retrieving audio connection for guild with id <{}>", guildIdSnowflake.asLong());
-        return Mono.just(audioConnections.get(guildIdSnowflake.asLong()));
+        return Mono.justOrEmpty(audioConnections.get(guildIdSnowflake.asLong()));
     }
 
     public static AudioConnectionManager getInstance() {
