@@ -38,9 +38,6 @@ public class JoinVoiceChannelListener implements EventListener<JoinVoiceChannelE
                         .doOnNext(bool -> {
                             if(Boolean.FALSE.equals(bool)) Messenger.send(event, voiceMissingPermissions).subscribe();
                         }))
-                .flatMap(ev -> Mono.justOrEmpty(ev.getMember()))
-                .flatMap(Member::getVoiceState)
-                .flatMap(VoiceState::getChannel)
                 .flatMap(AudioConnectionManager.getInstance()::joinVoiceChannel)
                 .flatMap(channel -> Messenger.send(event, voiceJoin))
                 .then();

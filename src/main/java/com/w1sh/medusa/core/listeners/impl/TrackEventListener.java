@@ -5,8 +5,13 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import com.w1sh.medusa.audio.AudioConnection;
+import com.w1sh.medusa.core.managers.AudioConnectionManager;
+import com.w1sh.medusa.utils.Messenger;
+import discord4j.core.object.util.Snowflake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
 
 public class TrackEventListener extends AudioEventAdapter {
 
@@ -31,6 +36,10 @@ public class TrackEventListener extends AudioEventAdapter {
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
         logger.info("Starting track <{}> in guild with <{}>", track.getInfo().title, guildId);
+        /*AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
+                .map(AudioConnection::getMessageChannel)
+                .flatMap(c -> Messenger.send(c, String.format(":musical_note: Currently playing %s", track.getInfo().title)))
+                .subscribe();*/
         super.onTrackStart(player, track);
     }
 

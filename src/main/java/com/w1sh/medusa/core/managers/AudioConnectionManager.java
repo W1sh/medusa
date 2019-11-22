@@ -2,19 +2,17 @@ package com.w1sh.medusa.core.managers;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.w1sh.medusa.audio.AudioConnection;
 import com.w1sh.medusa.audio.SimpleAudioProvider;
 import com.w1sh.medusa.audio.TrackScheduler;
-import com.w1sh.medusa.core.listeners.TrackEventListenerFactory;
-import com.w1sh.medusa.core.listeners.impl.TrackEventListener;
-import discord4j.core.object.entity.VoiceChannel;
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.VoiceState;
+import discord4j.core.object.entity.GuildChannel;
+import discord4j.core.object.entity.Member;
 import discord4j.core.object.util.Snowflake;
-import discord4j.voice.AudioProvider;
 import discord4j.voice.VoiceConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
@@ -52,14 +50,18 @@ public class AudioConnectionManager {
                 .map(Tuple2::getT2);
     }
 
-    public Mono<VoiceConnection> joinVoiceChannel(VoiceChannel channel) {
-        return Mono.just(channel)
+    public Mono<VoiceConnection> joinVoiceChannel(MessageCreateEvent event) {
+        return Mono.just(event)
+                .flatMap(ev -> Mono.justOrEmpty(ev.getMember()))
+                .flatMap(Member::getVoiceState)
+                .flatMap(VoiceState::getChannel)
                 .flatMap(chan -> {
                     final AudioPlayer audioPlayer = playerManager.createPlayer();
                     final SimpleAudioProvider audioProvider = new SimpleAudioProvider(audioPlayer);
-                    logger.info("Client joined voice channel in guild <{}>", channel.getGuildId().asLong());
+                    logger.info("Client joined voice channel in guild <{}>", event.getGuildId().map(Snowflake::asLong).orElse(0L));
                     return chan.join(spec1 -> spec1.setProvider(audioProvider))
-                            .flatMap(connection -> createAudioConnection(connection, audioProvider, chan.getGuildId().asLong(), audioPlayer));
+                            .zipWith(event.getMessage().getChannel())
+                            .flatMap(tuple -> createAudioConnection(audioProvider, audioPlayer, tuple.getT1(), ((GuildChannel) tuple.getT2())));
                 })
                 .doOnError(throwable -> logger.error("Failed to leave voice channel", throwable))
                 .map(AudioConnection::getVoiceConnection);
@@ -92,11 +94,11 @@ public class AudioConnectionManager {
         audioConnections.values().forEach(AudioConnection::destroy);
     }
 
-    private Mono<AudioConnection> createAudioConnection(VoiceConnection voiceConnection, SimpleAudioProvider provider,
-                                                        Long guildId, AudioPlayer audioPlayer){
+    private Mono<AudioConnection> createAudioConnection(SimpleAudioProvider provider, AudioPlayer player, VoiceConnection voiceConnection,
+                                                        GuildChannel channel){
+        Long guildId = channel.getGuildId().asLong();
         logger.info("Creating new audio connection in guild <{}>", guildId);
-
-        final AudioConnection audioConnection = new AudioConnection(provider, audioPlayer, voiceConnection, guildId);
+        final AudioConnection audioConnection = new AudioConnection(provider, player, voiceConnection, channel);
         audioConnections.put(guildId, audioConnection);
         return Mono.just(audioConnections.get(guildId));
     }

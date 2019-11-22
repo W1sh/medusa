@@ -36,10 +36,8 @@ public class PlayTrackListener implements MultipleArgsEventListener<PlayTrackEve
                 .filterWhen(ev -> PermissionManager.getInstance().hasPermissions(ev, ev.getPermissions()))
                 .flatMap(ev -> Mono.justOrEmpty(ev.getMessage().getContent()))
                 .zipWith(Mono.justOrEmpty(event.getGuildId()))
-                .flatMap(tuple -> {
-                    AudioConnectionManager.getInstance().requestTrack(tuple.getT1(), tuple.getT2());
-                    return Messenger.delete(event.getMessage());
-                })
+                .flatMap(tuple -> AudioConnectionManager.getInstance().requestTrack(tuple.getT1(), tuple.getT2()))
+                .flatMap(t -> Messenger.delete(event.getMessage()))
                 .doOnError(throwable -> logger.error("Failed to play track", throwable))
                 .then();
     }

@@ -28,7 +28,7 @@ public class Messenger {
         return message.delete();
     }
 
-    private static Mono<Message> send(MessageChannel channel, String content){
+    public static Mono<Message> send(MessageChannel channel, String content){
         return Mono.just(channel)
                 .flatMap(c -> c.createMessage(content))
                 .onErrorResume(ClientException.isStatusCode(HttpResponseStatus.FORBIDDEN.code()), err -> {
