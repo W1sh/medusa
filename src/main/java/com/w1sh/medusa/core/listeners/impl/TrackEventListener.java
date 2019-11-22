@@ -36,10 +36,10 @@ public class TrackEventListener extends AudioEventAdapter {
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
         logger.info("Starting track <{}> in guild with <{}>", track.getInfo().title, guildId);
-        /*AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
+        AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
                 .map(AudioConnection::getMessageChannel)
-                .flatMap(c -> Messenger.send(c, String.format(":musical_note: Currently playing %s", track.getInfo().title)))
-                .subscribe();*/
+                .flatMap(c -> Messenger.send(c, String.format(":musical_note: Currently playing: **%s**", track.getInfo().title)))
+                .subscribe();
         super.onTrackStart(player, track);
     }
 

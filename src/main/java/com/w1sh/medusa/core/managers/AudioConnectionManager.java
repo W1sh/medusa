@@ -94,15 +94,6 @@ public class AudioConnectionManager {
         audioConnections.values().forEach(AudioConnection::destroy);
     }
 
-    private Mono<AudioConnection> createAudioConnection(SimpleAudioProvider provider, AudioPlayer player, VoiceConnection voiceConnection,
-                                                        GuildChannel channel){
-        Long guildId = channel.getGuildId().asLong();
-        logger.info("Creating new audio connection in guild <{}>", guildId);
-        final AudioConnection audioConnection = new AudioConnection(provider, player, voiceConnection, channel);
-        audioConnections.put(guildId, audioConnection);
-        return Mono.just(audioConnections.get(guildId));
-    }
-
     public Mono<AudioConnection> getAudioConnection(Snowflake guildIdSnowflake) {
         logger.info("Retrieving audio connection for guild with id <{}>", guildIdSnowflake.asLong());
         return Mono.just(audioConnections.get(guildIdSnowflake.asLong()));
@@ -112,4 +103,12 @@ public class AudioConnectionManager {
         return instance.get();
     }
 
+    private Mono<AudioConnection> createAudioConnection(SimpleAudioProvider provider, AudioPlayer player,
+                                                        VoiceConnection voiceConnection, GuildChannel channel){
+        Long guildId = channel.getGuildId().asLong();
+        logger.info("Creating new audio connection in guild <{}>", guildId);
+        final AudioConnection audioConnection = new AudioConnection(provider, player, voiceConnection, channel);
+        audioConnections.put(guildId, audioConnection);
+        return Mono.just(audioConnections.get(guildId));
+    }
 }
