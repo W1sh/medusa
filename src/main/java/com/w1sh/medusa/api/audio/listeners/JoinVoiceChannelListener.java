@@ -6,8 +6,6 @@ import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.core.managers.AudioConnectionManager;
 import com.w1sh.medusa.core.managers.PermissionManager;
 import com.w1sh.medusa.utils.Messenger;
-import discord4j.core.object.VoiceState;
-import discord4j.core.object.entity.Member;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
@@ -38,9 +36,6 @@ public class JoinVoiceChannelListener implements EventListener<JoinVoiceChannelE
                         .doOnNext(bool -> {
                             if(Boolean.FALSE.equals(bool)) Messenger.send(event, voiceMissingPermissions).subscribe();
                         }))
-                .flatMap(ev -> Mono.justOrEmpty(ev.getMember()))
-                .flatMap(Member::getVoiceState)
-                .flatMap(VoiceState::getChannel)
                 .flatMap(AudioConnectionManager.getInstance()::joinVoiceChannel)
                 .flatMap(channel -> Messenger.send(event, voiceJoin))
                 .then();

@@ -1,8 +1,6 @@
 package com.w1sh.medusa.api;
 
-import com.w1sh.medusa.api.audio.events.JoinVoiceChannelEvent;
-import com.w1sh.medusa.api.audio.events.LeaveVoiceChannelEvent;
-import com.w1sh.medusa.api.audio.events.PlayTrackEvent;
+import com.w1sh.medusa.api.audio.events.*;
 import com.w1sh.medusa.api.dice.events.DuelRollEvent;
 import com.w1sh.medusa.api.dice.events.RollEvent;
 import com.w1sh.medusa.api.misc.events.PingEvent;
@@ -26,7 +24,11 @@ public class CommandEventFactory {
         EVENTS.put(PingEvent.KEYWORD, PingEvent.class);
         EVENTS.put(JoinVoiceChannelEvent.KEYWORD, JoinVoiceChannelEvent.class);
         EVENTS.put(LeaveVoiceChannelEvent.KEYWORD, LeaveVoiceChannelEvent.class);
+        EVENTS.put(NextTrackEvent.KEYWORD, NextTrackEvent.class);
         EVENTS.put(PlayTrackEvent.KEYWORD, PlayTrackEvent.class);
+        EVENTS.put(PauseTrackEvent.KEYWORD, PauseTrackEvent.class);
+        EVENTS.put(QueueTrackEvent.KEYWORD, QueueTrackEvent.class);
+        EVENTS.put(ResumeTrackEvent.KEYWORD, ResumeTrackEvent.class);
         EVENTS.put(RollEvent.KEYWORD, RollEvent.class);
         EVENTS.put(DuelRollEvent.KEYWORD, DuelRollEvent.class);
     }
@@ -36,9 +38,9 @@ public class CommandEventFactory {
     public static Optional<MessageCreateEvent> createEvent(MessageCreateEvent event){
         try {
             Class<?> clazz = EVENTS.getOrDefault(event.getMessage().getContent()
-                            .map(String::toLowerCase)
-                            .map(msg -> msg.split(" ")[0].substring(1))
-                            .orElse(""), UnsupportedEvent.class);
+                    .map(String::toLowerCase)
+                    .map(msg -> msg.split(" ")[0].substring(1))
+                    .orElse(""), UnsupportedEvent.class);
             Object instance = clazz.getConstructor(MessageCreateEvent.class).newInstance(event);
             return Optional.of((MessageCreateEvent) instance);
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException e) {

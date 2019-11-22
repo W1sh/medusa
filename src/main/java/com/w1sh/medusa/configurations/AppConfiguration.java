@@ -3,7 +3,6 @@ package com.w1sh.medusa.configurations;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
-import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
 import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBuffer;
 import com.w1sh.medusa.core.gateways.CustomGatewayObserver;
 import discord4j.core.DiscordClient;
@@ -25,11 +24,6 @@ public class AppConfiguration {
         playerManager.getConfiguration().setFrameBufferFactory(NonAllocatingAudioFrameBuffer::new);
         AudioSourceManagers.registerRemoteSources(playerManager);
         return playerManager;
-    }
-
-    @Bean
-    public MutableAudioFrame mutableAudioFrame() {
-        return new MutableAudioFrame();
     }
 
     @Bean

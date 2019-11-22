@@ -3,12 +3,15 @@ package com.w1sh.medusa.utils;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.MessageChannel;
+import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.rest.http.client.ClientException;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+
+import java.util.function.Consumer;
 
 @Component
 public class Messenger {
@@ -23,11 +26,25 @@ public class Messenger {
                 .flatMap(channel -> send(channel, content));
     }
 
-    private static Mono<Message> send(MessageChannel channel, String content){
+    public static Mono<Void> delete(Message message){
+        message.getEmbeds().clear();
+        return message.delete();
+    }
+
+    public static Mono<Message> send(MessageChannel channel, Consumer<EmbedCreateSpec> spec){
+        return Mono.just(channel)
+                .flatMap(c -> c.createEmbed(spec))
+                .onErrorResume(ClientException.isStatusCode(HttpResponseStatus.FORBIDDEN.code()), err -> {
+                    logger.error("Failed to send message, bot is not in the guild", err);
+                    return Mono.empty();
+                });
+    }
+
+    public static Mono<Message> send(MessageChannel channel, String content){
         return Mono.just(channel)
                 .flatMap(c -> c.createMessage(content))
                 .onErrorResume(ClientException.isStatusCode(HttpResponseStatus.FORBIDDEN.code()), err -> {
-                    logger.error("Failed to send message, bot is not ith the guild", err);
+                    logger.error("Failed to send message, bot is not in the guild", err);
                     return Mono.empty();
                 });
     }

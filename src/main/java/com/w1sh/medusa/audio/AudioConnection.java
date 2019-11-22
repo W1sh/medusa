@@ -1,28 +1,35 @@
 package com.w1sh.medusa.audio;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
-import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
+import com.w1sh.medusa.core.listeners.TrackEventListenerFactory;
+import com.w1sh.medusa.core.listeners.impl.TrackEventListener;
+import discord4j.core.object.entity.GuildChannel;
+import discord4j.core.object.entity.MessageChannel;
 import discord4j.voice.VoiceConnection;
-import org.springframework.stereotype.Component;
 
 public class AudioConnection {
 
+    private final SimpleAudioProvider audioProvider;
     private final TrackScheduler trackScheduler;
-    private VoiceConnection voiceConnection;
+    private final VoiceConnection voiceConnection;
+    private final MessageChannel messageChannel;
 
-    public AudioConnection(AudioPlayer player, VoiceConnection voiceConnection) {
-        this.trackScheduler = new TrackScheduler(player);
+    public AudioConnection(SimpleAudioProvider audioProvider, AudioPlayer player, VoiceConnection voiceConnection, GuildChannel messageChannel) {
+        final TrackEventListener trackEventListener = TrackEventListenerFactory.build(messageChannel.getGuildId().asLong());
+        this.messageChannel = (MessageChannel) messageChannel;
         this.voiceConnection = voiceConnection;
-    }
-
-    public void addListener(AudioEventAdapter listener){
-        trackScheduler.getPlayer().addListener(listener);
+        this.audioProvider = audioProvider;
+        this.trackScheduler = new TrackScheduler(player);
+        this.trackScheduler.getPlayer().addListener(trackEventListener);
     }
 
     public void destroy(){
         this.trackScheduler.destroy();
         this.voiceConnection.disconnect();
+    }
+
+    public MessageChannel getMessageChannel() {
+        return messageChannel;
     }
 
     public TrackScheduler getTrackScheduler() {
@@ -33,4 +40,7 @@ public class AudioConnection {
         return voiceConnection;
     }
 
+    public SimpleAudioProvider getAudioProvider() {
+        return audioProvider;
+    }
 }
