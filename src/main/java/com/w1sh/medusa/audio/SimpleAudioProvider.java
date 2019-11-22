@@ -2,10 +2,8 @@ package com.w1sh.medusa.audio;
 
 import com.sedmelluq.discord.lavaplayer.format.StandardAudioDataFormats;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
 import discord4j.voice.AudioProvider;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.nio.ByteBuffer;

@@ -24,6 +24,11 @@ public class TrackEventListener extends AudioEventAdapter {
 
     @Override
     public void onPlayerPause(AudioPlayer player) {
+        logger.info("Paused audio player in guild with id <{}>", guildId);
+        AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
+                .map(AudioConnection::getMessageChannel)
+                .flatMap(c -> Messenger.send(c, ":pause_button: The audio player was paused. Use `!resume` to unpause"))
+                .subscribe();
         super.onPlayerPause(player);
     }
 
@@ -34,7 +39,7 @@ public class TrackEventListener extends AudioEventAdapter {
 
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
-        logger.info("Starting track <{}> in guild with <{}>", track.getInfo().title, guildId);
+        logger.info("Starting track <{}> in guild with id <{}>", track.getInfo().title, guildId);
         AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
                 .map(AudioConnection::getMessageChannel)
                 .flatMap(c -> Messenger.send(c, String.format(":musical_note: Currently playing: **%s**", track.getInfo().title)))

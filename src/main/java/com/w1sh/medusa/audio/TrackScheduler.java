@@ -22,6 +22,12 @@ public class TrackScheduler implements AudioLoadResultHandler {
 
     }
 
+    public void pause(){
+        if(!player.isPaused()) {
+            player.setPaused(true);
+        }
+    }
+
     @Override
     public void trackLoaded(final AudioTrack track) {
         // LavaPlayer found an audio source for us to play

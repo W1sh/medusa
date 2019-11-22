@@ -6,8 +6,6 @@ import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.core.managers.AudioConnectionManager;
 import com.w1sh.medusa.core.managers.PermissionManager;
 import com.w1sh.medusa.utils.Messenger;
-import discord4j.core.object.VoiceState;
-import discord4j.core.object.entity.Member;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
