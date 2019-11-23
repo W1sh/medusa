@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.awt.*;
-import java.util.concurrent.TimeUnit;
 
 @Component
 public class PlayTrackListener implements MultipleArgsEventListener<PlayTrackEvent> {
@@ -52,7 +51,6 @@ public class PlayTrackListener implements MultipleArgsEventListener<PlayTrackEve
                                                     Messenger.formatDuration(track.getDuration())), true)))
                             .subscribe();
                 }))
-                .flatMap(t -> Messenger.delete(event.getMessage()))
                 .doOnError(throwable -> logger.error("Failed to play track", throwable))
                 .then();
     }

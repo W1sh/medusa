@@ -12,7 +12,7 @@ public class PlayTrackEvent extends MultipleArgumentsEvent {
     private static final Integer NUM_ALLOWED_ARGS = 2;
 
     public PlayTrackEvent(MessageCreateEvent event) {
-        super(event, Collections.singletonList(Permission.MANAGE_MESSAGES), NUM_ALLOWED_ARGS);
+        super(event, NUM_ALLOWED_ARGS);
     }
 
 }
