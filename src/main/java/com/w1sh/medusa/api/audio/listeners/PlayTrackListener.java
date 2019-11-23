@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.awt.*;
+import java.util.concurrent.TimeUnit;
+
 @Component
 public class PlayTrackListener implements MultipleArgsEventListener<PlayTrackEvent> {
 
@@ -37,6 +40,18 @@ public class PlayTrackListener implements MultipleArgsEventListener<PlayTrackEve
                 .filterWhen(this::validate)
                 .filterWhen(ev -> PermissionManager.getInstance().hasPermissions(ev, ev.getPermissions()))
                 .flatMap(tuple -> AudioConnectionManager.getInstance().requestTrack(event))
+                .doOnNext(scheduler -> scheduler.getPlayingTrack().ifPresent(track -> {
+                    event.getMessage().getChannel()
+                            .flatMap(channel -> Messenger.send(channel, embedCreateSpec ->
+                                    embedCreateSpec.setTitle(":ballot_box_with_check:\tQueued track")
+                                            .setColor(Color.GREEN)
+                                            .addField(Messenger.ZERO_WIDTH_SPACE, String.format("**%s**%n[%s](%s) | %s",
+                                                    track.getInfo().author,
+                                                    track.getInfo().title,
+                                                    track.getInfo().uri,
+                                                    Messenger.formatDuration(track.getDuration())), true)))
+                            .subscribe();
+                }))
                 .flatMap(t -> Messenger.delete(event.getMessage()))
                 .doOnError(throwable -> logger.error("Failed to play track", throwable))
                 .then();
