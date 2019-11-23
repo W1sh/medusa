@@ -51,7 +51,7 @@ public final class TrackEventListener extends AudioEventAdapter {
                 .flatMap(c -> Messenger.send(c, embedCreateSpec ->
                         embedCreateSpec.setTitle(":musical_note:\tCurrently playing")
                                 .setColor(Color.GREEN)
-                                .setDescription(String.format("**%s**%n%n[%s](%s) | %d:%d",
+                                .setDescription(String.format("**%s**%n[%s](%s) | %d:%d",
                                         track.getInfo().author,
                                         track.getInfo().title,
                                         track.getInfo().uri,

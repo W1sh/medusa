@@ -11,12 +11,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 @Component
 public class Messenger {
 
     private static final Logger logger = LoggerFactory.getLogger(Messenger.class);
+    public static final String ZERO_WIDTH_SPACE = "\u200E";
 
     private Messenger(){}
 
@@ -47,5 +49,10 @@ public class Messenger {
                     logger.error("Failed to send message, bot is not in the guild", err);
                     return Mono.empty();
                 });
+    }
+
+    public static String formatDuration(Long duration){
+        return String.format("%d:%d", TimeUnit.MILLISECONDS.toMinutes(duration),
+                TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration)));
     }
 }
