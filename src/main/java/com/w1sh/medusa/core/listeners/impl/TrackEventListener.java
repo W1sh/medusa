@@ -61,6 +61,14 @@ public final class TrackEventListener extends AudioEventAdapter {
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
         logger.info("Track <{}> on guild <{}> ended with reason <{}>", track.getInfo().title, guildId, endReason);
+        AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
+                .map(AudioConnection::getTrackScheduler)
+                .doOnNext(trackScheduler -> {
+                    if(endReason.mayStartNext){
+                        trackScheduler.nextTrack();
+                    }
+                })
+                .subscribe();
     }
 
     @Override
