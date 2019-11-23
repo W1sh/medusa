@@ -11,8 +11,10 @@ import com.w1sh.medusa.utils.Messenger;
 import discord4j.core.object.util.Snowflake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.scheduler.Schedulers;
 
 import java.awt.*;
+import java.util.concurrent.TimeUnit;
 
 public final class TrackEventListener extends AudioEventAdapter {
 
@@ -30,6 +32,7 @@ public final class TrackEventListener extends AudioEventAdapter {
         AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
                 .map(AudioConnection::getMessageChannel)
                 .flatMap(c -> Messenger.send(c, ":pause_button: The audio player was paused. Use `!resume` to unpause"))
+                .subscribeOn(Schedulers.elastic())
                 .subscribe();
     }
 
@@ -39,6 +42,7 @@ public final class TrackEventListener extends AudioEventAdapter {
         AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
                 .map(AudioConnection::getMessageChannel)
                 .flatMap(c -> Messenger.send(c, ":arrow_forward: The audio player was resumed"))
+                .subscribeOn(Schedulers.elastic())
                 .subscribe();
     }
 
@@ -55,6 +59,9 @@ public final class TrackEventListener extends AudioEventAdapter {
                                         track.getInfo().title,
                                         track.getInfo().uri,
                                         Messenger.formatDuration(track.getDuration())), true)))
+                .doOnNext(message -> Schedulers.elastic().schedule(() ->
+                        message.delete().subscribe(), track.getDuration(), TimeUnit.MILLISECONDS))
+                .subscribeOn(Schedulers.elastic())
                 .subscribe();
     }
 
@@ -68,6 +75,7 @@ public final class TrackEventListener extends AudioEventAdapter {
                         trackScheduler.nextTrack();
                     }
                 })
+                .subscribeOn(Schedulers.elastic())
                 .subscribe();
     }
 
