@@ -37,7 +37,7 @@ public class StopTrackListener implements EventListener<StopTrackEvent> {
                                     .setColor(Color.GREEN)
                                     .setDescription(String.format(
                                             "Cleared **%d** tracks from queue. Queue is now empty.%n%n" +
-                                                    "The bot will automatically leave after **2** min unless new tracks are added",
+                                                    "The bot will automatically leave after **2** min unless new tracks are added.",
                                             queueSize))))
                             .subscribe();
                 })
