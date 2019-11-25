@@ -46,6 +46,11 @@ public class TrackScheduler implements AudioLoadResultHandler {
         }
     }
 
+    public void stopQueue(){
+        player.stopTrack();
+        queue.clear();
+    }
+
     @Override
     public void trackLoaded(final AudioTrack track) {
         // LavaPlayer found an audio source for us to play

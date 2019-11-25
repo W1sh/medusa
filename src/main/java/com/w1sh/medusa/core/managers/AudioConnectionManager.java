@@ -82,7 +82,7 @@ public class AudioConnectionManager {
     }
 
     public Mono<Boolean> scheduleLeave(Snowflake guildIdSnowflake) {
-        final Duration timeout = Duration.ofSeconds(5);
+        final Duration timeout = Duration.ofSeconds(120);
         return Mono.just(guildIdSnowflake)
                 .doOnNext(snowflake -> logger.info("Scheduling client to leave voice channel in guild <{}> after <{}> seconds",
                         snowflake.asLong(), timeout.getSeconds()))

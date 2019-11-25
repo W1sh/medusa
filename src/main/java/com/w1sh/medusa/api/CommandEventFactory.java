@@ -26,6 +26,7 @@ public class CommandEventFactory {
         EVENTS.put(LeaveVoiceChannelEvent.KEYWORD, LeaveVoiceChannelEvent.class);
         EVENTS.put(PlayTrackEvent.KEYWORD, PlayTrackEvent.class);
         EVENTS.put(SkipTrackEvent.KEYWORD, SkipTrackEvent.class);
+        EVENTS.put(StopTrackEvent.KEYWORD, StopTrackEvent.class);
         EVENTS.put(PauseTrackEvent.KEYWORD, PauseTrackEvent.class);
         EVENTS.put(QueueTrackEvent.KEYWORD, QueueTrackEvent.class);
         EVENTS.put(ResumeTrackEvent.KEYWORD, ResumeTrackEvent.class);
