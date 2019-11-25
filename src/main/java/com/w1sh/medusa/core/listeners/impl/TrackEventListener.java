@@ -72,7 +72,7 @@ public final class TrackEventListener extends AudioEventAdapter {
                 .map(AudioConnection::getTrackScheduler)
                 .doOnNext(trackScheduler -> {
                     if(endReason.mayStartNext){
-                        trackScheduler.nextTrack();
+                        trackScheduler.nextTrack(false);
                     }
                 })
                 .subscribeOn(Schedulers.elastic())

@@ -3,12 +3,11 @@ package com.w1sh.medusa.api.audio.events;
 import com.w1sh.medusa.api.SingleArgumentEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 
-public class NextTrackEvent extends SingleArgumentEvent {
+public class SkipTrackEvent extends SingleArgumentEvent {
 
-    public static final String KEYWORD = "next";
+    public static final String KEYWORD = "skip";
 
-    public NextTrackEvent(MessageCreateEvent event) {
+    public SkipTrackEvent(MessageCreateEvent event) {
         super(event);
     }
-
 }

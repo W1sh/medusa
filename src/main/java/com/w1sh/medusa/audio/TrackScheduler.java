@@ -27,13 +27,22 @@ public class TrackScheduler implements AudioLoadResultHandler {
         this.playingTrack = null;
     }
 
-    public void nextTrack(){
-        if(player.getPlayingTrack() == null) {
+    public void nextTrack(boolean skip) {
+        if (skip) {
             final Optional<AudioTrack> track = Optional.ofNullable(this.queue.poll());
             track.ifPresent(t -> {
                 playingTrack = t;
+                player.stopTrack();
                 player.playTrack(playingTrack);
             });
+        } else {
+            if (player.getPlayingTrack() == null) {
+                final Optional<AudioTrack> track = Optional.ofNullable(this.queue.poll());
+                track.ifPresent(t -> {
+                    playingTrack = t;
+                    player.playTrack(playingTrack);
+                });
+            }
         }
     }
 
@@ -41,7 +50,7 @@ public class TrackScheduler implements AudioLoadResultHandler {
     public void trackLoaded(final AudioTrack track) {
         // LavaPlayer found an audio source for us to play
         queue.add(track);
-        nextTrack();
+        nextTrack(false);
     }
 
     @Override
