@@ -50,4 +50,16 @@ public class Messenger {
         return String.format("%02d:%02d", TimeUnit.MILLISECONDS.toMinutes(duration),
                 TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration)));
     }
+
+    public static String progressBar(Long current, Long length){
+        final String unicodeBar = "▬";
+        final float percentage = (100f / length * current);
+        int currentLengthInBars = (int) ((percentage / 100) * 12);
+        return String.format("**%s**\t%s%s%s\t**%s**",
+                formatDuration(current),
+                unicodeBar.repeat(currentLengthInBars),
+                "⚪",
+                unicodeBar.repeat(12 - currentLengthInBars),
+                formatDuration(length));
+    }
 }

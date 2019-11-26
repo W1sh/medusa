@@ -59,7 +59,9 @@ public final class TrackEventListener extends AudioEventAdapter {
                                         String.format("[%s](%s) | %s",
                                                 track.getInfo().title,
                                                 track.getInfo().uri,
-                                                Messenger.formatDuration(track.getInfo().length)), true)))
+                                                Messenger.formatDuration(track.getInfo().length)), false)
+                                .addField(Messenger.ZERO_WIDTH_SPACE, Messenger.progressBar(
+                                        track.getPosition(), track.getInfo().length), false)))
                 .doOnNext(message -> Schedulers.elastic().schedule(() ->
                         message.delete().subscribe(), track.getInfo().length, TimeUnit.MILLISECONDS))
                 .subscribeOn(Schedulers.elastic())
