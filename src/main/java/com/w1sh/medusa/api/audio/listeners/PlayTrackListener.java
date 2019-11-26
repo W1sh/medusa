@@ -48,7 +48,7 @@ public class PlayTrackListener implements MultipleArgsEventListener<PlayTrackEve
                                                     track.getInfo().author,
                                                     track.getInfo().title,
                                                     track.getInfo().uri,
-                                                    Messenger.formatDuration(track.getDuration())), true)))
+                                                    Messenger.formatDuration(track.getInfo().length)), true)))
                             .subscribe();
                 }))
                 .doOnError(throwable -> logger.error("Failed to play track", throwable))
