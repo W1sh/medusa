@@ -47,7 +47,7 @@ public class Messenger {
     }
 
     public static String formatDuration(Long duration){
-        return String.format("%d:%d", TimeUnit.MILLISECONDS.toMinutes(duration),
+        return String.format("%02d:%02d", TimeUnit.MILLISECONDS.toMinutes(duration),
                 TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration)));
     }
 }
