@@ -46,11 +46,6 @@ public class TrackScheduler implements AudioLoadResultHandler {
         }
     }
 
-    public void stopQueue(){
-        player.stopTrack();
-        queue.clear();
-    }
-
     @Override
     public void trackLoaded(final AudioTrack track) {
         // LavaPlayer found an audio source for us to play
@@ -72,6 +67,19 @@ public class TrackScheduler implements AudioLoadResultHandler {
     public void loadFailed(final FriendlyException exception) {
         // LavaPlayer could not parse an audio source for some reason
         logger.error("Failed to load track", exception);
+    }
+
+    public long getQueueDuration(){
+        long duration = player.getPlayingTrack().getDuration();
+        for (AudioTrack audioTrack : getQueue()) {
+            duration += audioTrack.getDuration();
+        }
+        return duration;
+    }
+
+    public void stopQueue(){
+        player.stopTrack();
+        queue.clear();
     }
 
     public void pause(){

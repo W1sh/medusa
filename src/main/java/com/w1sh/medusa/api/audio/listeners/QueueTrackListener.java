@@ -56,7 +56,9 @@ public class QueueTrackListener implements EventListener<QueueTrackEvent> {
                                     Messenger.formatDuration(track.getInfo().length)), false);
                         } else break;
                     }
-                    embedCreateSpec.setFooter(String.format("%d queued tracks", queue.size()), null);
+                    embedCreateSpec.setFooter(String.format("%d queued tracks | Queue duration: %s",
+                            queue.size(),
+                            Messenger.formatDuration(tuple.getT1().getQueueDuration())), null);
                 }))
                 .then();
     }
