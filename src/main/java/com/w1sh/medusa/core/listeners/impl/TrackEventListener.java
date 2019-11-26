@@ -54,11 +54,12 @@ public final class TrackEventListener extends AudioEventAdapter {
                 .flatMap(c -> Messenger.send(c, embedCreateSpec ->
                         embedCreateSpec.setTitle(":musical_note:\tCurrently playing")
                                 .setColor(Color.GREEN)
-                                .addField(Messenger.ZERO_WIDTH_SPACE, String.format("**%s**%n[%s](%s) | %s",
-                                        track.getInfo().author,
-                                        track.getInfo().title,
-                                        track.getInfo().uri,
-                                        Messenger.formatDuration(track.getDuration())), true)))
+                                .setThumbnail(getArtwork(track))
+                                .addField(String.format("**%s**", track.getInfo().author),
+                                        String.format("[%s](%s) | %s",
+                                                track.getInfo().title,
+                                                track.getInfo().uri,
+                                                Messenger.formatDuration(track.getDuration())), true)))
                 .doOnNext(message -> Schedulers.elastic().schedule(() ->
                         message.delete().subscribe(), track.getDuration(), TimeUnit.MILLISECONDS))
                 .subscribeOn(Schedulers.elastic())
@@ -87,5 +88,12 @@ public final class TrackEventListener extends AudioEventAdapter {
     @Override
     public void onTrackStuck(AudioPlayer player, AudioTrack track, long thresholdMs) {
         logger.info("Track <{}> on guild <{}> was stuck for <{}>", track.getInfo().title, guildId, thresholdMs);
+    }
+
+    public String getArtwork(final AudioTrack audioTrack) {
+        if (audioTrack.getInfo().uri.contains("youtube")) {
+            return String.format("https://img.youtube.com/vi/%s/hqdefault.jpg", audioTrack.getIdentifier());
+        }
+        return null;
     }
 }
