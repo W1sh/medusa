@@ -54,12 +54,12 @@ public class Messenger {
     public static String progressBar(Long current, Long length){
         final String unicodeBar = "▬";
         final float percentage = (100f / length * current);
-        int currentLengthInBars = (int) ((percentage / 100) * 12);
+        int currentLengthInBars = (int) ((percentage / 100) * 18);
         return String.format("**%s**\t%s%s%s\t**%s**",
                 formatDuration(current),
                 unicodeBar.repeat(currentLengthInBars),
                 "⚪",
-                unicodeBar.repeat(12 - currentLengthInBars),
+                unicodeBar.repeat(18 - currentLengthInBars),
                 formatDuration(length));
     }
 }
