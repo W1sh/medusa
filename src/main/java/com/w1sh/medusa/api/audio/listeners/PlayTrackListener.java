@@ -42,7 +42,7 @@ public class PlayTrackListener implements MultipleArgsEventListener<PlayTrackEve
                 .doOnNext(scheduler -> scheduler.getPlayingTrack().ifPresent(track -> {
                     event.getMessage().getChannel()
                             .flatMap(channel -> Messenger.send(channel, embedCreateSpec ->
-                                    embedCreateSpec.setTitle(":ballot_box_with_check:\tQueued track")
+                                    embedCreateSpec.setTitle(":ballot_box_with_check:\tAdded to queue")
                                             .setColor(Color.GREEN)
                                             .addField(Messenger.ZERO_WIDTH_SPACE, String.format("**%s**%n[%s](%s) | %s",
                                                     track.getInfo().author,

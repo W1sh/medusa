@@ -36,9 +36,10 @@ public class StopTrackListener implements EventListener<StopTrackEvent> {
                             embedCreateSpec.setTitle(":stop_button:\tStopped queue")
                                     .setColor(Color.GREEN)
                                     .setDescription(String.format(
-                                            "Cleared **%d** tracks from queue. Queue is now empty.%n%n" +
-                                                    "The bot will automatically leave after **2** min unless new tracks are added.",
-                                            queueSize))))
+                                            "Stopped playing **%s**%n%nCleared **%d** tracks from queue. Queue is now empty.",
+                                            audioConnection.getTrackScheduler().getPlayingTrack().map(track -> track.getInfo().title).orElse(""),
+                                            queueSize))
+                                    .setFooter("The bot will automatically leave after 2 min unless new tracks are added.", null)))
                             .subscribe();
                 })
                 .flatMap(a -> Mono.justOrEmpty(event.getGuildId()))
