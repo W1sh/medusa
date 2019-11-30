@@ -98,7 +98,11 @@ public class TrackScheduler implements AudioLoadResultHandler {
         return Optional.ofNullable(playingTrack);
     }
 
-    public void destroy(){}
+    public void destroy(){
+        playingTrack = null;
+        stopQueue();
+        player.destroy();
+    }
 
     public AudioPlayer getPlayer() {
         return player;

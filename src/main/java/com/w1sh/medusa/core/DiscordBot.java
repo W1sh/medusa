@@ -60,8 +60,8 @@ public class DiscordBot {
         client.getEventDispatcher()
                 .on(MessageCreateEvent.class)
                 .filter(event -> event.getMember().isPresent())
-                .filter(event -> event.getMember().map(user -> !user.isBot()).orElse(false))
-                .filter(event -> event.getMessage().getContent().orElse("").startsWith(CommandEventFactory.PREFIX))
+                .filter(event -> event.getMember().map(user -> !user.isBot()).orElse(false)
+                        && event.getMessage().getContent().orElse("").startsWith(CommandEventFactory.PREFIX))
                 .subscribe(commandEventDispatcher::publish);
     }
 }

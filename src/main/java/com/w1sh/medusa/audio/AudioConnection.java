@@ -6,8 +6,12 @@ import com.w1sh.medusa.core.listeners.impl.TrackEventListener;
 import discord4j.core.object.entity.GuildChannel;
 import discord4j.core.object.entity.MessageChannel;
 import discord4j.voice.VoiceConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AudioConnection {
+
+    private static final Logger logger = LoggerFactory.getLogger(AudioConnection.class);
 
     private final SimpleAudioProvider audioProvider;
     private final TrackScheduler trackScheduler;
@@ -24,6 +28,7 @@ public class AudioConnection {
     }
 
     public void destroy(){
+        logger.info("Destroying audio connection in guild <{}>", ((GuildChannel) messageChannel).getGuildId().asLong());
         this.trackScheduler.destroy();
         this.voiceConnection.disconnect();
     }

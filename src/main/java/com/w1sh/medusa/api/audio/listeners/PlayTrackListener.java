@@ -39,18 +39,17 @@ public class PlayTrackListener implements MultipleArgsEventListener<PlayTrackEve
                 .filterWhen(this::validate)
                 .filterWhen(ev -> PermissionManager.getInstance().hasPermissions(ev, ev.getPermissions()))
                 .flatMap(tuple -> AudioConnectionManager.getInstance().requestTrack(event))
-                .doOnNext(scheduler -> scheduler.getPlayingTrack().ifPresent(track -> {
-                    event.getMessage().getChannel()
-                            .flatMap(channel -> Messenger.send(channel, embedCreateSpec ->
-                                    embedCreateSpec.setTitle(":ballot_box_with_check:\tAdded to queue")
-                                            .setColor(Color.GREEN)
-                                            .addField(Messenger.ZERO_WIDTH_SPACE, String.format("**%s**%n[%s](%s) | %s",
-                                                    track.getInfo().author,
-                                                    track.getInfo().title,
-                                                    track.getInfo().uri,
-                                                    Messenger.formatDuration(track.getInfo().length)), true)))
-                            .subscribe();
-                }))
+                .doOnNext(scheduler -> scheduler.getPlayingTrack().ifPresent(track -> event.getMessage().getChannel()
+                        .flatMap(channel -> Messenger.send(channel, embedCreateSpec ->
+                                embedCreateSpec.setTitle(":ballot_box_with_check:\tAdded to queue")
+                                        .setColor(Color.GREEN)
+                                        .addField(Messenger.ZERO_WIDTH_SPACE, String.format("**%s**%n[%s](%s) | %s",
+                                                track.getInfo().author,
+                                                track.getInfo().title,
+                                                track.getInfo().uri,
+                                                Messenger.formatDuration(track.getInfo().length)), true)))
+                        .subscribe()
+                ))
                 .doOnError(throwable -> logger.error("Failed to play track", throwable))
                 .then();
     }
