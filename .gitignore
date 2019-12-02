@@ -18,6 +18,7 @@ nbdist/
 *.jar
 out/
 build/
+target/
 **/bin/
 
 # Gradle
