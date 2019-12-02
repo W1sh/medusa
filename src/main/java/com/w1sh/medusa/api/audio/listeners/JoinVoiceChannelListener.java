@@ -1,7 +1,6 @@
 package com.w1sh.medusa.api.audio.listeners;
 
 import com.w1sh.medusa.api.audio.events.JoinVoiceChannelEvent;
-import com.w1sh.medusa.core.MeasureAverageExecutionTime;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.core.managers.AudioConnectionManager;
