@@ -1,6 +1,6 @@
 package com.w1sh.medusa.api.dice.events;
 
-import com.w1sh.medusa.api.MultipleArgumentsEvent;
+import com.w1sh.medusa.core.events.MultipleArgumentsEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 
 public class DuelRollEvent extends MultipleArgumentsEvent {

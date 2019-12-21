@@ -1,6 +1,6 @@
 package com.w1sh.medusa.core.dispatchers;
 
-import com.w1sh.medusa.api.CommandEventFactory;
+import com.w1sh.medusa.core.events.CommandEventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import discord4j.core.event.domain.Event;
 import discord4j.core.event.domain.message.MessageCreateEvent;

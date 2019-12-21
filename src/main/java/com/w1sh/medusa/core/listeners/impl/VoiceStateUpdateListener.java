@@ -1,15 +1,10 @@
 package com.w1sh.medusa.core.listeners.impl;
 
 import com.w1sh.medusa.core.listeners.EventListener;
-import com.w1sh.medusa.core.managers.AudioConnectionManager;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
-import discord4j.core.object.VoiceState;
-import discord4j.core.object.entity.VoiceChannel;
-import discord4j.core.object.util.Snowflake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -24,7 +19,8 @@ public class VoiceStateUpdateListener implements EventListener<VoiceStateUpdateE
 
     @Override
     public Mono<Void> execute(VoiceStateUpdateEvent event) {
-        return Mono.justOrEmpty(event)
+        return Mono.empty();
+        /*return Mono.justOrEmpty(event)
                 .map(VoiceStateUpdateEvent::getCurrent)
                 .map(voiceState -> voiceState.getChannelId()
                         .orElse(Snowflake.of(0L)))
@@ -44,5 +40,7 @@ public class VoiceStateUpdateListener implements EventListener<VoiceStateUpdateE
                     }
                 })
                 .then();
+
+         */
     }
 }
