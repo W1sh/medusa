@@ -2,7 +2,7 @@ package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.events.CommandEventFactory;
+import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.events.LeaveVoiceChannelEvent;
 import com.w1sh.medusa.utils.Messenger;
@@ -19,7 +19,7 @@ public class LeaveVoiceChannelListener implements EventListener<LeaveVoiceChanne
     private String voiceLeave;
 
     public LeaveVoiceChannelListener(CommandEventDispatcher eventDispatcher) {
-        CommandEventFactory.registerEvent(LeaveVoiceChannelEvent.KEYWORD, LeaveVoiceChannelEvent.class);
+        EventFactory.registerEvent(LeaveVoiceChannelEvent.KEYWORD, LeaveVoiceChannelEvent.class);
         eventDispatcher.registerListener(this);
     }
 

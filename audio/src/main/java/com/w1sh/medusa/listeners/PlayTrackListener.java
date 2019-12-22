@@ -2,7 +2,7 @@ package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.events.CommandEventFactory;
+import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.MultipleArgsEventListener;
 import com.w1sh.medusa.core.managers.PermissionManager;
 import com.w1sh.medusa.events.PlayTrackEvent;
@@ -26,7 +26,7 @@ public class PlayTrackListener implements MultipleArgsEventListener<PlayTrackEve
     private String unsupported;
 
     public PlayTrackListener(CommandEventDispatcher eventDispatcher) {
-        CommandEventFactory.registerEvent(PlayTrackEvent.KEYWORD, PlayTrackEvent.class);
+        EventFactory.registerEvent(PlayTrackEvent.KEYWORD, PlayTrackEvent.class);
         eventDispatcher.registerListener(this);
     }
 

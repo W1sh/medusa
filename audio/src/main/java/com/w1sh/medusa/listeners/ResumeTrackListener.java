@@ -2,7 +2,7 @@ package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.events.CommandEventFactory;
+import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.events.ResumeTrackEvent;
 import org.springframework.stereotype.Component;
@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 public class ResumeTrackListener implements EventListener<ResumeTrackEvent> {
 
     public ResumeTrackListener(CommandEventDispatcher eventDispatcher) {
-        CommandEventFactory.registerEvent(ResumeTrackEvent.KEYWORD, ResumeTrackEvent.class);
+        EventFactory.registerEvent(ResumeTrackEvent.KEYWORD, ResumeTrackEvent.class);
         eventDispatcher.registerListener(this);
     }
 

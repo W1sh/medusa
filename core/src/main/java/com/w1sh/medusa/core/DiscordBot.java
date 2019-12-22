@@ -1,7 +1,7 @@
 package com.w1sh.medusa.core;
 
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.events.CommandEventFactory;
+import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.core.listeners.impl.DisconnectListener;
 import com.w1sh.medusa.core.listeners.impl.ReadyListener;
@@ -61,7 +61,7 @@ public class DiscordBot {
                 .on(MessageCreateEvent.class)
                 .filter(event -> event.getMember().isPresent())
                 .filter(event -> event.getMember().map(user -> !user.isBot()).orElse(false)
-                        && event.getMessage().getContent().orElse("").startsWith(CommandEventFactory.PREFIX))
+                        && event.getMessage().getContent().orElse("").startsWith(EventFactory.PREFIX))
                 .subscribe(commandEventDispatcher::publish);
     }
 }

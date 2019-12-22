@@ -3,7 +3,7 @@ package com.w1sh.medusa.listeners;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.events.CommandEventFactory;
+import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.core.managers.PermissionManager;
 import com.w1sh.medusa.events.SkipTrackEvent;
@@ -18,7 +18,7 @@ import java.util.Optional;
 public class SkipTrackListener implements EventListener<SkipTrackEvent> {
 
     public SkipTrackListener(CommandEventDispatcher eventDispatcher) {
-        CommandEventFactory.registerEvent(SkipTrackEvent.KEYWORD, SkipTrackEvent.class);
+        EventFactory.registerEvent(SkipTrackEvent.KEYWORD, SkipTrackEvent.class);
         eventDispatcher.registerListener(this);
     }
 
