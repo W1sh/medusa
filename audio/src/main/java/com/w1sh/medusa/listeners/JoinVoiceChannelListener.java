@@ -2,7 +2,7 @@ package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.events.CommandEventFactory;
+import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.core.managers.PermissionManager;
 import com.w1sh.medusa.events.JoinVoiceChannelEvent;
@@ -23,7 +23,7 @@ public class JoinVoiceChannelListener implements EventListener<JoinVoiceChannelE
 
     public JoinVoiceChannelListener(CommandEventDispatcher eventDispatcher) {
         eventDispatcher.registerListener(this);
-        CommandEventFactory.registerEvent(JoinVoiceChannelEvent.KEYWORD, JoinVoiceChannelEvent.class);
+        EventFactory.registerEvent(JoinVoiceChannelEvent.KEYWORD, JoinVoiceChannelEvent.class);
     }
 
     @Override

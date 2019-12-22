@@ -1,6 +1,6 @@
 package com.w1sh.medusa.core.dispatchers;
 
-import com.w1sh.medusa.core.events.CommandEventFactory;
+import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import discord4j.core.event.domain.Event;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -32,7 +32,7 @@ public class CommandEventDispatcher {
 
     public void publish(MessageCreateEvent event) {
         logger.info("Received new event of type <{}>", event.getClass().getSimpleName());
-        CommandEventFactory.createEvent(event).ifPresent(processor::onNext);
+        EventFactory.createEvent(event).ifPresent(processor::onNext);
     }
 
     public <T extends Event> void registerListener(EventListener<T> eventListener){

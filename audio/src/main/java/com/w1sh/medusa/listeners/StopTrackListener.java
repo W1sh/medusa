@@ -2,7 +2,7 @@ package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.events.CommandEventFactory;
+import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.core.managers.PermissionManager;
 import com.w1sh.medusa.events.StopTrackEvent;
@@ -16,7 +16,7 @@ import java.awt.*;
 public class StopTrackListener implements EventListener<StopTrackEvent> {
 
     public StopTrackListener(CommandEventDispatcher eventDispatcher) {
-        CommandEventFactory.registerEvent(StopTrackEvent.KEYWORD, StopTrackEvent.class);
+        EventFactory.registerEvent(StopTrackEvent.KEYWORD, StopTrackEvent.class);
         eventDispatcher.registerListener(this);
     }
 

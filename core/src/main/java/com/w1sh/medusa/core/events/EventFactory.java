@@ -13,11 +13,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class CommandEventFactory {
+public class EventFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(CommandEventFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(EventFactory.class);
     private static final Map<String, Class<? extends MessageCreateEvent>> EVENTS = new HashMap<>();
-    public static final String PREFIX = "!";
+    private static String prefix = "!";
 
     static {
         EVENTS.put(PingEvent.KEYWORD, PingEvent.class);
@@ -25,7 +25,7 @@ public class CommandEventFactory {
         EVENTS.put(DuelRollEvent.KEYWORD, DuelRollEvent.class);
     }
 
-    private CommandEventFactory(){}
+    private EventFactory(){}
 
     public static Optional<MessageCreateEvent> createEvent(MessageCreateEvent event){
         try {
@@ -47,4 +47,11 @@ public class CommandEventFactory {
         EVENTS.put(keyword, clazz);
     }
 
+    public static String getPrefix() {
+        return prefix;
+    }
+
+    public static void setPrefix(String prefix) {
+        EventFactory.prefix = prefix;
+    }
 }
