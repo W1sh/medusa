@@ -2,7 +2,9 @@ package com.w1sh.medusa.api.dice.listeners;
 
 import com.w1sh.medusa.api.dice.Dice;
 import com.w1sh.medusa.api.dice.events.DuelRollEvent;
+import com.w1sh.medusa.api.dice.events.RollEvent;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
+import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.MultipleArgsEventListener;
 import com.w1sh.medusa.utils.Messenger;
 import discord4j.core.object.entity.Member;
@@ -28,6 +30,7 @@ public class DuelRollEventListener implements MultipleArgsEventListener<DuelRoll
 
     public DuelRollEventListener(CommandEventDispatcher eventDispatcher, Dice dice) {
         this.dice = dice;
+        EventFactory.registerEvent(DuelRollEvent.KEYWORD, DuelRollEvent.class);
         eventDispatcher.registerListener(this);
     }
 

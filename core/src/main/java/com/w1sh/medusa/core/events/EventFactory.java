@@ -1,8 +1,5 @@
 package com.w1sh.medusa.core.events;
 
-import com.w1sh.medusa.api.dice.events.DuelRollEvent;
-import com.w1sh.medusa.api.dice.events.RollEvent;
-import com.w1sh.medusa.api.misc.events.PingEvent;
 import com.w1sh.medusa.api.misc.events.UnsupportedEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import org.slf4j.Logger;
@@ -18,12 +15,6 @@ public class EventFactory {
     private static final Logger logger = LoggerFactory.getLogger(EventFactory.class);
     private static final Map<String, Class<? extends MessageCreateEvent>> EVENTS = new HashMap<>();
     private static String prefix = "!";
-
-    static {
-        EVENTS.put(PingEvent.KEYWORD, PingEvent.class);
-        EVENTS.put(RollEvent.KEYWORD, RollEvent.class);
-        EVENTS.put(DuelRollEvent.KEYWORD, DuelRollEvent.class);
-    }
 
     private EventFactory(){}
 
