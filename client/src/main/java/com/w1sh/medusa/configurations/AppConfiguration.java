@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBuffer;
+import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.gateways.CustomGatewayObserver;
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
@@ -35,7 +36,7 @@ public class AppConfiguration {
         return new DiscordClientBuilder(token)
                 .setGatewayObserver(customGatewayObserver)
                 //.setStoreService(new RedisStoreService(RedisStoreService.defaultClient()))
-                .setInitialPresence(Presence.online(Activity.watching("Cringe 2")))
+                .setInitialPresence(Presence.online(Activity.watching(String.format("Cringe 2 | %shelp", EventFactory.getPrefix()))))
                 .build();
     }
 

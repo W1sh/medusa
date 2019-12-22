@@ -17,7 +17,7 @@ public class EventFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(EventFactory.class);
     private static final Map<String, Class<? extends MessageCreateEvent>> EVENTS = new HashMap<>();
-    public static String prefix = "!";
+    private static String prefix = "!";
 
     static {
         EVENTS.put(PingEvent.KEYWORD, PingEvent.class);
