@@ -2,6 +2,7 @@ package com.w1sh.medusa.api.misc.listeners;
 
 import com.w1sh.medusa.api.misc.events.PingEvent;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
+import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.utils.Messenger;
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ public class PingEventListener implements EventListener<PingEvent> {
     private static final Logger logger = LoggerFactory.getLogger(PingEventListener.class);
 
     public PingEventListener(CommandEventDispatcher eventDispatcher) {
+        EventFactory.registerEvent(PingEvent.KEYWORD, PingEvent.class);
         eventDispatcher.registerListener(this);
     }
 
