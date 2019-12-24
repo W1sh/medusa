@@ -9,7 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
+
+import java.time.Duration;
+import java.time.Instant;
 
 @Component
 public class PingEventListener implements EventListener<PingEvent> {
@@ -29,11 +31,11 @@ public class PingEventListener implements EventListener<PingEvent> {
     @Override
     public Mono<Void> execute(PingEvent event) {
         return Mono.just(event)
-                .doOnNext(ev -> Messenger.send(ev, "Pong!")
-                        .elapsed()
-                        .map(Tuple2::getT1)
-                        .doOnNext(elapsed -> logger.info("Answered ping request in {} milliseconds", elapsed))
-                        .subscribe())
+                .doOnNext(ev -> {
+                    Long duration = Duration.between(ev.getMessage().getTimestamp(), Instant.now()).toMillis();
+                    Messenger.send(ev, String.format("Pong! `%sms`", duration)).subscribe();
+                    logger.info("Answered ping request in {} milliseconds", duration);
+                })
                 .then();
     }
 }
