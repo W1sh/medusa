@@ -42,7 +42,7 @@ public class CommandEventDispatcher {
                 .subscribe();
     }
 
-    private  <E extends Event> Flux<E> on(Class<E> eventClass) {
+    private <E extends Event> Flux<E> on(Class<E> eventClass) {
         AtomicReference<Subscription> subscription = new AtomicReference<>();
         return processor.publishOn(scheduler)
                 .ofType(eventClass)
