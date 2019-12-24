@@ -1,5 +1,6 @@
 package com.w1sh.medusa;
 
+import com.w1sh.medusa.metrics.Trackers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -24,6 +25,7 @@ public class Main {
 
     public static void main(String[] args) {
         startInstant = Instant.now();
+        Trackers.setStartInstant(startInstant);
         String now = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(Date.from(startInstant));
         logger.info("Booting Medusa - {}", now);
         Thread.currentThread().setName("medusa-main");
