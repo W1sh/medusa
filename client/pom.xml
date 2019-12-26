@@ -26,5 +26,10 @@
             <groupId>com.w1sh</groupId>
             <artifactId>core</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.w1sh</groupId>
+            <artifactId>mtg</artifactId>
+        </dependency>
     </dependencies>
 </project>
