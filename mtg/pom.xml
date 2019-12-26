@@ -11,5 +11,10 @@
 
     <artifactId>mtg</artifactId>
 
-
+    <dependencies>
+        <dependency>
+            <groupId>com.w1sh</groupId>
+            <artifactId>core</artifactId>
+        </dependency>
+    </dependencies>
 </project>

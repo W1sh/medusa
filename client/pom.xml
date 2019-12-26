@@ -24,12 +24,12 @@
 
         <dependency>
             <groupId>com.w1sh</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>mtg</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.w1sh</groupId>
-            <artifactId>mtg</artifactId>
+            <artifactId>core</artifactId>
         </dependency>
     </dependencies>
 </project>

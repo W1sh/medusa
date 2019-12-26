@@ -2,7 +2,6 @@ package com.w1sh.medusa.api.dice.listeners;
 
 import com.w1sh.medusa.api.dice.Dice;
 import com.w1sh.medusa.api.dice.events.DuelRollEvent;
-import com.w1sh.medusa.api.dice.events.RollEvent;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.MultipleArgsEventListener;
