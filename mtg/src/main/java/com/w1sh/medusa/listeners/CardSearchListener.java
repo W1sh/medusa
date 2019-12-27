@@ -31,8 +31,8 @@ public class CardSearchListener implements MultipleArgsEventListener<CardSearchE
                 .filterWhen(this::validate)
                 .flatMap(ev -> Mono.justOrEmpty(ev.getMessage().getContent()))
                 .map(content -> content.split(" ")[1])
-                .map(cardClient::getCardByName)
-                .doOnNext(s -> Messenger.send(event, s).subscribe())
+                .flatMapMany(cardClient::getCardByName)
+                .doOnNext(s -> Messenger.send(event, s.getName()).subscribe())
                 .then();
     }
 
