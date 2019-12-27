@@ -5,6 +5,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 
 public class CardSearchEvent extends MultipleArgumentsEvent {
 
+    public static final String INLINE_PREFIX = "{{";
     public static final String KEYWORD = "mcardsearch";
 
     public CardSearchEvent(MessageCreateEvent event) {

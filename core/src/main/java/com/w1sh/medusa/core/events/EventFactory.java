@@ -9,6 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 public class EventFactory {
 
@@ -20,10 +21,17 @@ public class EventFactory {
 
     public static Optional<MessageCreateEvent> createEvent(MessageCreateEvent event){
         try {
-            Class<?> clazz = EVENTS.getOrDefault(event.getMessage().getContent()
-                    .map(String::toLowerCase)
-                    .map(msg -> msg.split(" ")[0].substring(1))
-                    .orElse(""), UnsupportedEvent.class);
+            String message = event.getMessage().getContent().orElse("");
+            Class<?> clazz;
+            if (message.startsWith(prefix)){
+                String eventKeyword = message.split(" ")[0].substring(1);
+                clazz = EVENTS.getOrDefault(eventKeyword, UnsupportedEvent.class);
+            } else if (hasInlineEvent(message)){
+                String inlineEventPrefix = message.substring(message.indexOf("{{")).substring(0, 3).replaceAll("\\w", "");
+                clazz = EVENTS.getOrDefault(inlineEventPrefix, UnsupportedEvent.class);
+            } else {
+                return Optional.empty();
+            }
             Object instance = clazz.getConstructor(MessageCreateEvent.class).newInstance(event);
             return Optional.of((MessageCreateEvent) instance);
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException e) {
@@ -36,6 +44,11 @@ public class EventFactory {
 
     public static void registerEvent(String keyword, Class<? extends MessageCreateEvent> clazz){
         EVENTS.put(keyword, clazz);
+    }
+
+    private static boolean hasInlineEvent(String message){
+        String inlineEventRegex = "\\{\\{.+?(?:}})";
+        return Pattern.compile(inlineEventRegex).matcher(message).find();
     }
 
     public static String getPrefix() {

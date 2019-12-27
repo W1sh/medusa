@@ -8,8 +8,11 @@ import com.w1sh.medusa.resources.ListResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Component
 public class CardClient {
@@ -22,18 +25,36 @@ public class CardClient {
         this.objectMapper = objectMapper;
     }
 
-    public Flux<Card> getCardByName(String name){
+    public Mono<ListResponse<Card>> getCardsByName(String name){
         return HttpClient.create()
                 .get()
-                .uri("https://api.scryfall.com/cards/search?q=sun%20titan")
+                .uri("https://api.scryfall.com/cards/search?q=" + URLEncoder.encode(name, StandardCharsets.UTF_8))
                 .responseContent()
                 .aggregate()
                 .asString()
-                .map(this::parseJson)
-                .flatMapIterable(ListResponse::getData);
+                .map(this::parseMultiple);
     }
 
-    private ListResponse<Card> parseJson(String json){
+    public Mono<Card> getCardByName(String name){
+        return HttpClient.create()
+                .get()
+                .uri("https://api.scryfall.com/cards/named?fuzzy=" + URLEncoder.encode(name, StandardCharsets.UTF_8))
+                .responseContent()
+                .aggregate()
+                .asString()
+                .map(this::parse);
+    }
+
+    private Card parse(String json){
+        try {
+            return objectMapper.readValue(json, Card.class);
+        } catch (JsonProcessingException e) {
+            logger.error("Error while parsing JSON received from Scryfall", e);
+        }
+        return null;
+    }
+
+    private ListResponse<Card> parseMultiple(String json){
         try {
             return objectMapper.readValue(json, new TypeReference<>() {});
         } catch (JsonProcessingException e) {
