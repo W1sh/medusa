@@ -57,7 +57,7 @@ public class CardSearchListener implements EventListener<CardSearchEvent> {
                 .then();
     }
 
-    public Mono<Boolean> validate(CardSearchEvent event) {
+    private Mono<Boolean> validate(CardSearchEvent event) {
         return Mono.just(event.getInlineArgument() != null && !event.getInlineArgument().isBlank());
     }
 }

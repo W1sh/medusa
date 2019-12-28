@@ -40,7 +40,7 @@ public class EventFactory {
                         .map(MatchResult::group)
                         .collect(Collectors.toList());
                 for(String match : matches){
-                    final String argument = match.replaceAll("[{}]", "");
+                    final String argument = match.replaceAll("[{!}]", "");
                     final String inlineEventPrefix = match.substring(0, 3).replaceAll("\\w", "");
                     final Class<?> clazz = EVENTS.getOrDefault(inlineEventPrefix, UnsupportedEvent.class);
                     Event instance = (Event) clazz.getConstructor(MessageCreateEvent.class).newInstance(event);
