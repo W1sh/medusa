@@ -14,12 +14,12 @@ import java.util.regex.Pattern;
 public class EventFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(EventFactory.class);
-    private static final Map<String, Class<? extends MessageCreateEvent>> EVENTS = new HashMap<>();
+    private static final Map<String, Class<? extends Event>> EVENTS = new HashMap<>();
     private static String prefix = "!";
 
     private EventFactory(){}
 
-    public static Optional<MessageCreateEvent> createEvent(MessageCreateEvent event){
+    public static Optional<Event> createEvent(MessageCreateEvent event){
         try {
             String message = event.getMessage().getContent().orElse("");
             Class<?> clazz;
@@ -33,7 +33,7 @@ public class EventFactory {
                 return Optional.empty();
             }
             Object instance = clazz.getConstructor(MessageCreateEvent.class).newInstance(event);
-            return Optional.of((MessageCreateEvent) instance);
+            return Optional.of((Event) instance);
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException e) {
             logger.error("Could not access or instantiate constructor", e);
         } catch (InvocationTargetException e) {
@@ -42,8 +42,9 @@ public class EventFactory {
         return Optional.empty();
     }
 
-    public static void registerEvent(String keyword, Class<? extends MessageCreateEvent> clazz){
-        EVENTS.put(keyword, clazz);
+    public static void registerEvent(String keyword, Class<? extends Event> clazz){
+        Object instance =
+                EVENTS.put(keyword, clazz);
     }
 
     private static boolean hasInlineEvent(String message){

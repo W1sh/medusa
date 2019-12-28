@@ -1,9 +1,9 @@
 package com.w1sh.medusa.api.misc.events;
 
-import com.w1sh.medusa.core.events.SingleArgumentEvent;
+import com.w1sh.medusa.core.events.Event;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 
-public class UptimeEvent extends SingleArgumentEvent {
+public class UptimeEvent extends Event {
 
     public static final String KEYWORD = "uptime";
 

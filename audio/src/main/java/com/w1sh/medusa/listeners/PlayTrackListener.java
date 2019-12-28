@@ -3,7 +3,7 @@ package com.w1sh.medusa.listeners;
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.core.events.EventFactory;
-import com.w1sh.medusa.core.listeners.MultipleArgsEventListener;
+import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.core.managers.PermissionManager;
 import com.w1sh.medusa.events.PlayTrackEvent;
 import com.w1sh.medusa.utils.Messenger;
@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono;
 import java.awt.*;
 
 @Component
-public class PlayTrackListener implements MultipleArgsEventListener<PlayTrackEvent> {
+public class PlayTrackListener implements EventListener<PlayTrackEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(PlayTrackListener.class);
 
@@ -56,7 +56,6 @@ public class PlayTrackListener implements MultipleArgsEventListener<PlayTrackEve
                 .then();
     }
 
-    @Override
     public Mono<Boolean> validate(PlayTrackEvent event) {
         return Mono.justOrEmpty(event.getMessage().getContent())
                 .map(content -> content.split(" "))

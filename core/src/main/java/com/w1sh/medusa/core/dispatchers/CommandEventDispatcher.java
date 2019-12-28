@@ -1,8 +1,8 @@
 package com.w1sh.medusa.core.dispatchers;
 
+import com.w1sh.medusa.core.events.Event;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
-import discord4j.core.event.domain.Event;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ public class CommandEventDispatcher {
 
     private static final Logger logger = LoggerFactory.getLogger(CommandEventDispatcher.class);
 
-    private final FluxProcessor<MessageCreateEvent, MessageCreateEvent> processor;
+    private final FluxProcessor<Event, Event> processor;
     private final Scheduler scheduler;
 
     public CommandEventDispatcher() {

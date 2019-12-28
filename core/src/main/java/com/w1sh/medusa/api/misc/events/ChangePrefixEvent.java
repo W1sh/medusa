@@ -1,9 +1,9 @@
 package com.w1sh.medusa.api.misc.events;
 
-import com.w1sh.medusa.core.events.MultipleArgumentsEvent;
+import com.w1sh.medusa.core.events.Event;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 
-public class ChangePrefixEvent extends MultipleArgumentsEvent {
+public class ChangePrefixEvent extends Event {
 
     public static final String KEYWORD = "cprefix";
     private static final Integer NUM_ALLOWED_ARGS = 2;

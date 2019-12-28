@@ -3,13 +3,13 @@ package com.w1sh.medusa.api.misc.listeners;
 import com.w1sh.medusa.api.misc.events.ClapifyEvent;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.core.events.EventFactory;
-import com.w1sh.medusa.core.listeners.MultipleArgsEventListener;
+import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.utils.Messenger;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class ClapifyEventListener implements MultipleArgsEventListener<ClapifyEvent> {
+public class ClapifyEventListener implements EventListener<ClapifyEvent> {
 
     public ClapifyEventListener(CommandEventDispatcher eventDispatcher) {
         EventFactory.registerEvent(ClapifyEvent.KEYWORD, ClapifyEvent.class);
@@ -31,7 +31,6 @@ public class ClapifyEventListener implements MultipleArgsEventListener<ClapifyEv
                 .then();
     }
 
-    @Override
     public Mono<Boolean> validate(ClapifyEvent event) {
         return Mono.justOrEmpty(event.getMessage().getContent())
                 .map(message -> message.split(" "))

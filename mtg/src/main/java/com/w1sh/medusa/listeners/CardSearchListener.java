@@ -2,7 +2,7 @@ package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.core.events.EventFactory;
-import com.w1sh.medusa.core.listeners.MultipleArgsEventListener;
+import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.events.CardSearchEvent;
 import com.w1sh.medusa.services.CardService;
 import com.w1sh.medusa.utils.Messenger;
@@ -15,14 +15,13 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Component
-public class CardSearchListener implements MultipleArgsEventListener<CardSearchEvent> {
+public class CardSearchListener implements EventListener<CardSearchEvent> {
 
     private final Pattern pattern = Pattern.compile("\\{\\{.+?(?:}})");
     private final CardService cardService;
 
     public CardSearchListener(CommandEventDispatcher eventDispatcher, CardService cardService) {
         this.cardService = cardService;
-        EventFactory.registerEvent(CardSearchEvent.KEYWORD, CardSearchEvent.class);
         EventFactory.registerEvent(CardSearchEvent.INLINE_PREFIX, CardSearchEvent.class);
         eventDispatcher.registerListener(this);
     }
@@ -43,7 +42,6 @@ public class CardSearchListener implements MultipleArgsEventListener<CardSearchE
                 .then();
     }
 
-    @Override
     public Mono<Boolean> validate(CardSearchEvent event) {
         return Mono.just(true);
     }
