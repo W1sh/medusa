@@ -3,15 +3,14 @@ package com.w1sh.medusa.resources;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.List;
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Card {
 
     @JsonProperty(value = "scryfall_uri")
     private String uri;
 
-    private List<Color> colors;
+    @JsonProperty(value = "mana_cost")
+    private String manaCost;
 
     @JsonProperty(value = "image_uris")
     private Image image;
@@ -45,12 +44,12 @@ public class Card {
         this.uri = uri;
     }
 
-    public List<Color> getColors() {
-        return colors;
+    public String getManaCost() {
+        return manaCost;
     }
 
-    public void setColors(List<Color> colors) {
-        this.colors = colors;
+    public void setManaCost(String manaCost) {
+        this.manaCost = manaCost;
     }
 
     public Image getImage() {
