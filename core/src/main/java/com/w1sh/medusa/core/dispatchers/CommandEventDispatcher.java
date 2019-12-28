@@ -32,7 +32,8 @@ public class CommandEventDispatcher {
 
     public void publish(MessageCreateEvent event) {
         logger.info("Received new event of type <{}>", event.getClass().getSimpleName());
-        EventFactory.createEvent(event).ifPresent(processor::onNext);
+        Flux.fromIterable(EventFactory.extractEvents(event))
+                .subscribe(processor::onNext);
     }
 
     public <T extends Event> void registerListener(EventListener<T> eventListener){

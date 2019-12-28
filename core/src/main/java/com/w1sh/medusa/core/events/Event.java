@@ -12,7 +12,7 @@ public abstract class Event extends MessageCreateEvent {
     private Integer numAllowedArguments;
     private boolean inline;
     private String inlinePrefix;
-    private List<String> inlineArguments;
+    private String inlineArgument;
     private List<Permission> permissions;
 
     public Event(MessageCreateEvent event){
@@ -63,12 +63,12 @@ public abstract class Event extends MessageCreateEvent {
         this.inlinePrefix = inlinePrefix;
     }
 
-    public List<String> getInlineArguments() {
-        return inlineArguments;
+    public String getInlineArgument() {
+        return inlineArgument;
     }
 
-    public void setInlineArguments(List<String> inlineArguments) {
-        this.inlineArguments = inlineArguments;
+    public void setInlineArgument(String inlineArgument) {
+        this.inlineArgument = inlineArgument;
     }
 
     public List<Permission> getPermissions() {
