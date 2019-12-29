@@ -1,11 +1,12 @@
 package com.w1sh.medusa.listeners;
 
+import com.w1sh.medusa.core.data.Embed;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
+import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.events.CardImageEvent;
 import com.w1sh.medusa.services.CardService;
-import com.w1sh.medusa.utils.Messenger;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -15,9 +16,12 @@ import java.awt.*;
 public class CardImageListener implements EventListener<CardImageEvent> {
 
     private final CardService cardService;
+    private final ResponseDispatcher responseDispatcher;
 
-    public CardImageListener(CommandEventDispatcher eventDispatcher, CardService cardService) {
+    public CardImageListener(CommandEventDispatcher eventDispatcher, CardService cardService,
+                             ResponseDispatcher responseDispatcher) {
         this.cardService = cardService;
+        this.responseDispatcher = responseDispatcher;
         EventFactory.registerEvent(CardImageEvent.INLINE_PREFIX, CardImageEvent.class);
         eventDispatcher.registerListener(this);
     }
@@ -34,12 +38,14 @@ public class CardImageListener implements EventListener<CardImageEvent> {
                 .flatMap(ev -> Mono.justOrEmpty(ev.getInlineArgument()))
                 .flatMap(cardService::getCardByName)
                 .zipWith(event.getMessage().getChannel())
-                .flatMap(tuple -> Messenger.send(tuple.getT2(), embedCreateSpec -> {
+                .map(tuple -> new Embed(tuple.getT2(), embedCreateSpec -> {
                     embedCreateSpec.setColor(Color.GREEN);
                     embedCreateSpec.setUrl(tuple.getT1().getUri());
                     embedCreateSpec.setTitle(tuple.getT1().getName());
                     embedCreateSpec.setImage(tuple.getT1().getImage().getNormal());
-                }))
+                }, event.isFragment(), event.getInlineOrder()))
+                .doOnNext(responseDispatcher::queue)
+                .doAfterTerminate(responseDispatcher::flush)
                 .then();
     }
 

@@ -1,6 +1,8 @@
 package com.w1sh.medusa.listeners;
 
+import com.w1sh.medusa.core.data.Embed;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
+import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.events.CardSearchEvent;
@@ -16,9 +18,12 @@ import java.awt.*;
 public class CardSearchListener implements EventListener<CardSearchEvent> {
 
     private final CardService cardService;
+    private final ResponseDispatcher responseDispatcher;
 
-    public CardSearchListener(CommandEventDispatcher eventDispatcher, CardService cardService) {
+    public CardSearchListener(CommandEventDispatcher eventDispatcher, CardService cardService,
+                              ResponseDispatcher responseDispatcher) {
         this.cardService = cardService;
+        this.responseDispatcher = responseDispatcher;
         EventFactory.registerEvent(CardSearchEvent.INLINE_PREFIX, CardSearchEvent.class);
         eventDispatcher.registerListener(this);
     }
@@ -35,7 +40,7 @@ public class CardSearchListener implements EventListener<CardSearchEvent> {
                 .flatMap(ev -> Mono.justOrEmpty(ev.getInlineArgument()))
                 .flatMap(cardService::getCardByName)
                 .zipWith(event.getMessage().getChannel())
-                .flatMap(tuple -> Messenger.send(tuple.getT2(), embedCreateSpec -> {
+                .map(tuple -> new Embed(tuple.getT2(), embedCreateSpec -> {
                     final Card card = tuple.getT1();
                     embedCreateSpec.setColor(Color.GREEN);
                     embedCreateSpec.setUrl(card.getUri());
@@ -53,7 +58,9 @@ public class CardSearchListener implements EventListener<CardSearchEvent> {
                                         card.getPower(),
                                         card.getToughness()), true);
                     }
-                }))
+                }, event.isFragment(), event.getInlineOrder()))
+                .doOnNext(responseDispatcher::queue)
+                .doAfterTerminate(responseDispatcher::flush)
                 .then();
     }
 

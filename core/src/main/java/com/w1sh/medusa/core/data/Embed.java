@@ -5,29 +5,21 @@ import discord4j.core.spec.EmbedCreateSpec;
 
 import java.util.function.Consumer;
 
-public class Embed {
+public class Embed extends Response{
 
-    private MessageChannel channel;
     private Consumer<EmbedCreateSpec> embedCreateSpec;
 
-    public Embed(MessageChannel channel, Consumer<EmbedCreateSpec> embedCreateSpec) {
-        this.channel = channel;
+    public Embed(MessageChannel channel, Consumer<EmbedCreateSpec> embedCreateSpec, boolean fragment) {
+        super(channel, fragment);
         this.embedCreateSpec = embedCreateSpec;
     }
 
-    public MessageChannel getChannel() {
-        return channel;
-    }
-
-    public void setChannel(MessageChannel channel) {
-        this.channel = channel;
+    public Embed(MessageChannel channel, Consumer<EmbedCreateSpec> embedCreateSpec, boolean fragment, Integer order) {
+        super(channel, fragment, order);
+        this.embedCreateSpec = embedCreateSpec;
     }
 
     public Consumer<EmbedCreateSpec> getEmbedCreateSpec() {
         return embedCreateSpec;
-    }
-
-    public void setEmbedCreateSpec(Consumer<EmbedCreateSpec> embedCreateSpec) {
-        this.embedCreateSpec = embedCreateSpec;
     }
 }

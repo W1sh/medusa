@@ -11,8 +11,10 @@ public abstract class Event extends MessageCreateEvent {
 
     private Integer numAllowedArguments;
     private boolean inline;
+    private boolean fragment;
     private String inlinePrefix;
     private String inlineArgument;
+    private Integer inlineOrder;
     private List<Permission> permissions;
 
     public Event(MessageCreateEvent event){
@@ -20,6 +22,7 @@ public abstract class Event extends MessageCreateEvent {
                 event.getMember().orElse(null));
         this.permissions = new ArrayList<>();
         this.permissions.add(Permission.SEND_MESSAGES);
+        this.fragment = false;
     }
 
     public Event(MessageCreateEvent event, Integer numAllowedArguments) {
@@ -77,5 +80,21 @@ public abstract class Event extends MessageCreateEvent {
 
     public void setPermissions(List<Permission> permissions) {
         this.permissions = permissions;
+    }
+
+    public boolean isFragment() {
+        return fragment;
+    }
+
+    public void setFragment(boolean fragment) {
+        this.fragment = fragment;
+    }
+
+    public Integer getInlineOrder() {
+        return inlineOrder;
+    }
+
+    public void setInlineOrder(Integer inlineOrder) {
+        this.inlineOrder = inlineOrder;
     }
 }

@@ -1,6 +1,6 @@
 package com.w1sh.medusa.utils;
 
-import com.w1sh.medusa.core.data.Message;
+import com.w1sh.medusa.core.data.TextMessage;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.MessageChannel;
 import discord4j.core.spec.EmbedCreateSpec;
@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 public class Messenger {
 
     private static final Logger logger = LoggerFactory.getLogger(Messenger.class);
-    private static final FluxProcessor<Message, Message> messageProcessor = EmitterProcessor.create(false);
+    private static final FluxProcessor<TextMessage, TextMessage> messageProcessor = EmitterProcessor.create(false);
     private static final Integer bufferSize = 2;
 
     public static final String ZERO_WIDTH_SPACE = "\u200E";
@@ -30,7 +30,7 @@ public class Messenger {
     public static void queue(MessageCreateEvent event, String content){
         Mono.just(event)
                 .flatMap(ev -> ev.getMessage().getChannel())
-                .map(messageChannel -> new Message(messageChannel, content))
+                .map(messageChannel -> new TextMessage(messageChannel, content, false))
                 .subscribe(messageProcessor::onNext);
     }
 
@@ -39,7 +39,7 @@ public class Messenger {
                 .autoConnect()
                 .bufferTimeout(2, Duration.ofSeconds(2))
                 .flatMap(Flux::fromIterable)
-                .flatMap(message -> message.getChannel().createMessage(message.getContent()))
+                .flatMap(textMessage -> textMessage.getChannel().createMessage(textMessage.getContent()))
                 .subscribe();
     }
 

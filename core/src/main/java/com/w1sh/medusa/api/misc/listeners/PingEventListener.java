@@ -2,7 +2,7 @@ package com.w1sh.medusa.api.misc.listeners;
 
 import com.w1sh.medusa.api.misc.events.PingEvent;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.dispatchers.MessageDispatcher;
+import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import org.slf4j.Logger;
@@ -18,10 +18,10 @@ public class PingEventListener implements EventListener<PingEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(PingEventListener.class);
 
-    private final MessageDispatcher messageDispatcher;
+    private final ResponseDispatcher responseDispatcher;
 
-    public PingEventListener(CommandEventDispatcher eventDispatcher, MessageDispatcher messageDispatcher) {
-        this.messageDispatcher = messageDispatcher;
+    public PingEventListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher) {
+        this.responseDispatcher = responseDispatcher;
         EventFactory.registerEvent(PingEvent.KEYWORD, PingEvent.class);
         eventDispatcher.registerListener(this);
     }
@@ -36,10 +36,10 @@ public class PingEventListener implements EventListener<PingEvent> {
         return Mono.just(event)
                 .doOnNext(ev -> {
                     Long duration = Duration.between(ev.getMessage().getTimestamp(), Instant.now()).toMillis();
-                    messageDispatcher.queue(ev, String.format("Pong! `%sms`", duration));
+                    responseDispatcher.queue(ev, String.format("Pong! `%sms`", duration));
                     logger.info("Answered ping request in {} milliseconds", duration);
                 })
-                .doAfterTerminate(messageDispatcher::flush)
+                .doAfterTerminate(responseDispatcher::flush)
                 .then();
     }
 }
