@@ -31,7 +31,7 @@ public class ChangePrefixEventListener implements EventListener<ChangePrefixEven
                 .doOnNext(prefix -> {
                     EventFactory.setPrefix(prefix);
                     Messenger.send(event, String.format("Changed prefix to \"%s\"", prefix)).subscribe();
-                    event.getClient().updatePresence(Presence.online(Activity.watching(String.format("Cringe 2 | %shelp", EventFactory.getPrefix()))));
+                    event.getClient().updatePresence(Presence.online(Activity.watching(String.format("Cringe 2 | %shelp", EventFactory.getPrefix())))).subscribe();
                 })
                 .then();
     }
