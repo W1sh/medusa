@@ -3,7 +3,6 @@ package com.w1sh.medusa.core.dispatchers;
 import com.w1sh.medusa.core.data.Embed;
 import com.w1sh.medusa.core.data.Response;
 import com.w1sh.medusa.core.data.TextMessage;
-import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.EmitterProcessor;
@@ -17,13 +16,6 @@ public class ResponseDispatcher {
 
     public ResponseDispatcher() {
         this.responseProcessor = EmitterProcessor.create(false);
-    }
-
-    public void queue(MessageCreateEvent event, String content){
-        Mono.just(event)
-                .flatMap(ev -> ev.getMessage().getChannel())
-                .map(messageChannel -> new TextMessage(messageChannel, content, false))
-                .subscribe(responseProcessor::onNext);
     }
 
     public void queue(TextMessage textMessage){
