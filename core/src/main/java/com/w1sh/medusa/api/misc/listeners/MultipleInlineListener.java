@@ -27,7 +27,11 @@ public class MultipleInlineListener implements EventListener<MultipleInlineEvent
     public Mono<Void> execute(MultipleInlineEvent event) {
         return Mono.just(event)
                 .flatMapIterable(MultipleInlineEvent::getEvents)
+                //.take(1)
+                //.doOnNext(commandEventDispatcher::publish)
+                //.then()
                 .doOnNext(commandEventDispatcher::publish)
+                .doOnEach(signal -> System.out.println(signal.getType().toString()))
                 .then();
     }
 }
