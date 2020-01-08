@@ -32,6 +32,7 @@ public class CardClient {
                 .responseContent()
                 .aggregate()
                 .asString()
+                .doOnNext(s -> logger.info("Queried Scryfall API for all cards with name like \"{}\"", name))
                 .map(this::parseMultiple);
     }
 
@@ -42,6 +43,7 @@ public class CardClient {
                 .responseContent()
                 .aggregate()
                 .asString()
+                .doOnNext(s -> logger.info("Queried Scryfall API for card with name similar to \"{}\"", name))
                 .map(this::parse);
     }
 
