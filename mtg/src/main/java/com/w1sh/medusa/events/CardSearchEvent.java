@@ -1,13 +1,13 @@
 package com.w1sh.medusa.events;
 
-import com.w1sh.medusa.core.events.Event;
+import com.w1sh.medusa.core.events.InlineEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 
-public class CardSearchEvent extends Event {
+public class CardSearchEvent extends InlineEvent {
 
     public static final String INLINE_PREFIX = "{{";
 
     public CardSearchEvent(MessageCreateEvent event) {
-        super(event, true, INLINE_PREFIX);
+        super(event, INLINE_PREFIX);
     }
 }

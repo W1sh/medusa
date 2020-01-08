@@ -51,14 +51,14 @@ public class EventFactory {
     }
 
     private static Event extractInlineEvents(final MessageCreateEvent event, final List<String> matches){
-        final List<Event> events = new ArrayList<>();
+        final List<InlineEvent> events = new ArrayList<>();
         try {
             int order = 1;
             for(String match : matches){
                 final String argument = match.replaceAll("[{!}]", "");
                 final String inlineEventPrefix = match.substring(0, 3).replaceAll("\\w", "");
                 final Class<?> clazz = EVENTS.getOrDefault(inlineEventPrefix, UnsupportedEvent.class);
-                Event instance = (Event) clazz.getConstructor(MessageCreateEvent.class).newInstance(event);
+                InlineEvent instance = (InlineEvent) clazz.getConstructor(MessageCreateEvent.class).newInstance(event);
                 instance.setInlineArgument(argument);
                 instance.setInlineOrder(order++);
                 events.add(instance);
