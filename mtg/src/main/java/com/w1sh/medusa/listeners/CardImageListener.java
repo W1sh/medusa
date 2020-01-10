@@ -42,7 +42,9 @@ public class CardImageListener implements EventListener<CardImageEvent> {
                     embedCreateSpec.setColor(Color.GREEN);
                     embedCreateSpec.setUrl(tuple.getT1().getUri());
                     embedCreateSpec.setTitle(tuple.getT1().getName());
-                    embedCreateSpec.setImage(tuple.getT1().getImage().getNormal());
+                    if(tuple.getT1().getImage() != null && tuple.getT1().getImage().getNormal() != null){
+                        embedCreateSpec.setImage(tuple.getT1().getImage().getNormal());
+                    }
                 }, event.isFragment(), event.getInlineOrder()))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)

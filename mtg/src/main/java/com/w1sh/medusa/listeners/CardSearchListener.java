@@ -42,9 +42,11 @@ public class CardSearchListener implements EventListener<CardSearchEvent> {
                 .zipWith(event.getMessage().getChannel())
                 .map(tuple -> new Embed(tuple.getT2(), embedCreateSpec -> {
                     final Card card = tuple.getT1();
+                    if(card.getImage() != null && card.getImage().getSmall() != null){
+                        embedCreateSpec.setThumbnail(card.getImage().getSmall());
+                    }
                     embedCreateSpec.setColor(Color.GREEN);
                     embedCreateSpec.setUrl(card.getUri());
-                    embedCreateSpec.setThumbnail(card.getImage().getSmall());
                     embedCreateSpec.setTitle(String.format("%s %s",
                             card.getName(),
                             card.getManaCost()));

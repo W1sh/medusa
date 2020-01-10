@@ -13,6 +13,7 @@ import reactor.netty.http.client.HttpClient;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 @Component
 public class CardClient {
@@ -32,6 +33,7 @@ public class CardClient {
                 .responseContent()
                 .aggregate()
                 .asString()
+                .timeout(Duration.ofSeconds(5))
                 .doOnNext(s -> logger.info("Queried Scryfall API for all cards with name like \"{}\"", name))
                 .map(this::parseMultiple);
     }
@@ -39,7 +41,7 @@ public class CardClient {
     public Mono<Card> getCardByName(String name){
         return HttpClient.create()
                 .get()
-                .uri("https://api.scryfall.com/cards/named?fuzzy=" + URLEncoder.encode(name, StandardCharsets.UTF_8))
+                .uri("https://api.scryfall.com/cardse/named?fuzzy=" + URLEncoder.encode(name, StandardCharsets.UTF_8))
                 .responseContent()
                 .aggregate()
                 .asString()
