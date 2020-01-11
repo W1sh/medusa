@@ -3,6 +3,9 @@ package com.w1sh.medusa.resources;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Objects;
+import java.util.stream.Stream;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Card {
 
@@ -35,6 +38,12 @@ public class Card {
 
     @JsonProperty(value = "edhrec_rank")
     private Integer edhrecRank;
+
+    public boolean isEmpty(){
+        return Stream.of(uri, manaCost, image, name, power, toughness, typeLine, oracleText,
+                flavorText, price, edhrecRank)
+                .allMatch(Objects::isNull);
+    }
 
     public String getUri() {
         return uri;
@@ -122,5 +131,28 @@ public class Card {
 
     public void setEdhrecRank(Integer edhrecRank) {
         this.edhrecRank = edhrecRank;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Card card = (Card) o;
+        return Objects.equals(uri, card.uri) &&
+                Objects.equals(manaCost, card.manaCost) &&
+                Objects.equals(image, card.image) &&
+                Objects.equals(name, card.name) &&
+                Objects.equals(power, card.power) &&
+                Objects.equals(toughness, card.toughness) &&
+                Objects.equals(typeLine, card.typeLine) &&
+                Objects.equals(oracleText, card.oracleText) &&
+                Objects.equals(flavorText, card.flavorText) &&
+                Objects.equals(price, card.price) &&
+                Objects.equals(edhrecRank, card.edhrecRank);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uri, manaCost, image, name, power, toughness, typeLine, oracleText, flavorText, price, edhrecRank);
     }
 }
