@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.resources.ListResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -30,23 +31,24 @@ public class CardClient {
         return HttpClient.create()
                 .get()
                 .uri("https://api.scryfall.com/cards/search?q=" + URLEncoder.encode(name, StandardCharsets.UTF_8))
-                .responseContent()
-                .aggregate()
-                .asString()
-                .timeout(Duration.ofSeconds(5))
-                .doOnNext(s -> logger.info("Queried Scryfall API for all cards with name like \"{}\"", name))
-                .map(this::parseMultiple);
+                .responseSingle(((httpClientResponse, byteBufMono) -> {
+                    if(httpClientResponse.status().equals(HttpResponseStatus.OK)){
+                        return byteBufMono.asString().map(this::parseMultiple);
+                    }else return Mono.error(new Exception("Failed to retrieve cards from Scryfall API"));
+                }))
+                .doOnNext(s -> logger.info("Queried Scryfall API for all cards with name like \"{}\"", name));
     }
 
     public Mono<Card> getCardByName(String name){
         return HttpClient.create()
                 .get()
-                .uri("https://api.scryfall.com/cardse/named?fuzzy=" + URLEncoder.encode(name, StandardCharsets.UTF_8))
-                .responseContent()
-                .aggregate()
-                .asString()
-                .doOnNext(s -> logger.info("Queried Scryfall API for card with name similar to \"{}\"", name))
-                .map(this::parse);
+                .uri("https://api.scryfall.com/cards/named?fuzzy=" + URLEncoder.encode(name, StandardCharsets.UTF_8))
+                .responseSingle(((httpClientResponse, byteBufMono) -> {
+                    if(httpClientResponse.status().equals(HttpResponseStatus.OK)){
+                        return byteBufMono.asString().map(this::parse);
+                    }else return Mono.error(new Exception("Failed to retrieve cards from Scryfall API"));
+                }))
+                .doOnNext(s -> logger.info("Queried Scryfall API for card with name similar to \"{}\"", name));
     }
 
     private Card parse(String json){

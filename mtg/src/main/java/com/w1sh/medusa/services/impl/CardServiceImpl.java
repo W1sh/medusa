@@ -54,7 +54,4 @@ public class CardServiceImpl implements CardService {
                 .flatMapIterable(ListResponse::getData);
     }
 
-    private Card fallback(){
-        return new Card();
-    }
 }
