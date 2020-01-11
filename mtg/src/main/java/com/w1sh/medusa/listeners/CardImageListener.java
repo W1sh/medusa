@@ -52,13 +52,23 @@ public class CardImageListener implements EventListener<CardImageEvent> {
     }
 
     private Embed createEmbed(Tuple2<Card, MessageChannel> tuple, Boolean isFragment, Integer order){
+        Card card = tuple.getT1();
+        if(card.isEmpty() || card.getUri() == null || card.getName() == null || card.getImage() == null || card.getImage().getNormal() == null){
+            return createErrorEmbed(tuple.getT2(), isFragment, order);
+        }
         return new Embed(tuple.getT2(), embedCreateSpec -> {
             embedCreateSpec.setColor(Color.GREEN);
-            embedCreateSpec.setUrl(tuple.getT1().getUri());
-            embedCreateSpec.setTitle(tuple.getT1().getName());
-            if(tuple.getT1().getImage() != null && tuple.getT1().getImage().getNormal() != null){
-                embedCreateSpec.setImage(tuple.getT1().getImage().getNormal());
-            }
+            embedCreateSpec.setUrl(card.getUri());
+            embedCreateSpec.setTitle(card.getName());
+            embedCreateSpec.setImage(card.getImage().getNormal());
+        }, isFragment, order);
+    }
+
+    private Embed createErrorEmbed(MessageChannel messageChannel, Boolean isFragment, Integer order){
+        return new Embed(messageChannel, embedCreateSpec -> {
+            embedCreateSpec.setColor(Color.GREEN);
+            embedCreateSpec.setTitle("Error - failed to find card");
+            embedCreateSpec.setDescription("Could not load image!");
         }, isFragment, order);
     }
 }
