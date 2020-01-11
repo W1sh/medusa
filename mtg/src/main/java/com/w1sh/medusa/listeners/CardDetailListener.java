@@ -5,7 +5,7 @@ import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
-import com.w1sh.medusa.events.CardSearchEvent;
+import com.w1sh.medusa.events.CardDetailEvent;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.services.CardService;
 import com.w1sh.medusa.utils.Messenger;
@@ -17,26 +17,26 @@ import reactor.util.function.Tuple2;
 import java.awt.*;
 
 @Component
-public class CardSearchListener implements EventListener<CardSearchEvent> {
+public class CardDetailListener implements EventListener<CardDetailEvent> {
 
     private final CardService cardService;
     private final ResponseDispatcher responseDispatcher;
 
-    public CardSearchListener(CommandEventDispatcher eventDispatcher, CardService cardService,
+    public CardDetailListener(CommandEventDispatcher eventDispatcher, CardService cardService,
                               ResponseDispatcher responseDispatcher) {
         this.cardService = cardService;
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(CardSearchEvent.INLINE_PREFIX, CardSearchEvent.class);
+        EventFactory.registerEvent(CardDetailEvent.INLINE_PREFIX, CardDetailEvent.class);
         eventDispatcher.registerListener(this);
     }
 
     @Override
-    public Class<CardSearchEvent> getEventType() {
-        return CardSearchEvent.class;
+    public Class<CardDetailEvent> getEventType() {
+        return CardDetailEvent.class;
     }
 
     @Override
-    public Mono<Void> execute(CardSearchEvent event) {
+    public Mono<Void> execute(CardDetailEvent event) {
         return Mono.just(event)
                 .filterWhen(this::validate)
                 .flatMap(ev -> Mono.justOrEmpty(ev.getInlineArgument()))
@@ -48,7 +48,7 @@ public class CardSearchListener implements EventListener<CardSearchEvent> {
                 .then();
     }
 
-    private Mono<Boolean> validate(CardSearchEvent event) {
+    private Mono<Boolean> validate(CardDetailEvent event) {
         return Mono.just(event.getInlineArgument() != null && !event.getInlineArgument().isBlank());
     }
 
