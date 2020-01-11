@@ -14,7 +14,6 @@ import reactor.netty.http.client.HttpClient;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 
 @Component
 public class CardClient {

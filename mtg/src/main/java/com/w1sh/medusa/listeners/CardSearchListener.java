@@ -75,4 +75,5 @@ public class CardSearchListener implements EventListener<CardSearchEvent> {
             }
         }, isFragment, order);
     }
+
 }
