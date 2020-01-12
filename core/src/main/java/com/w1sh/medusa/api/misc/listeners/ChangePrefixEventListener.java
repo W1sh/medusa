@@ -3,7 +3,7 @@ package com.w1sh.medusa.api.misc.listeners;
 import com.w1sh.medusa.api.misc.events.ChangePrefixEvent;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.core.events.EventFactory;
-import com.w1sh.medusa.core.listeners.MultipleArgsEventListener;
+import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.utils.Messenger;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class ChangePrefixEventListener implements MultipleArgsEventListener<ChangePrefixEvent> {
+public class ChangePrefixEventListener implements EventListener<ChangePrefixEvent> {
 
     public ChangePrefixEventListener(CommandEventDispatcher eventDispatcher) {
         EventFactory.registerEvent(ChangePrefixEvent.KEYWORD, ChangePrefixEvent.class);
@@ -31,12 +31,11 @@ public class ChangePrefixEventListener implements MultipleArgsEventListener<Chan
                 .doOnNext(prefix -> {
                     EventFactory.setPrefix(prefix);
                     Messenger.send(event, String.format("Changed prefix to \"%s\"", prefix)).subscribe();
-                    event.getClient().updatePresence(Presence.online(Activity.watching(String.format("Cringe 2 | %shelp", EventFactory.getPrefix()))));
+                    event.getClient().updatePresence(Presence.online(Activity.watching(String.format("Cringe 2 | %shelp", EventFactory.getPrefix())))).subscribe();
                 })
                 .then();
     }
 
-    @Override
     public Mono<Boolean> validate(ChangePrefixEvent event) {
         return Mono.justOrEmpty(event.getMessage().getContent())
                 .map(message -> message.split(" "))

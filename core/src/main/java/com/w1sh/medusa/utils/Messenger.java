@@ -1,7 +1,7 @@
 package com.w1sh.medusa.utils;
 
+import com.w1sh.medusa.core.data.TextMessage;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.MessageChannel;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.rest.http.client.ClientException;
@@ -9,8 +9,12 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.EmitterProcessor;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxProcessor;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -18,17 +22,34 @@ import java.util.function.Consumer;
 public class Messenger {
 
     private static final Logger logger = LoggerFactory.getLogger(Messenger.class);
+    private static final FluxProcessor<TextMessage, TextMessage> messageProcessor = EmitterProcessor.create(false);
+    private static final Integer bufferSize = 2;
+
     public static final String ZERO_WIDTH_SPACE = "\u200E";
 
-    private Messenger(){}
+    public static void queue(MessageCreateEvent event, String content){
+        Mono.just(event)
+                .flatMap(ev -> ev.getMessage().getChannel())
+                .map(messageChannel -> new TextMessage(messageChannel, content, false))
+                .subscribe(messageProcessor::onNext);
+    }
 
-    public static Mono<Message> send(MessageCreateEvent event, String content){
+    public static void flush(){
+        messageProcessor.publish()
+                .autoConnect()
+                .bufferTimeout(2, Duration.ofSeconds(2))
+                .flatMap(Flux::fromIterable)
+                .flatMap(textMessage -> textMessage.getChannel().createMessage(textMessage.getContent()))
+                .subscribe();
+    }
+
+    public static Mono<discord4j.core.object.entity.Message> send(MessageCreateEvent event, String content){
         return Mono.just(event)
                 .flatMap(ev -> ev.getMessage().getChannel())
                 .flatMap(channel -> send(channel, content));
     }
 
-    public static Mono<Message> send(MessageChannel channel, Consumer<EmbedCreateSpec> spec){
+    public static Mono<discord4j.core.object.entity.Message> send(MessageChannel channel, Consumer<EmbedCreateSpec> spec){
         return Mono.just(channel)
                 .flatMap(c -> c.createEmbed(spec))
                 .onErrorResume(ClientException.isStatusCode(HttpResponseStatus.FORBIDDEN.code()), err -> {
@@ -37,7 +58,7 @@ public class Messenger {
                 });
     }
 
-    public static Mono<Message> send(MessageChannel channel, String content){
+    public static Mono<discord4j.core.object.entity.Message> send(MessageChannel channel, String content){
         return Mono.just(channel)
                 .flatMap(c -> c.createMessage(content))
                 .onErrorResume(ClientException.isStatusCode(HttpResponseStatus.FORBIDDEN.code()), err -> {

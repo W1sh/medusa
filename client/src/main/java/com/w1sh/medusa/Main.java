@@ -17,7 +17,7 @@ import java.time.Instant;
 import java.util.Date;
 
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
-@PropertySource(value = "text-constants.properties")
+@PropertySource(value = "classpath:text-constants.properties")
 public class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);

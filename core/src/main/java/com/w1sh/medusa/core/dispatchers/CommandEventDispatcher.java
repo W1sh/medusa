@@ -1,17 +1,14 @@
 package com.w1sh.medusa.core.dispatchers;
 
+import com.w1sh.medusa.core.events.Event;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
-import discord4j.core.event.domain.Event;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.EmitterProcessor;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.FluxProcessor;
-import reactor.core.publisher.SignalType;
+import reactor.core.publisher.*;
 import reactor.core.scheduler.Scheduler;
 import reactor.scheduler.forkjoin.ForkJoinPoolScheduler;
 
@@ -22,7 +19,7 @@ public class CommandEventDispatcher {
 
     private static final Logger logger = LoggerFactory.getLogger(CommandEventDispatcher.class);
 
-    private final FluxProcessor<MessageCreateEvent, MessageCreateEvent> processor;
+    private final FluxProcessor<Event, Event> processor;
     private final Scheduler scheduler;
 
     public CommandEventDispatcher() {
@@ -31,8 +28,15 @@ public class CommandEventDispatcher {
     }
 
     public void publish(MessageCreateEvent event) {
-        logger.info("Received new event of type <{}>", event.getClass().getSimpleName());
-        EventFactory.createEvent(event).ifPresent(processor::onNext);
+        Mono.justOrEmpty(EventFactory.extractEvents(event))
+                .doOnNext(ev -> logger.info("Received new event of type <{}>", ev.getClass().getSimpleName()))
+                .subscribe(processor::onNext);
+    }
+
+    public void publish(Event event){
+        Mono.justOrEmpty(event)
+                .doOnNext(ev -> logger.info("Received new event of type <{}>", ev.getClass().getSimpleName()))
+                .subscribe(processor::onNext);
     }
 
     public <T extends Event> void registerListener(EventListener<T> eventListener){

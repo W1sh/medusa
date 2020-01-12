@@ -1,5 +1,6 @@
 package com.w1sh.medusa.configurations;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
@@ -26,6 +27,9 @@ public class AppConfiguration {
         AudioSourceManagers.registerRemoteSources(playerManager);
         return playerManager;
     }
+
+    @Bean
+    public ObjectMapper objectMapper() { return new ObjectMapper(); }
 
     @Bean
     public SecureRandom secureRandom() { return new SecureRandom(); }
