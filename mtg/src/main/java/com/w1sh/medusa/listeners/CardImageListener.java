@@ -53,7 +53,7 @@ public class CardImageListener implements EventListener<CardImageEvent> {
     }
 
     private Embed createEmbed(Tuple2<Card, MessageChannel> tuple, CardImageEvent event){
-        Card card = tuple.getT1();
+        final Card card = tuple.getT1();
         if(card.isEmpty() || card.getUri() == null || card.getName() == null || card.getImage() == null || card.getImage().getNormal() == null){
             return CardUtils.createErrorEmbed(tuple.getT2(), event);
         }

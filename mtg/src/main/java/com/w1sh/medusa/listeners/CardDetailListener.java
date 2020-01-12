@@ -8,6 +8,7 @@ import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.events.CardDetailEvent;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.services.CardService;
+import com.w1sh.medusa.utils.CardUtils;
 import com.w1sh.medusa.utils.Messenger;
 import discord4j.core.object.entity.MessageChannel;
 import org.springframework.stereotype.Component;
@@ -42,7 +43,7 @@ public class CardDetailListener implements EventListener<CardDetailEvent> {
                 .flatMap(ev -> Mono.justOrEmpty(ev.getInlineArgument()))
                 .flatMap(cardService::getCardByName)
                 .zipWith(event.getMessage().getChannel())
-                .map(tuple -> this.createEmbed(tuple, event.isFragment(), event.getInlineOrder()))
+                .map(tuple -> this.createEmbed(tuple, event))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
@@ -52,12 +53,14 @@ public class CardDetailListener implements EventListener<CardDetailEvent> {
         return Mono.just(event.getInlineArgument() != null && !event.getInlineArgument().isBlank());
     }
 
-    private Embed createEmbed(Tuple2<Card, MessageChannel> tuple, Boolean isFragment, Integer order){
+    private Embed createEmbed(Tuple2<Card, MessageChannel> tuple, CardDetailEvent event){
+        final Card card = tuple.getT1();
+        if(card.isEmpty() || card.getImage() == null || card.getImage().getSmall() == null || card.getUri() == null
+                || card.getName() == null || card.getManaCost() == null || card.getTypeLine() == null){
+            return CardUtils.createErrorEmbed(tuple.getT2(), event);
+        }
         return new Embed(tuple.getT2(), embedCreateSpec -> {
-            final Card card = tuple.getT1();
-            if(card.getImage() != null && card.getImage().getSmall() != null){
-                embedCreateSpec.setThumbnail(card.getImage().getSmall());
-            }
+            embedCreateSpec.setThumbnail(card.getImage().getSmall());
             embedCreateSpec.setColor(Color.GREEN);
             embedCreateSpec.setUrl(card.getUri());
             embedCreateSpec.setTitle(String.format("%s %s",
@@ -73,7 +76,7 @@ public class CardDetailListener implements EventListener<CardDetailEvent> {
                                 card.getPower(),
                                 card.getToughness()), true);
             }
-        }, isFragment, order);
+        }, event.isFragment(), event.getInlineOrder());
     }
 
 }
