@@ -63,7 +63,7 @@ public class AudioConnectionManager {
                             .zipWith(event.getMessage().getChannel())
                             .flatMap(tuple -> createAudioConnection(audioProvider, audioPlayer, tuple.getT1(), ((GuildChannel) tuple.getT2())));
                 })
-                .doOnError(throwable -> logger.error("Failed to leave voice channel", throwable));
+                .doOnError(throwable -> logger.error("Failed to leave join channel", throwable));
     }
 
     public Mono<Boolean> leaveVoiceChannel(Snowflake guildIdSnowflake) {
