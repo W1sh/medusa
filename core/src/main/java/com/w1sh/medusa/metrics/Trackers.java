@@ -1,5 +1,8 @@
 package com.w1sh.medusa.metrics;
 
+import discord4j.core.DiscordClient;
+import discord4j.core.object.entity.Guild;
+
 import java.time.Duration;
 import java.time.Instant;
 
@@ -29,6 +32,14 @@ public final class Trackers {
             positive = String.format("%d %s", absSeconds % 60, absSeconds % 60 > 1 ? "seconds" : "second");
         }
         return positive;
+    }
+
+    public static Long getGuilds(DiscordClient client){
+        return client.getGuilds().count().block();
+    }
+
+    public static Long getUsers(DiscordClient client){
+        return client.getUsers().count().block();
     }
 
     public static void setStartInstant(Instant startInstant) {

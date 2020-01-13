@@ -8,6 +8,7 @@ import com.w1sh.medusa.core.events.Event;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.metrics.Trackers;
+import com.w1sh.medusa.utils.Messenger;
 import discord4j.core.object.entity.MessageChannel;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -40,13 +41,20 @@ public class StatusEventListener implements EventListener<StatusEvent> {
     }
 
     private Embed createStatusEmbed(MessageChannel messageChannel, Event event){
+        Long guilds = Trackers.getGuilds(event.getClient());
+        Long users = Trackers.getUsers(event.getClient());
+
         return new Embed(messageChannel, embedCreateSpec -> {
             embedCreateSpec.setColor(Color.GREEN);
             embedCreateSpec.setTitle("Medusa - 1.0-SNAPSHOT");
             embedCreateSpec.addField("Uptime", Trackers.getUptime(), true);
-            embedCreateSpec.addField("Memory Usage", String.format("%d / %d MB",
-                    numberAsMegabytes(Runtime.getRuntime().freeMemory()),
+            embedCreateSpec.addField("Memory Usage", String.format("%d MB / %d MB",
+                    numberAsMegabytes(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()),
                     numberAsMegabytes(Runtime.getRuntime().totalMemory())), true);
+            embedCreateSpec.addField(Messenger.ZERO_WIDTH_SPACE, Messenger.ZERO_WIDTH_SPACE, true);
+            embedCreateSpec.addField("Guilds", String.format("%d (%d Avg Users/Guild)",
+                    guilds, users/guilds), true);
+            embedCreateSpec.addField("Users", users.toString(), true);
         });
     }
 
