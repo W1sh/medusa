@@ -55,6 +55,7 @@ public class StatusEventListener implements EventListener<StatusEvent> {
             embedCreateSpec.addField("Guilds", String.format("%d (%d Avg Users/Guild)",
                     guilds, users/guilds), true);
             embedCreateSpec.addField("Users", users.toString(), true);
+            embedCreateSpec.addField("Total events", Trackers.getTotalEventCount().toString(), true);
         });
     }
 

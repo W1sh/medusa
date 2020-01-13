@@ -3,6 +3,7 @@ package com.w1sh.medusa.core.dispatchers;
 import com.w1sh.medusa.core.events.Event;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
+import com.w1sh.medusa.metrics.Trackers;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
@@ -42,6 +43,7 @@ public class CommandEventDispatcher {
     public <T extends Event> void registerListener(EventListener<T> eventListener){
         logger.info("Registering new listener to command event dispatcher of type <{}>", eventListener.getClass().getSimpleName());
         on(eventListener.getEventType())
+                .doOnNext(Trackers::track)
                 .flatMap(eventListener::execute)
                 .subscribe();
     }
