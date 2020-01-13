@@ -10,6 +10,7 @@ import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.metrics.Trackers;
 import com.w1sh.medusa.utils.Messenger;
 import discord4j.core.object.entity.MessageChannel;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -17,6 +18,9 @@ import java.awt.*;
 
 @Component
 public class StatusEventListener implements EventListener<StatusEvent> {
+
+    @Value("${medusa.version}")
+    private String version;
 
     private final ResponseDispatcher responseDispatcher;
 
@@ -46,7 +50,7 @@ public class StatusEventListener implements EventListener<StatusEvent> {
 
         return new Embed(messageChannel, embedCreateSpec -> {
             embedCreateSpec.setColor(Color.GREEN);
-            embedCreateSpec.setTitle("Medusa - 1.0-SNAPSHOT");
+            embedCreateSpec.setTitle(String.format("Medusa - %s", version));
             embedCreateSpec.addField("Uptime", Trackers.getUptime(), true);
             embedCreateSpec.addField("Memory Usage", String.format("%d MB / %d MB",
                     numberAsMegabytes(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()),
