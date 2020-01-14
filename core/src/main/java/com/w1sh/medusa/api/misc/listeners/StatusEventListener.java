@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 import java.awt.*;
 
 @Component
-public class StatusEventListener implements EventListener<StatusEvent> {
+public final class StatusEventListener implements EventListener<StatusEvent> {
 
     @Value("${medusa.version}")
     private String version;
@@ -50,7 +50,9 @@ public class StatusEventListener implements EventListener<StatusEvent> {
 
         return new Embed(messageChannel, embedCreateSpec -> {
             embedCreateSpec.setColor(Color.GREEN);
-            embedCreateSpec.setTitle(String.format("Medusa - %s", version));
+            embedCreateSpec.setTitle(String.format("Medusa - Shard %d/%d",
+                    event.getClient().getServiceMediator().getClientConfig().getShardIndex() + 1,
+                    event.getClient().getServiceMediator().getClientConfig().getShardCount()));
             embedCreateSpec.addField("Uptime", Trackers.getUptime(), true);
             embedCreateSpec.addField("Memory Usage", String.format("%d MB / %d MB",
                     numberAsMegabytes(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()),
@@ -60,6 +62,7 @@ public class StatusEventListener implements EventListener<StatusEvent> {
                     guilds, users/guilds), true);
             embedCreateSpec.addField("Users", users.toString(), true);
             embedCreateSpec.addField("Total events", Trackers.getTotalEventCount().toString(), true);
+            embedCreateSpec.setFooter(String.format("Version: %s", version), null);
         });
     }
 
