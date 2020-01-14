@@ -4,6 +4,7 @@ import com.w1sh.medusa.core.events.Event;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.metrics.Trackers;
+import com.w1sh.medusa.validators.ArgumentValidator;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
@@ -20,16 +21,19 @@ public class CommandEventDispatcher {
 
     private static final Logger logger = LoggerFactory.getLogger(CommandEventDispatcher.class);
 
+    private final ArgumentValidator argumentValidator;
     private final FluxProcessor<Event, Event> processor;
     private final Scheduler scheduler;
 
-    public CommandEventDispatcher() {
+    public CommandEventDispatcher(ArgumentValidator argumentValidator, ResponseDispatcher responseDispatcher) {
+        this.argumentValidator = argumentValidator;
         this.processor = EmitterProcessor.create(false);
         this.scheduler = ForkJoinPoolScheduler.create("medusa-events");
     }
 
     public void publish(MessageCreateEvent event) {
         Mono.justOrEmpty(EventFactory.extractEvents(event))
+                .filterWhen(argumentValidator::validate)
                 .doOnNext(ev -> logger.info("Received new event of type <{}>", ev.getClass().getSimpleName()))
                 .subscribe(processor::onNext);
     }
