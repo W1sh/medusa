@@ -2,6 +2,7 @@ package com.w1sh.medusa.services.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.stats.CacheStats;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.resources.ListResponse;
 import com.w1sh.medusa.rest.CardClient;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Signal;
 import reactor.core.scheduler.Schedulers;
 
+import java.time.Duration;
 import java.util.Optional;
 
 @Component
@@ -23,10 +25,14 @@ public class CardServiceImpl implements CardService {
     private static final Logger logger = LoggerFactory.getLogger(CardServiceImpl.class);
 
     private final CardClient cardClient;
-    private final Cache<String, Card> cardCache = Caffeine.newBuilder().build();
+    private final Cache<String, Card> cardCache;
 
     public CardServiceImpl(CardClient cardClient) {
         this.cardClient = cardClient;
+        this.cardCache = Caffeine.newBuilder()
+                .expireAfterAccess(Duration.ofHours(6))
+                .recordStats()
+                .build();
     }
 
     @Override
@@ -44,7 +50,6 @@ public class CardServiceImpl implements CardService {
                     logger.error("Failed to fetch cards with name \"{}\"", name, throwable);
                     return Mono.just(new Card());
                 });
-        /*return cardClient.getCardByName(name);*/
     }
 
     @Override
@@ -53,4 +58,7 @@ public class CardServiceImpl implements CardService {
                 .flatMapIterable(ListResponse::getData);
     }
 
+    public CacheStats getCacheStats(){
+        return cardCache.stats();
+    }
 }

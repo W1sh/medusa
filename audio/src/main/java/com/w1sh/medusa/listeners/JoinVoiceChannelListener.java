@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 
 @DependsOn({"audioConnectionManager", "permissionManager"})
 @Component
-public class JoinVoiceChannelListener implements EventListener<JoinVoiceChannelEvent> {
+public final class JoinVoiceChannelListener implements EventListener<JoinVoiceChannelEvent> {
 
     @Value("${event.voice.missing-permissions.join}")
     private String voiceMissingPermissions;
@@ -57,8 +57,8 @@ public class JoinVoiceChannelListener implements EventListener<JoinVoiceChannelE
 
     private Mono<TextMessage> createEmptyVoiceStateErrorMessage(JoinVoiceChannelEvent event){
         return event.getMessage().getChannel()
-                .zipWith(Mono.justOrEmpty(event.getMember().map(Member::getNicknameMention)))
-                .map(tuple -> new TextMessage(tuple.getT1(), String.format("%s, you are not in a voice channel! :rage:",
+                .zipWith(Mono.justOrEmpty(event.getMember().flatMap(Member::getNickname)))
+                .map(tuple -> new TextMessage(tuple.getT1(), String.format("**%s**, you are not in a voice channel!",
                         tuple.getT2()), false));
     }
 

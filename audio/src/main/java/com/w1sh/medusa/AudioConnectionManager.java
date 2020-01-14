@@ -66,7 +66,7 @@ public class AudioConnectionManager {
                 .doOnError(throwable -> logger.error("Failed to leave join channel", throwable));
     }
 
-    public Mono<Boolean> leaveVoiceChannel(Snowflake guildIdSnowflake) {
+    public Mono<Void> leaveVoiceChannel(Snowflake guildIdSnowflake) {
         return Mono.just(guildIdSnowflake)
                 .flatMap(this::getAudioConnection)
                 .filter(Objects::nonNull)
@@ -75,10 +75,10 @@ public class AudioConnectionManager {
                 .map(Tuple2::getT1)
                 .doOnNext(AudioConnection::destroy)
                 .doOnError(throwable -> logger.error("Failed to leave voice channel", throwable))
-                .then(Mono.just(true)); // find new return type to represent completion
+                .then(); // find new return type to represent completion
     }
 
-    public Mono<Boolean> scheduleLeave(Snowflake guildIdSnowflake) {
+    public Mono<Void> scheduleLeave(Snowflake guildIdSnowflake) {
         final Duration timeout = Duration.ofSeconds(120);
         return Mono.just(guildIdSnowflake)
                 .doOnNext(snowflake -> logger.info("Scheduling client to leave voice channel in guild <{}> after <{}> seconds",
