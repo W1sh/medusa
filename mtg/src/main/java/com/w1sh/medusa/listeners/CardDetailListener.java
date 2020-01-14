@@ -10,15 +10,13 @@ import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.services.CardService;
 import com.w1sh.medusa.utils.CardUtils;
 import com.w1sh.medusa.utils.Messenger;
-import discord4j.core.object.entity.MessageChannel;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 
 import java.awt.*;
 
 @Component
-public class CardDetailListener implements EventListener<CardDetailEvent> {
+public final class CardDetailListener implements EventListener<CardDetailEvent> {
 
     private final CardService cardService;
     private final ResponseDispatcher responseDispatcher;
@@ -42,8 +40,7 @@ public class CardDetailListener implements EventListener<CardDetailEvent> {
                 .filterWhen(this::validate)
                 .flatMap(ev -> Mono.justOrEmpty(ev.getInlineArgument()))
                 .flatMap(cardService::getCardByName)
-                .zipWith(event.getMessage().getChannel())
-                .map(tuple -> this.createEmbed(tuple, event))
+                .flatMap(tuple -> this.createEmbed(tuple, event))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
@@ -53,30 +50,31 @@ public class CardDetailListener implements EventListener<CardDetailEvent> {
         return Mono.just(event.getInlineArgument() != null && !event.getInlineArgument().isBlank());
     }
 
-    private Embed createEmbed(Tuple2<Card, MessageChannel> tuple, CardDetailEvent event){
-        final Card card = tuple.getT1();
-        if(card.isEmpty() || card.getImage() == null || card.getImage().getSmall() == null || card.getUri() == null
-                || card.getName() == null || card.getManaCost() == null || card.getTypeLine() == null){
-            return CardUtils.createErrorEmbed(tuple.getT2(), event);
-        }
-        return new Embed(tuple.getT2(), embedCreateSpec -> {
-            embedCreateSpec.setThumbnail(card.getImage().getSmall());
-            embedCreateSpec.setColor(Color.GREEN);
-            embedCreateSpec.setUrl(card.getUri());
-            embedCreateSpec.setTitle(String.format("%s %s",
-                    card.getName(),
-                    card.getManaCost()));
-            embedCreateSpec.addField(String.format("**%s**", card.getTypeLine()),
-                    String.format("%s%n*%s*",
-                            card.getOracleText() == null ? Messenger.ZERO_WIDTH_SPACE : card.getOracleText(),
-                            card.getFlavorText() == null ? Messenger.ZERO_WIDTH_SPACE : card.getFlavorText()), false);
-            if(card.getPower() != null || card.getToughness() != null){
-                embedCreateSpec.addField(Messenger.ZERO_WIDTH_SPACE,
-                        String.format("**%s/%s**",
-                                card.getPower(),
-                                card.getToughness()), true);
-            }
-        }, event.isFragment(), event.getInlineOrder());
+    private Mono<Embed> createEmbed(Card card, CardDetailEvent event){
+        return event.getMessage().getChannel()
+                .map(channel -> {
+                    if(card.isEmpty() || card.getImage() == null || card.getImage().getSmall() == null || card.getUri() == null
+                            || card.getName() == null || card.getManaCost() == null || card.getTypeLine() == null){
+                        return CardUtils.createErrorEmbed(channel, event);
+                    }
+                    return new Embed(channel, embedCreateSpec -> {
+                        embedCreateSpec.setThumbnail(card.getImage().getSmall());
+                        embedCreateSpec.setColor(Color.GREEN);
+                        embedCreateSpec.setUrl(card.getUri());
+                        embedCreateSpec.setTitle(String.format("%s %s",
+                                card.getName(),
+                                card.getManaCost()));
+                        embedCreateSpec.addField(String.format("**%s**", card.getTypeLine()),
+                                String.format("%s%n*%s*",
+                                        card.getOracleText() == null ? Messenger.ZERO_WIDTH_SPACE : card.getOracleText(),
+                                        card.getFlavorText() == null ? Messenger.ZERO_WIDTH_SPACE : card.getFlavorText()), false);
+                        if(card.getPower() != null || card.getToughness() != null){
+                            embedCreateSpec.addField(Messenger.ZERO_WIDTH_SPACE,
+                                    String.format("**%s/%s**",
+                                            card.getPower(),
+                                            card.getToughness()), true);
+                        }
+                    }, event.isFragment(), event.getInlineOrder());
+                });
     }
-
 }

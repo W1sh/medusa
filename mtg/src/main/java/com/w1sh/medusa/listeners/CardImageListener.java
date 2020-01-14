@@ -17,7 +17,7 @@ import reactor.util.function.Tuple2;
 import java.awt.*;
 
 @Component
-public class CardImageListener implements EventListener<CardImageEvent> {
+public final class CardImageListener implements EventListener<CardImageEvent> {
 
     private final CardService cardService;
     private final ResponseDispatcher responseDispatcher;
@@ -41,8 +41,7 @@ public class CardImageListener implements EventListener<CardImageEvent> {
                 .filterWhen(this::validate)
                 .flatMap(ev -> Mono.justOrEmpty(ev.getInlineArgument()))
                 .flatMap(cardService::getCardByName)
-                .zipWith(event.getMessage().getChannel())
-                .map(tuple -> createEmbed(tuple, event))
+                .flatMap(tuple -> createEmbed(tuple, event))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
@@ -52,16 +51,18 @@ public class CardImageListener implements EventListener<CardImageEvent> {
         return Mono.just(event.getInlineArgument() != null && !event.getInlineArgument().isBlank());
     }
 
-    private Embed createEmbed(Tuple2<Card, MessageChannel> tuple, CardImageEvent event){
-        final Card card = tuple.getT1();
-        if(card.isEmpty() || card.getUri() == null || card.getName() == null || card.getImage() == null || card.getImage().getNormal() == null){
-            return CardUtils.createErrorEmbed(tuple.getT2(), event);
-        }
-        return new Embed(tuple.getT2(), embedCreateSpec -> {
-            embedCreateSpec.setColor(Color.GREEN);
-            embedCreateSpec.setUrl(card.getUri());
-            embedCreateSpec.setTitle(card.getName());
-            embedCreateSpec.setImage(card.getImage().getNormal());
-        }, event.isFragment(), event.getInlineOrder());
+    private Mono<Embed> createEmbed(Card card, CardImageEvent event){
+        return event.getMessage().getChannel()
+                .map(channel -> {
+                    if(card.isEmpty() || card.getUri() == null || card.getName() == null || card.getImage() == null || card.getImage().getNormal() == null){
+                        return CardUtils.createErrorEmbed(channel, event);
+                    }
+                    return new Embed(channel, embedCreateSpec -> {
+                        embedCreateSpec.setColor(Color.GREEN);
+                        embedCreateSpec.setUrl(card.getUri());
+                        embedCreateSpec.setTitle(card.getName());
+                        embedCreateSpec.setImage(card.getImage().getNormal());
+                    }, event.isFragment(), event.getInlineOrder());
+                });
     }
 }

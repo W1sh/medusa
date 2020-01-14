@@ -16,7 +16,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 @Component
-public class CardClient {
+public final class CardClient {
 
     private static final Logger logger = LoggerFactory.getLogger(CardClient.class);
 

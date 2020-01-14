@@ -2,7 +2,6 @@ package com.w1sh.medusa.services.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.stats.CacheStats;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.resources.ListResponse;
 import com.w1sh.medusa.rest.CardClient;
@@ -20,7 +19,7 @@ import java.time.Duration;
 import java.util.Optional;
 
 @Component
-public class CardServiceImpl implements CardService {
+public final class CardServiceImpl implements CardService {
 
     private static final Logger logger = LoggerFactory.getLogger(CardServiceImpl.class);
 
@@ -39,13 +38,11 @@ public class CardServiceImpl implements CardService {
     public Mono<Card> getCardByName(String name) {
         return CacheMono.lookup(key -> Mono.justOrEmpty(cardCache.getIfPresent(key))
                 .map(Signal::next), name)
-                .onCacheMissResume(
-                        () -> cardClient.getCardByName(name)
-                                .subscribeOn(Schedulers.elastic()))
-                .andWriteWith(
-                        (key, signal) -> Mono.fromRunnable(
-                                () -> Optional.ofNullable(signal.get())
-                                        .ifPresent(value -> cardCache.put(key, value))))
+                .onCacheMissResume(() -> cardClient.getCardByName(name)
+                        .subscribeOn(Schedulers.elastic()))
+                .andWriteWith((key, signal) -> Mono.fromRunnable(
+                        () -> Optional.ofNullable(signal.get())
+                                .ifPresent(value -> cardCache.put(key, value))))
                 .onErrorResume(throwable -> {
                     logger.error("Failed to fetch cards with name \"{}\"", name, throwable);
                     return Mono.just(new Card());
@@ -56,9 +53,5 @@ public class CardServiceImpl implements CardService {
     public Flux<Card> getCardsByName(String name) {
         return cardClient.getCardsByName(name)
                 .flatMapIterable(ListResponse::getData);
-    }
-
-    public CacheStats getCacheStats(){
-        return cardCache.stats();
     }
 }
