@@ -3,29 +3,31 @@ package com.w1sh.medusa.validators;
 import com.w1sh.medusa.core.data.TextMessage;
 import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.core.events.Event;
+import discord4j.core.object.entity.GuildChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
-public class ArgumentValidator implements Validator {
+public class PermissionsValidator implements Validator {
 
-    private static final Logger logger = LoggerFactory.getLogger(ArgumentValidator.class);
-    private static final String ARGUMENT_DELIMITER = " ";
+    private static final Logger logger = LoggerFactory.getLogger(PermissionsValidator.class);
 
     private final ResponseDispatcher responseDispatcher;
 
-    public ArgumentValidator(ResponseDispatcher responseDispatcher) {
+    public PermissionsValidator(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
     }
 
     @Override
-    public Mono<Boolean> validate(Event event){
-        return Mono.justOrEmpty(event.getMessage().getContent())
-                .map(content -> content.split(ARGUMENT_DELIMITER).length)
-                .filter(count -> count.equals(event.getNumAllowedArguments()))
-                .hasElement()
+    public Mono<Boolean> validate(Event event) {
+        return event.getMessage().getChannel()
+                .ofType(GuildChannel.class)
+                .flatMap(guildChannel -> guildChannel.getEffectivePermissions(event.getClient().getSelfId().orElseThrow()))
+                .flatMap(effPermissions -> Flux.fromIterable(event.getPermissions())
+                        .all(effPermissions::contains))
                 .flatMap(bool -> {
                     if(Boolean.FALSE.equals(bool)){
                         return createErrorMessage(event);
@@ -38,7 +40,7 @@ public class ArgumentValidator implements Validator {
     private Mono<TextMessage> createErrorMessage(Event event){
         return event.getMessage().getChannel()
                 .map(channel -> new TextMessage(channel,
-                        ":x: Invalid number of arguments, expected " + event.getNumAllowedArguments() + " arguments",
+                        ":x: I do not have permission to do that",
                         false))
                 .doOnNext(textMessage -> {
                     logger.error(textMessage.getContent());
