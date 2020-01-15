@@ -24,18 +24,21 @@ public class ArgumentValidator {
         return Mono.justOrEmpty(event.getMessage().getContent())
                 .map(content -> content.split(ARGUMENT_DELIMITER).length)
                 .filter(count -> count.equals(event.getNumAllowedArguments()))
-                .switchIfEmpty(Mono.error(new Exception("Invalid number of arguments, expected " + event.getNumAllowedArguments() + " arguments")))
                 .hasElement()
-                .onErrorResume(throwable -> {
-                    logger.error("Invalid number of arguments, expected {} arguments", event.getNumAllowedArguments());
-                    createErrorMessage(event, throwable).block();
-                    return Mono.just(false);
-                });
+                .flatMap(bool -> {
+                    if(Boolean.FALSE.equals(bool)){
+                        return createErrorMessage(event);
+                    }else return Mono.empty();
+                })
+                .hasElement()
+                .map(b -> !b);
     }
 
-    public Mono<TextMessage> createErrorMessage(Event event, Throwable throwable){
+    public Mono<TextMessage> createErrorMessage(Event event){
         return event.getMessage().getChannel()
-                .map(channel -> new TextMessage(channel, throwable.getMessage(), false))
+                .map(channel -> new TextMessage(channel,
+                        "Invalid number of arguments, expected " + event.getNumAllowedArguments() + " arguments",
+                        false))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush);
 
