@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories;
 
 import javax.annotation.PreDestroy;
 import java.text.SimpleDateFormat;
@@ -17,6 +18,7 @@ import java.time.Instant;
 import java.util.Date;
 
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
+@EnableReactiveMongoRepositories
 @PropertySource(value = "classpath:text-constants.properties")
 public class Main {
 
