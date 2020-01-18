@@ -7,7 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
-public class PlaylistService {
+public final class PlaylistService {
 
     private final PlaylistRepo playlistRepo;
 

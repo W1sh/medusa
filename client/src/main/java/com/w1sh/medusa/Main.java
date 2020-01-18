@@ -7,6 +7,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories;
@@ -17,7 +18,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 
-@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class,
+        HibernateJpaAutoConfiguration.class, MongoAutoConfiguration.class})
 @EnableReactiveMongoRepositories
 @PropertySource(value = "classpath:text-constants.properties")
 public class Main {
@@ -32,6 +34,7 @@ public class Main {
         logger.info("Booting Medusa - {}", now);
         Thread.currentThread().setName("medusa-main");
         SpringApplication.run(Main.class, args);
+
     }
 
     @PreDestroy

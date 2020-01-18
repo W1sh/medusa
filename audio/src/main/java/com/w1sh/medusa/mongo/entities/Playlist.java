@@ -1,16 +1,44 @@
 package com.w1sh.medusa.mongo.entities;
 
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Set;
+import java.util.List;
 
 @Document
-public class Playlist {
+public final class Playlist {
 
     @Id
-    private Integer id;
+    private String id;
     private Long user;
-    private Set<AudioTrack> tracks;
+    private List<String> tracks;
+
+    public Playlist(Long user, List<String> tracks) {
+        this.user = user;
+        this.tracks = tracks;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public Long getUser() {
+        return user;
+    }
+
+    public void setUser(Long user) {
+        this.user = user;
+    }
+
+    public List<String> getTracks() {
+        return tracks;
+    }
+
+    public void setTracks(List<String> tracks) {
+        this.tracks = tracks;
+    }
 }
