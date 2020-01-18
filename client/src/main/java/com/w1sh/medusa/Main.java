@@ -1,5 +1,7 @@
 package com.w1sh.medusa;
 
+import com.mongodb.reactivestreams.client.MongoClient;
+import com.mongodb.reactivestreams.client.MongoClients;
 import com.w1sh.medusa.metrics.Trackers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +11,9 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.data.mongodb.config.AbstractReactiveMongoConfiguration;
 import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories;
 
 import javax.annotation.PreDestroy;
@@ -18,11 +22,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 
-@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class,
-        HibernateJpaAutoConfiguration.class, MongoAutoConfiguration.class})
-@EnableReactiveMongoRepositories
+@SpringBootApplication
+@EnableReactiveMongoRepositories(value = "com.w1sh.medusa.mongo.repos")
 @PropertySource(value = "classpath:text-constants.properties")
-public class Main {
+public class Main extends AbstractReactiveMongoConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
     private static Instant startInstant;
@@ -34,11 +37,20 @@ public class Main {
         logger.info("Booting Medusa - {}", now);
         Thread.currentThread().setName("medusa-main");
         SpringApplication.run(Main.class, args);
-
     }
 
     @PreDestroy
     public void onDestroy(){
         logger.info("Closing Medusa - Alive for {}h", Duration.between(startInstant, Instant.now()).toHours());
+    }
+
+    @Override
+    public @Bean MongoClient reactiveMongoClient() {
+        return MongoClients.create();
+    }
+
+    @Override
+    protected String getDatabaseName() {
+        return "medusa";
     }
 }
