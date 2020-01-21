@@ -69,4 +69,11 @@ public final class PlaylistService {
         playlistsCache.put(playlist.getUser(), playlists);
         return playlists;
     }
+
+    public List<Playlist> removeIndex(List<Playlist> playlists, Integer index){
+        Playlist playlist = playlists.get(index - 1);
+        playlists.remove(playlist);
+        playlistsCache.put(playlist.getUser(), playlists);
+        return playlists;
+    }
 }
