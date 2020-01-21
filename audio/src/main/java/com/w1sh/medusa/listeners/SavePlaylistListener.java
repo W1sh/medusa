@@ -68,7 +68,7 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
     private Mono<TextMessage> createFailedSaveErrorMessage(SavePlaylistEvent event){
         return event.getMessage().getChannel()
                 .zipWith(Mono.justOrEmpty(event.getMember().flatMap(Member::getNickname)))
-                .map(tuple -> new TextMessage(tuple.getT1(), String.format("**%s**, could not save you playlist, try again later!",
+                .map(tuple -> new TextMessage(tuple.getT1(), String.format("**%s**, could not save your playlist, try again later!",
                         tuple.getT2()), false));
     }
 

@@ -23,7 +23,7 @@ public final class PlaylistService {
     private static final Logger logger = LoggerFactory.getLogger(PlaylistService.class);
 
     private final PlaylistRepo playlistRepo;
-    private final Cache<String, List<Playlist>> playlistsCache;
+    private final Cache<Long, List<Playlist>> playlistsCache;
 
     public PlaylistService(PlaylistRepo playlistRepo) {
         this.playlistRepo = playlistRepo;
@@ -33,21 +33,40 @@ public final class PlaylistService {
                 .build();
     }
 
-    public Flux<Playlist> findAll(String playlistsKey){
+    public Flux<Playlist> findAllByUserId(Long userId){
         return CacheMono.lookup(key -> Mono.justOrEmpty(playlistsCache.getIfPresent(key))
-                .map(Signal::next), playlistsKey)
-                .onCacheMissResume(Mono::empty)
+                .map(Signal::next), userId)
+                .onCacheMissResume(() -> Mono.just(new ArrayList<>()))
                 .andWriteWith((key, signal) -> Mono.fromRunnable(
                         () -> Optional.ofNullable(signal.get())
                                 .ifPresent(value -> playlistsCache.put(key, value))))
                 .onErrorResume(throwable -> {
-                    logger.error("Failed to fetch playlists of user with id \"{}\"", playlistsKey, throwable);
-                    return Mono.just(new ArrayList<>());
+                    logger.error("Failed to fetch playlists of user with id \"{}\"", userId, throwable);
+                    return Mono.empty();
                 })
                 .flatMapMany(Flux::fromIterable);
     }
 
     public Mono<Playlist> save(Playlist playlistMono){
-        return playlistRepo.save(playlistMono);
+        return findAllByUserId(playlistMono.getUser())
+                .collectList()
+                .map(playlists -> findAndReplace(playlists, playlistMono))
+                .flatMapMany(Flux::fromIterable)
+                .filter(playlist -> playlist.getId().equalsIgnoreCase(playlistMono.getId()))
+                .next();
+    }
+
+    private List<Playlist> findAndReplace(List<Playlist> playlists, Playlist playlist){
+        int index = -1;
+        for(int i=0; i<playlists.size(); i++){
+            if(playlist.getId().equalsIgnoreCase(playlists.get(i).getId())) index = i;
+        }
+        if(index >= 0) {
+            playlists.set(index, playlist);
+        } else {
+            playlists.add(playlist);
+        }
+        playlistsCache.put(playlist.getUser(), playlists);
+        return playlists;
     }
 }
