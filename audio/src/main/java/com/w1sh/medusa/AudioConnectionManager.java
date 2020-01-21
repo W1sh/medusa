@@ -36,6 +36,12 @@ public class AudioConnectionManager {
         this.audioConnections = new HashMap<>();
     }
 
+    public Mono<TrackScheduler> requestTrack(Long guildId, String trackLink){
+        return Mono.justOrEmpty(audioConnections.get(guildId))
+                .map(AudioConnection::getTrackScheduler)
+                .doOnNext(trackScheduler -> playerManager.loadItem(trackLink, trackScheduler));
+    }
+
     public Mono<TrackScheduler> requestTrack(MessageCreateEvent event){
         Long guildId = event.getGuildId().map(Snowflake::asLong).orElse(0L);
         return Mono.justOrEmpty(event.getMessage().getContent())
