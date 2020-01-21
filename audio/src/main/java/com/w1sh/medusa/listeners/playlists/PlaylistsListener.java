@@ -1,15 +1,13 @@
-package com.w1sh.medusa.listeners;
+package com.w1sh.medusa.listeners.playlists;
 
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.w1sh.medusa.core.data.Embed;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
-import com.w1sh.medusa.events.PlaylistsEvent;
+import com.w1sh.medusa.events.playlists.PlaylistsEvent;
 import com.w1sh.medusa.mongo.entities.Playlist;
 import com.w1sh.medusa.mongo.services.PlaylistService;
-import com.w1sh.medusa.utils.Messenger;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -17,7 +15,7 @@ import java.awt.*;
 import java.util.List;
 
 @Component
-public class PlaylistsListener implements EventListener<PlaylistsEvent> {
+public final class PlaylistsListener implements EventListener<PlaylistsEvent> {
 
     private final PlaylistService playlistService;
     private final ResponseDispatcher responseDispatcher;
