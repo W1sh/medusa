@@ -49,7 +49,7 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
                 .map(tracks -> new Playlist(userId, tracks))
                 .flatMap(playlistService::save)
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to save playlist", throwable)))
-                .flatMap(playlist -> createSavePlaylistSuccessMessage(event))
+                .flatMap(playlist -> createSavePlaylistSuccessMessage(event, playlist))
                 .switchIfEmpty(createFailedSaveErrorMessage(event))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
@@ -63,8 +63,9 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
                         tuple.getT2()), false));
     }
 
-    private Mono<TextMessage> createSavePlaylistSuccessMessage(SavePlaylistEvent event){
+    private Mono<TextMessage> createSavePlaylistSuccessMessage(SavePlaylistEvent event, Playlist playlist){
         return event.getMessage().getChannel()
-                .map(channel -> new TextMessage(channel, "Saved new playlist!", false));
+                .map(channel -> new TextMessage(channel, String.format("Saved new playlist with %d tracks!",
+                        playlist.getTracks().size()), false));
     }
 }
