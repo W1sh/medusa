@@ -9,6 +9,8 @@ import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.events.playlists.LoadPlaylistEvent;
 import com.w1sh.medusa.mongo.entities.Playlist;
 import com.w1sh.medusa.mongo.services.PlaylistService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -17,6 +19,8 @@ import java.awt.*;
 
 @Component
 public final class LoadPlaylistListener implements EventListener<LoadPlaylistEvent> {
+
+    private static final Logger logger = LoggerFactory.getLogger(LoadPlaylistEvent.class);
 
     private final PlaylistService playlistService;
     private final ResponseDispatcher responseDispatcher;
@@ -43,10 +47,11 @@ public final class LoadPlaylistListener implements EventListener<LoadPlaylistEve
                 .flatMap(playlist -> Flux.fromIterable(playlist.getTracks())
                         .flatMap(link -> event.getGuild()
                                 .map(guild -> guild.getId().asLong())
-                                .flatMap(id -> AudioConnectionManager.getInstance().requestTrack(id, link)))
+                                .flatMap(id -> AudioConnectionManager.getInstance().requestTrack(id, link.getUri())))
                         .last()
                         .map(t -> playlist))
                 .flatMap(playlist -> createEmbed(playlist, event))
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to load playlist", throwable)))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();

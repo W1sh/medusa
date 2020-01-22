@@ -1,8 +1,8 @@
 package com.w1sh.medusa.listeners.playlists;
 
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.w1sh.medusa.AudioConnection;
 import com.w1sh.medusa.AudioConnectionManager;
+import com.w1sh.medusa.TrackScheduler;
 import com.w1sh.medusa.core.data.TextMessage;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
@@ -16,10 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public final class SavePlaylistListener implements EventListener<SavePlaylistEvent> {
@@ -43,21 +39,16 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
 
     @Override
     public Mono<Void> execute(SavePlaylistEvent event) {
+        Long userId = event.getMember().map(member -> member.getId().asLong()).orElseThrow();
+
         return Mono.justOrEmpty(event.getGuildId())
                 .flatMap(AudioConnectionManager.getInstance()::getAudioConnection)
                 .map(AudioConnection::getTrackScheduler)
-                .flatMapIterable(trackScheduler -> {
-                    List<AudioTrack> trackList = new ArrayList<>(trackScheduler.getQueue());
-                    trackScheduler.getPlayingTrack().ifPresent(track -> trackList.add(0, track));
-                    return trackList.stream().map(track -> track.getInfo().uri).collect(Collectors.toList());
-                })
+                .flatMapIterable(TrackScheduler::getFullQueue)
                 .collectList()
-                .flatMap(tracks -> Mono.justOrEmpty(event.getMember())
-                        .map(member -> member.getId().asLong())
-                        .map(id -> new Playlist(id, tracks))
-                )
+                .map(tracks -> new Playlist(userId, tracks))
                 .flatMap(playlistService::save)
-                .doOnError(throwable -> logger.error("Failed to save playlist", throwable))
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to save playlist", throwable)))
                 .flatMap(playlist -> createSavePlaylistSuccessMessage(event))
                 .switchIfEmpty(createFailedSaveErrorMessage(event))
                 .doOnNext(responseDispatcher::queue)

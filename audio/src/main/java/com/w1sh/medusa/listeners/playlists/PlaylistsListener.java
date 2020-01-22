@@ -8,6 +8,8 @@ import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.events.playlists.PlaylistsEvent;
 import com.w1sh.medusa.mongo.entities.Playlist;
 import com.w1sh.medusa.mongo.services.PlaylistService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -16,6 +18,8 @@ import java.util.List;
 
 @Component
 public final class PlaylistsListener implements EventListener<PlaylistsEvent> {
+
+    private static final Logger logger = LoggerFactory.getLogger(PlaylistsListener.class);
 
     private final PlaylistService playlistService;
     private final ResponseDispatcher responseDispatcher;
@@ -36,9 +40,11 @@ public final class PlaylistsListener implements EventListener<PlaylistsEvent> {
     public Mono<Void> execute(PlaylistsEvent event) {
         return Mono.justOrEmpty(event.getMember())
                 .map(member -> member.getId().asLong())
-                .flatMap(id -> playlistService.findAllByUserId(id)
-                        .collectList())
+                .flatMapMany(playlistService::findAllByUserId)
+                .collectList()
                 .flatMap(playlists -> createEmbed(playlists, event))
+                .onErrorResume(throwable -> Mono.fromRunnable(
+                        () -> logger.error("Failed to list all user's playlists", throwable)))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
@@ -50,8 +56,8 @@ public final class PlaylistsListener implements EventListener<PlaylistsEvent> {
                     embedCreateSpec.setColor(Color.GREEN);
                     embedCreateSpec.setTitle("Saved playlists");
                     for (Playlist playlist : playlists) {
-                            embedCreateSpec.addField("Playlist", String.format("**%d track(s)**",
-                                    playlist.getTracks().size()), false);
+                        embedCreateSpec.addField("Playlist", String.format("**%d track(s)**",
+                                playlist.getTracks().size()), false);
                     }
                 }));
     }

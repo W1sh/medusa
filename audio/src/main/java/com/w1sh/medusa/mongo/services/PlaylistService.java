@@ -22,12 +22,14 @@ public final class PlaylistService {
 
     private static final Logger logger = LoggerFactory.getLogger(PlaylistService.class);
 
+
     private final PlaylistRepo playlistRepo;
     private final Cache<Long, List<Playlist>> playlistsCache;
 
     public PlaylistService(PlaylistRepo playlistRepo) {
         this.playlistRepo = playlistRepo;
         this.playlistsCache = Caffeine.newBuilder()
+                .maximumSize(10000)
                 .expireAfterAccess(Duration.ofHours(6))
                 .recordStats()
                 .build();

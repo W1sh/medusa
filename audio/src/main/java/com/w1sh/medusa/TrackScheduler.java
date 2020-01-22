@@ -94,6 +94,13 @@ public class TrackScheduler implements AudioLoadResultHandler {
         return queue;
     }
 
+    public BlockingQueue<AudioTrack> getFullQueue(){
+        BlockingQueue<AudioTrack> fullQueue = new LinkedBlockingQueue<>();
+        getPlayingTrack().ifPresent(fullQueue::add);
+        fullQueue.addAll(queue);
+        return fullQueue;
+    }
+
     public Optional<AudioTrack> getPlayingTrack() {
         return Optional.ofNullable(playingTrack);
     }

@@ -8,6 +8,8 @@ import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.events.playlists.DeletePlaylistEvent;
 import com.w1sh.medusa.mongo.entities.Playlist;
 import com.w1sh.medusa.mongo.services.PlaylistService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -15,6 +17,8 @@ import java.util.List;
 
 @Component
 public final class DeletePlaylistListener implements EventListener<DeletePlaylistEvent> {
+
+    private static final Logger logger = LoggerFactory.getLogger(DeletePlaylistListener.class);
 
     private final PlaylistService playlistService;
     private final ResponseDispatcher responseDispatcher;
@@ -41,6 +45,7 @@ public final class DeletePlaylistListener implements EventListener<DeletePlaylis
                         .map(content -> Integer.parseInt(content.split(" ")[1])))
                 .map(tuple -> playlistService.removeIndex(tuple.getT1(), tuple.getT2()))
                 .flatMap(playlists -> createSuccessTextMessage(playlists, event))
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to delete playlist", throwable)))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
@@ -48,7 +53,8 @@ public final class DeletePlaylistListener implements EventListener<DeletePlaylis
 
     private Mono<TextMessage> createSuccessTextMessage(List<Playlist> playlists, DeletePlaylistEvent event){
         return event.getMessage().getChannel()
-                .map(channel -> new TextMessage(channel, "Deleted playlist", false));
+                .map(channel -> new TextMessage(channel, String.format("Deleted playlist, you now have %d playlists",
+                        playlists.size()), false));
     }
 
 }
