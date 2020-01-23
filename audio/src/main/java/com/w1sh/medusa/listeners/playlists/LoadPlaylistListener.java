@@ -1,6 +1,7 @@
 package com.w1sh.medusa.listeners.playlists;
 
 import com.w1sh.medusa.AudioConnectionManager;
+import com.w1sh.medusa.TrackScheduler;
 import com.w1sh.medusa.core.data.Embed;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
@@ -13,7 +14,6 @@ import com.w1sh.medusa.utils.Messenger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.awt.*;
@@ -45,27 +45,26 @@ public final class LoadPlaylistListener implements EventListener<LoadPlaylistEve
                 .flatMapMany(playlistService::findAllByUserId)
                 .take(event.getMessage().getContent().map(c -> Integer.parseInt(c.split(" ")[1])).orElse(1))
                 .last()
-                .flatMap(playlist -> Flux.fromIterable(playlist.getTracks())
-                        .flatMap(link -> event.getGuild()
-                                .map(guild -> guild.getId().asLong())
-                                .flatMap(id -> AudioConnectionManager.getInstance().requestTrack(id, link.getUri())))
-                        .last()
-                        .map(t -> playlist))
-                .flatMap(playlist -> createEmbed(playlist, event))
+                .flatMapIterable(Playlist::getTracks)
+                .flatMap(track -> event.getGuild()
+                        .map(guild -> guild.getId().asLong())
+                        .flatMap(id -> AudioConnectionManager.getInstance().requestTrack(id, track.getUri())))
+                .last()
+                .flatMap(trackScheduler -> createEmbed(trackScheduler, event))
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to load playlist", throwable)))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
     }
 
-    private Mono<Embed> createEmbed(Playlist playlist, LoadPlaylistEvent event){
+    private Mono<Embed> createEmbed(TrackScheduler trackScheduler, LoadPlaylistEvent event){
         return event.getMessage().getChannel()
                 .map(channel -> new Embed(channel, embedCreateSpec -> {
                     embedCreateSpec.setColor(Color.GREEN);
                     embedCreateSpec.setTitle("Loaded playlist");
                     embedCreateSpec.setDescription(String.format("**%d** tracks loaded | %s",
-                            playlist.getTracks().size(),
-                            Messenger.formatDuration(playlist.getFullDuration())));
+                            trackScheduler.getFullQueue().size(),
+                            Messenger.formatDuration(trackScheduler.getQueueDuration())));
                 }));
     }
 }
