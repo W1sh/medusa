@@ -9,6 +9,7 @@ import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.events.playlists.LoadPlaylistEvent;
 import com.w1sh.medusa.mongo.entities.Playlist;
 import com.w1sh.medusa.mongo.services.PlaylistService;
+import com.w1sh.medusa.utils.Messenger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -62,7 +63,9 @@ public final class LoadPlaylistListener implements EventListener<LoadPlaylistEve
                 .map(channel -> new Embed(channel, embedCreateSpec -> {
                     embedCreateSpec.setColor(Color.GREEN);
                     embedCreateSpec.setTitle("Loaded playlist");
-                    embedCreateSpec.setDescription(String.format("**%d** tracks", playlist.getTracks().size()));
+                    embedCreateSpec.setDescription(String.format("**%d** tracks loaded | %s",
+                            playlist.getTracks().size(),
+                            Messenger.formatDuration(playlist.getFullDuration())));
                 }));
     }
 }

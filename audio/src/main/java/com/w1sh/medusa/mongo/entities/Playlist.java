@@ -43,4 +43,10 @@ public final class Playlist {
     public void setTracks(List<Track> tracks) {
         this.tracks = tracks;
     }
+
+    public Long getFullDuration(){
+        return tracks.stream()
+                .map(Track::getDuration)
+                .reduce(Long::sum).orElse(0L);
+    }
 }

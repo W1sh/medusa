@@ -7,7 +7,9 @@ import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.events.playlists.PlaylistsEvent;
 import com.w1sh.medusa.mongo.entities.Playlist;
+import com.w1sh.medusa.mongo.entities.Track;
 import com.w1sh.medusa.mongo.services.PlaylistService;
+import com.w1sh.medusa.utils.Messenger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -56,8 +58,9 @@ public final class PlaylistsListener implements EventListener<PlaylistsEvent> {
                     embedCreateSpec.setColor(Color.GREEN);
                     embedCreateSpec.setTitle("Saved playlists");
                     for (Playlist playlist : playlists) {
-                        embedCreateSpec.addField("Playlist", String.format("**%d track(s)**",
-                                playlist.getTracks().size()), false);
+                        embedCreateSpec.addField("Playlist", String.format("**%d track(s)** | %s",
+                                playlist.getTracks().size(),
+                                Messenger.formatDuration(playlist.getFullDuration())), false);
                     }
                 }));
     }
