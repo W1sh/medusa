@@ -1,11 +1,9 @@
 package com.w1sh.medusa.mongo.entities;
 
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Document
@@ -16,12 +14,10 @@ public final class Playlist {
     private Long user;
     private List<Track> tracks;
 
-    public Playlist(Long user, List<AudioTrack> tracks) {
+    public Playlist(Long user, List<Track> tracks) {
         this.id = ObjectId.get().toString();
         this.user = user;
-        this.tracks = new ArrayList<>();
-        tracks.forEach(track -> this.tracks.add(
-                new Track(track.getInfo().author, track.getInfo().title, track.getInfo().uri, track.getInfo().length)));
+        this.tracks = tracks;
     }
 
     public String getId() {

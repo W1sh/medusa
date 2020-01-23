@@ -10,6 +10,7 @@ import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.events.playlists.SavePlaylistEvent;
 import com.w1sh.medusa.mongo.entities.Playlist;
+import com.w1sh.medusa.mongo.entities.Track;
 import com.w1sh.medusa.mongo.services.PlaylistService;
 import discord4j.core.object.entity.Member;
 import org.slf4j.Logger;
@@ -45,6 +46,7 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
                 .flatMap(AudioConnectionManager.getInstance()::getAudioConnection)
                 .map(AudioConnection::getTrackScheduler)
                 .flatMapIterable(TrackScheduler::getFullQueue)
+                .map(at -> new Track(at.getInfo().author, at.getInfo().title, at.getInfo().uri, at.getInfo().length))
                 .collectList()
                 .map(tracks -> new Playlist(userId, tracks))
                 .flatMap(playlistService::save)
