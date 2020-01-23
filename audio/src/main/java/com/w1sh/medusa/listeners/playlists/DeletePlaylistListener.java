@@ -8,6 +8,7 @@ import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.events.playlists.DeletePlaylistEvent;
 import com.w1sh.medusa.mongo.entities.Playlist;
 import com.w1sh.medusa.mongo.services.PlaylistService;
+import discord4j.core.object.entity.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -53,7 +54,8 @@ public final class DeletePlaylistListener implements EventListener<DeletePlaylis
 
     private Mono<TextMessage> createSuccessTextMessage(List<Playlist> playlists, DeletePlaylistEvent event){
         return event.getMessage().getChannel()
-                .map(channel -> new TextMessage(channel, String.format("Deleted playlist, you now have %d playlists",
+                .map(channel -> new TextMessage(channel, String.format("**%s**, deleted playlist, you now have %d playlists",
+                        event.getMember().flatMap(Member::getNickname).orElse(""),
                         playlists.size()), false));
     }
 

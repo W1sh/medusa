@@ -7,9 +7,9 @@ import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.events.playlists.PlaylistsEvent;
 import com.w1sh.medusa.mongo.entities.Playlist;
-import com.w1sh.medusa.mongo.entities.Track;
 import com.w1sh.medusa.mongo.services.PlaylistService;
 import com.w1sh.medusa.utils.Messenger;
+import discord4j.core.object.entity.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -56,9 +56,11 @@ public final class PlaylistsListener implements EventListener<PlaylistsEvent> {
         return event.getMessage().getChannel()
                 .map(channel -> new Embed(channel, embedCreateSpec -> {
                     embedCreateSpec.setColor(Color.GREEN);
-                    embedCreateSpec.setTitle("Saved playlists");
+                    embedCreateSpec.setTitle(String.format("%s saved playlists",
+                            event.getMember().flatMap(Member::getNickname).orElse("")));
                     for (Playlist playlist : playlists) {
-                        embedCreateSpec.addField("Playlist", String.format("**%d track(s)** | %s",
+                        embedCreateSpec.addField("Playlist", String.format("** %s %d track(s)** | %s",
+                                Messenger.BULLET,
                                 playlist.getTracks().size(),
                                 Messenger.formatDuration(playlist.getFullDuration())), false);
                     }
