@@ -1,6 +1,8 @@
 package com.w1sh.medusa.configurations;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.reactivestreams.client.MongoClient;
+import com.mongodb.reactivestreams.client.MongoClients;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
@@ -14,11 +16,12 @@ import discord4j.core.object.presence.Presence;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.mongodb.config.AbstractReactiveMongoConfiguration;
 
 import java.security.SecureRandom;
 
 @Configuration
-public class AppConfiguration {
+public class AppConfiguration extends AbstractReactiveMongoConfiguration {
 
     @Bean
     public AudioPlayerManager audioPlayerManager() {
@@ -44,4 +47,13 @@ public class AppConfiguration {
                 .build();
     }
 
+    @Override
+    public MongoClient reactiveMongoClient() {
+        return MongoClients.create();
+    }
+
+    @Override
+    protected String getDatabaseName() {
+        return "medusa";
+    }
 }

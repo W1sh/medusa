@@ -17,7 +17,6 @@ import reactor.util.function.Tuple2;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component
@@ -34,6 +33,12 @@ public class AudioConnectionManager {
         if(previous != null) throw new IllegalArgumentException("Cannot created second AudioConnectionManager");
         this.playerManager = playerManager;
         this.audioConnections = new HashMap<>();
+    }
+
+    public Mono<TrackScheduler> requestTrack(Long guildId, String trackLink){
+        return Mono.justOrEmpty(audioConnections.get(guildId))
+                .map(AudioConnection::getTrackScheduler)
+                .doOnNext(trackScheduler -> playerManager.loadItem(trackLink, trackScheduler));
     }
 
     public Mono<TrackScheduler> requestTrack(MessageCreateEvent event){
@@ -66,19 +71,18 @@ public class AudioConnectionManager {
                 .doOnError(throwable -> logger.error("Failed to leave join channel", throwable));
     }
 
-    public Mono<Void> leaveVoiceChannel(Snowflake guildIdSnowflake) {
+    public Mono<Boolean> leaveVoiceChannel(Snowflake guildIdSnowflake) {
         return Mono.just(guildIdSnowflake)
                 .flatMap(this::getAudioConnection)
-                .filter(Objects::nonNull)
                 .zipWith(Mono.just(guildIdSnowflake))
                 .doOnNext(tuple -> logger.info("Client leaving voice channel in guild <{}>", tuple.getT2().asBigInteger()))
                 .map(Tuple2::getT1)
-                .doOnNext(AudioConnection::destroy)
+                .doOnNext(connection -> destroyAudioConnection(guildIdSnowflake.asLong(), connection))
                 .doOnError(throwable -> logger.error("Failed to leave voice channel", throwable))
-                .then(); // find new return type to represent completion
+                .hasElement();
     }
 
-    public Mono<Void> scheduleLeave(Snowflake guildIdSnowflake) {
+    public Mono<Boolean> scheduleLeave(Snowflake guildIdSnowflake) {
         final Duration timeout = Duration.ofSeconds(120);
         return Mono.just(guildIdSnowflake)
                 .doOnNext(snowflake -> logger.info("Scheduling client to leave voice channel in guild <{}> after <{}> seconds",
@@ -109,5 +113,10 @@ public class AudioConnectionManager {
         final AudioConnection audioConnection = new AudioConnection(provider, player, voiceConnection, channel);
         audioConnections.put(guildId, audioConnection);
         return Mono.just(audioConnections.get(guildId));
+    }
+
+    private void destroyAudioConnection(Long guildId, AudioConnection connection){
+        connection.destroy();
+        audioConnections.remove(guildId);
     }
 }

@@ -23,8 +23,8 @@ public class Messenger {
 
     private static final Logger logger = LoggerFactory.getLogger(Messenger.class);
     private static final FluxProcessor<TextMessage, TextMessage> messageProcessor = EmitterProcessor.create(false);
-    private static final Integer bufferSize = 2;
 
+    public static final String BULLET = "\u2022";
     public static final String ZERO_WIDTH_SPACE = "\u200E";
 
     public static void queue(MessageCreateEvent event, String content){

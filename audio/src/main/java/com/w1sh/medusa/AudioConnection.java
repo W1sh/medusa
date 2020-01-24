@@ -18,7 +18,7 @@ public class AudioConnection {
     private final MessageChannel messageChannel;
 
     public AudioConnection(SimpleAudioProvider audioProvider, AudioPlayer player, VoiceConnection voiceConnection, GuildChannel messageChannel) {
-        final TrackEventListener trackEventListener = TrackEventListenerFactory.build(messageChannel.getGuildId().asLong());
+        final TrackEventListener trackEventListener = new TrackEventListener(messageChannel.getGuildId().asLong());
         this.messageChannel = (MessageChannel) messageChannel;
         this.voiceConnection = voiceConnection;
         this.audioProvider = audioProvider;
