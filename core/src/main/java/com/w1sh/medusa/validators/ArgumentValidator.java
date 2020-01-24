@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class ArgumentValidator implements Validator {
+public final class ArgumentValidator implements Validator {
 
     private static final Logger logger = LoggerFactory.getLogger(ArgumentValidator.class);
     private static final String ARGUMENT_DELIMITER = " ";
@@ -24,7 +24,7 @@ public class ArgumentValidator implements Validator {
     public Mono<Boolean> validate(Event event){
         return Mono.justOrEmpty(event.getMessage().getContent())
                 .map(content -> content.split(ARGUMENT_DELIMITER).length)
-                .filter(count -> count.equals(event.getNumAllowedArguments()))
+                .filter(count -> count.equals(event.getMinArguments()))
                 .hasElement()
                 .flatMap(bool -> {
                     if(Boolean.FALSE.equals(bool)){
@@ -38,7 +38,7 @@ public class ArgumentValidator implements Validator {
     private Mono<TextMessage> createErrorMessage(Event event){
         return event.getMessage().getChannel()
                 .map(channel -> new TextMessage(channel,
-                        ":x: Invalid number of arguments, expected " + event.getNumAllowedArguments() + " arguments",
+                        ":x: Invalid number of arguments, expected " + event.getMinArguments() + " arguments",
                         false))
                 .doOnNext(textMessage -> {
                     logger.error(textMessage.getContent());
