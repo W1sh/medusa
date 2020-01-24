@@ -11,7 +11,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
-public class PermissionsValidator implements Validator {
+public final class PermissionsValidator implements Validator {
 
     private static final Logger logger = LoggerFactory.getLogger(PermissionsValidator.class);
 
