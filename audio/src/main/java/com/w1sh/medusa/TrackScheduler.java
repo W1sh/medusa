@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class TrackScheduler implements AudioLoadResultHandler {
+public final class TrackScheduler implements AudioLoadResultHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(TrackScheduler.class);
 
@@ -92,6 +92,13 @@ public class TrackScheduler implements AudioLoadResultHandler {
 
     public BlockingQueue<AudioTrack> getQueue() {
         return queue;
+    }
+
+    public BlockingQueue<AudioTrack> getFullQueue(){
+        BlockingQueue<AudioTrack> fullQueue = new LinkedBlockingQueue<>();
+        getPlayingTrack().ifPresent(fullQueue::add);
+        fullQueue.addAll(queue);
+        return fullQueue;
     }
 
     public Optional<AudioTrack> getPlayingTrack() {
