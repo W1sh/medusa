@@ -22,6 +22,7 @@ public final class EventFactory {
     private static final Logger logger = LoggerFactory.getLogger(EventFactory.class);
     private static final Map<String, Class<? extends Event>> EVENTS = new HashMap<>();
     private static final Pattern inlineEventPattern = Pattern.compile("\\{\\{.+?(?:}})");
+    private static final String ARGUMENT_DELIMITER = " ";
     private static String prefix = "!";
 
     private EventFactory(){}
@@ -31,7 +32,7 @@ public final class EventFactory {
             final String message = event.getMessage().getContent().orElse("");
 
             if (message.startsWith(prefix)){
-                final String eventKeyword = message.split(" ")[0].substring(1);
+                final String eventKeyword = message.split(ARGUMENT_DELIMITER)[0].substring(1);
                 final Class<?> clazz = EVENTS.getOrDefault(eventKeyword, UnsupportedEvent.class);
                 Event e = (Event) clazz.getConstructor(MessageCreateEvent.class).newInstance(event);
                 return extractArguments(e);
@@ -81,7 +82,7 @@ public final class EventFactory {
     }
 
     private static Event extractArguments(final Event event){
-        String[] content = event.getMessage().getContent().orElse("").split(" ");
+        String[] content = event.getMessage().getContent().orElse("").split(ARGUMENT_DELIMITER);
         List<String> argumentsList = Arrays.asList(content).subList(1, content.length);
         Map<Integer, String> arguments = IntStream.range(0, argumentsList.size())
                 .boxed()

@@ -12,7 +12,6 @@ import reactor.core.publisher.Mono;
 public final class ArgumentValidator implements Validator {
 
     private static final Logger logger = LoggerFactory.getLogger(ArgumentValidator.class);
-    private static final String ARGUMENT_DELIMITER = " ";
 
     private final ResponseDispatcher responseDispatcher;
 
@@ -22,9 +21,8 @@ public final class ArgumentValidator implements Validator {
 
     @Override
     public Mono<Boolean> validate(Event event){
-        return Mono.justOrEmpty(event.getMessage().getContent())
-                .map(content -> content.split(ARGUMENT_DELIMITER).length)
-                .filter(count -> count.equals(event.getMinArguments()))
+        return Mono.justOrEmpty(event)
+                .filter(e -> e.getArguments().size() >= e.getMinArguments())
                 .hasElement()
                 .flatMap(bool -> {
                     if(Boolean.FALSE.equals(bool)){
@@ -41,7 +39,7 @@ public final class ArgumentValidator implements Validator {
                         ":x: Invalid number of arguments, expected " + event.getMinArguments() + " arguments",
                         false))
                 .doOnNext(textMessage -> {
-                    logger.error(textMessage.getContent());
+                    logger.error("Invalid number of arguments received, event discarded");
                     responseDispatcher.queue(textMessage);
                 })
                 .doAfterTerminate(responseDispatcher::flush);

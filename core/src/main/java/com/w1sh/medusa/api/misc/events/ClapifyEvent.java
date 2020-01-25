@@ -8,6 +8,6 @@ public class ClapifyEvent extends Event {
     public static final String KEYWORD = "clapify";
 
     public ClapifyEvent(MessageCreateEvent event) {
-        super(event, Integer.MAX_VALUE);
+        super(event, 1);
     }
 }

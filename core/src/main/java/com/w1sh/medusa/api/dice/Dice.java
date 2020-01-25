@@ -16,10 +16,6 @@ public class Dice {
         this.random = random;
     }
 
-    public Integer roll(Integer min, Integer max) {
-        return random.nextInt((min + max + 1)) + min;
-    }
-
     public Integer roll(String min, String max) {
         try {
             return random.nextInt((Integer.parseInt(min) + Integer.parseInt(max) + 1)) + Integer.parseInt(min);
