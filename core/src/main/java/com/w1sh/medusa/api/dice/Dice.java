@@ -33,9 +33,9 @@ public class Dice {
                 .map(limits -> limits.getArguments().get(0).split(ROLL_ARGUMENT_DELIMITER))
                 .filter(limits -> limits.length == 2)
                 .map(limits -> new int[]{Integer.parseInt(limits[0]), Integer.parseInt(limits[1])})
+                .filter(limits -> limits[1] > limits[0])
                 .onErrorResume(throwable -> Mono.fromRunnable(
                         () -> logger.error("Failed to parse arguments", throwable)))
-                .filter(limits -> limits[1] > limits[0])
                 .hasElement()
                 .flatMap(bool -> {
                     if(Boolean.FALSE.equals(bool)){
