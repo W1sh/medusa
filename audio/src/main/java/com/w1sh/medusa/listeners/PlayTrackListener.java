@@ -40,7 +40,7 @@ public final class PlayTrackListener implements EventListener<PlayTrackEvent> {
         return Mono.justOrEmpty(event)
                 .flatMap(tuple -> AudioConnectionManager.getInstance().requestTrack(event))
                 .flatMap(trackScheduler -> createQueueMessage(trackScheduler, event))
-                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to delete playlist", throwable)))
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to play track", throwable)))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();

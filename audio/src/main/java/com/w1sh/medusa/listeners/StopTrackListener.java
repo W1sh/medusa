@@ -46,6 +46,7 @@ public final class StopTrackListener implements EventListener<StopTrackEvent> {
         final int queueSize = audioConnection.getTrackScheduler().getQueue().size();
         audioConnection.getTrackScheduler().stopQueue();
         return event.getMessage().getChannel()
+                .filter(c -> audioConnection.getTrackScheduler().getPlayingTrack().isPresent())
                 .map(channel -> new Embed(channel, embedCreateSpec ->
                         embedCreateSpec.setTitle(":stop_button:\tStopped queue")
                                 .setColor(Color.GREEN)
@@ -53,6 +54,16 @@ public final class StopTrackListener implements EventListener<StopTrackEvent> {
                                         "Stopped playing **%s**%n%nCleared **%d** tracks from queue. Queue is now empty.",
                                         audioConnection.getTrackScheduler().getPlayingTrack().map(track -> track.getInfo().title).orElse(""),
                                         queueSize))
+                                .setFooter("The bot will automatically leave after 2 min unless new tracks are added.", null)))
+                .switchIfEmpty(createEmptyQueueStopMessage(event));
+    }
+
+    public Mono<Embed> createEmptyQueueStopMessage(StopTrackEvent event){
+        return event.getMessage().getChannel()
+                .map(channel -> new Embed(channel, embedCreateSpec ->
+                        embedCreateSpec.setTitle(":stop_button:\tStopped queue")
+                                .setColor(Color.GREEN)
+                                .setDescription(String.format("Stopped queue%n%nCleared all tracks from queue. Queue is now empty."))
                                 .setFooter("The bot will automatically leave after 2 min unless new tracks are added.", null)));
     }
 }

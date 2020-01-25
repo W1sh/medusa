@@ -43,7 +43,7 @@ public final class PermissionsValidator implements Validator {
                         ":x: I do not have permission to do that",
                         false))
                 .doOnNext(textMessage -> {
-                    logger.error(textMessage.getContent());
+                    logger.error("Permissions validation failed, event discarded");
                     responseDispatcher.queue(textMessage);
                 })
                 .doAfterTerminate(responseDispatcher::flush);

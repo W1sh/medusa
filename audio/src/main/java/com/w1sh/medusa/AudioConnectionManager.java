@@ -13,11 +13,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuple2;
 
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component
@@ -82,13 +84,14 @@ public class AudioConnectionManager {
                 .hasElement();
     }
 
-    public Mono<Boolean> scheduleLeave(Snowflake guildIdSnowflake) {
+    public Mono<Snowflake> scheduleLeave(Snowflake guildIdSnowflake) {
         final Duration timeout = Duration.ofSeconds(120);
         return Mono.just(guildIdSnowflake)
-                .doOnNext(snowflake -> logger.info("Scheduling client to leave voice channel in guild <{}> after <{}> seconds",
-                        snowflake.asLong(), timeout.getSeconds()))
-                .delayElement(timeout)
-                .flatMap(this::leaveVoiceChannel);
+                .doOnNext(snowflake -> {
+                    logger.info("Scheduling client to leave voice channel in guild <{}> after <{}> seconds",
+                            snowflake.asLong(), timeout.getSeconds());
+                    Schedulers.elastic().schedule(() -> leaveVoiceChannel(snowflake).subscribe(), 120, TimeUnit.SECONDS);
+                });
     }
 
     public void shutdown(){
