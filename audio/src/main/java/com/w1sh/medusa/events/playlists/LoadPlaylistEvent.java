@@ -8,6 +8,6 @@ public final class LoadPlaylistEvent extends Event {
     public static final String KEYWORD = "loadplaylist";
 
     public LoadPlaylistEvent(MessageCreateEvent event) {
-        super(event, 2);
+        super(event, 1);
     }
 }

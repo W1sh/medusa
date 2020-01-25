@@ -6,7 +6,7 @@ import discord4j.core.object.util.Permission;
 
 import java.util.Collections;
 
-public class JoinVoiceChannelEvent extends Event {
+public final class JoinVoiceChannelEvent extends Event {
 
     public static final String KEYWORD = "join";
 
