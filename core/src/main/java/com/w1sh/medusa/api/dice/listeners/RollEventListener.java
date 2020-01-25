@@ -14,7 +14,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
-public class RollEventListener implements EventListener<RollEvent> {
+public final class RollEventListener implements EventListener<RollEvent> {
 
     private final ResponseDispatcher responseDispatcher;
     private final Dice dice;
