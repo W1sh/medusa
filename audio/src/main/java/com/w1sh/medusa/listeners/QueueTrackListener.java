@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.Queue;
 
 @Component
-public class QueueTrackListener implements EventListener<QueueTrackEvent> {
+public final class QueueTrackListener implements EventListener<QueueTrackEvent> {
 
     public QueueTrackListener(CommandEventDispatcher eventDispatcher) {
         EventFactory.registerEvent(QueueTrackEvent.KEYWORD, QueueTrackEvent.class);

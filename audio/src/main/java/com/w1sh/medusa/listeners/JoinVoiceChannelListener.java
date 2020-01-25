@@ -6,21 +6,17 @@ import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
-import com.w1sh.medusa.core.managers.PermissionManager;
 import com.w1sh.medusa.events.JoinVoiceChannelEvent;
-import com.w1sh.medusa.utils.Messenger;
 import discord4j.core.object.entity.Member;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-@DependsOn({"audioConnectionManager", "permissionManager"})
+@DependsOn({"audioConnectionManager"})
 @Component
 public final class JoinVoiceChannelListener implements EventListener<JoinVoiceChannelEvent> {
 
-    @Value("${event.voice.missing-permissions.join}")
-    private String voiceMissingPermissions;
     @Value("${event.voice.join}")
     private String voiceJoin;
 
@@ -40,10 +36,6 @@ public final class JoinVoiceChannelListener implements EventListener<JoinVoiceCh
     @Override
     public Mono<Void> execute(JoinVoiceChannelEvent event) {
         return Mono.justOrEmpty(event)
-                .filterWhen(ev -> PermissionManager.getInstance().hasPermissions(ev, ev.getPermissions())
-                        .doOnNext(bool -> {
-                            if(Boolean.FALSE.equals(bool)) Messenger.send(event, voiceMissingPermissions).subscribe();
-                        }))
                 .filterWhen(ev -> Mono.justOrEmpty(ev.getMember())
                         .flatMap(Member::getVoiceState)
                         .hasElement())

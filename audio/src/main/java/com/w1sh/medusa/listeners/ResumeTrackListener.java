@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class ResumeTrackListener implements EventListener<ResumeTrackEvent> {
+public final class ResumeTrackListener implements EventListener<ResumeTrackEvent> {
 
     public ResumeTrackListener(CommandEventDispatcher eventDispatcher) {
         EventFactory.registerEvent(ResumeTrackEvent.KEYWORD, ResumeTrackEvent.class);
