@@ -38,9 +38,10 @@ public class RollEventListener implements EventListener<RollEvent> {
 
     @Override
     public Mono<Void> execute(RollEvent event) {
-        return Mono.just(event.getArguments().get(0))
-                .map(limits -> limits.split("-"))
-                .map(strings -> dice.roll(strings[0], strings[1]))
+        return Mono.just(event)
+                .filterWhen(dice::validateRollArgument)
+                .map(ev -> ev.getArguments().get(0).split(Dice.ROLL_ARGUMENT_DELIMITER))
+                .flatMap(limits -> dice.roll(Integer.parseInt(limits[0]), Integer.parseInt(limits[1])))
                 .flatMapMany(result -> sendResults(result, event))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
