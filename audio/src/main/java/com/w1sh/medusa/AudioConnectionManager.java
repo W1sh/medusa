@@ -2,6 +2,7 @@ package com.w1sh.medusa;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
+import com.w1sh.medusa.core.events.Event;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.GuildChannel;
@@ -12,11 +13,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuple2;
 
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component
@@ -41,15 +44,14 @@ public class AudioConnectionManager {
                 .doOnNext(trackScheduler -> playerManager.loadItem(trackLink, trackScheduler));
     }
 
-    public Mono<TrackScheduler> requestTrack(MessageCreateEvent event){
+    public Mono<TrackScheduler> requestTrack(Event event){
         Long guildId = event.getGuildId().map(Snowflake::asLong).orElse(0L);
-        return Mono.justOrEmpty(event.getMessage().getContent())
-                .map(msg -> msg.split(" "))
-                .filter(splitMsg -> splitMsg.length > 1)
+        return Mono.justOrEmpty(event)
+                .map(ev -> ev.getArguments().get(0))
                 .zipWith(Mono.justOrEmpty(audioConnections.get(guildId))
                         .switchIfEmpty(joinVoiceChannel(event))
                         .map(AudioConnection::getTrackScheduler))
-                .doOnNext(tuple -> playerManager.loadItem(tuple.getT1()[1], tuple.getT2()))
+                .doOnNext(tuple -> playerManager.loadItem(tuple.getT1(), tuple.getT2()))
                 .doOnSuccess(tuple -> logger.info("Loaded song request to voice channel in guild <{}>", guildId))
                 .doOnError(throwable -> logger.error("Failed to load requested track", throwable))
                 .map(Tuple2::getT2);
@@ -82,13 +84,14 @@ public class AudioConnectionManager {
                 .hasElement();
     }
 
-    public Mono<Boolean> scheduleLeave(Snowflake guildIdSnowflake) {
+    public Mono<Snowflake> scheduleLeave(Snowflake guildIdSnowflake) {
         final Duration timeout = Duration.ofSeconds(120);
         return Mono.just(guildIdSnowflake)
-                .doOnNext(snowflake -> logger.info("Scheduling client to leave voice channel in guild <{}> after <{}> seconds",
-                        snowflake.asLong(), timeout.getSeconds()))
-                .delayElement(timeout)
-                .flatMap(this::leaveVoiceChannel);
+                .doOnNext(snowflake -> {
+                    logger.info("Scheduling client to leave voice channel in guild <{}> after <{}> seconds",
+                            snowflake.asLong(), timeout.getSeconds());
+                    Schedulers.elastic().schedule(() -> leaveVoiceChannel(snowflake).subscribe(), 120, TimeUnit.SECONDS);
+                });
     }
 
     public void shutdown(){

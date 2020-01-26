@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class PauseTrackListener implements EventListener<PauseTrackEvent> {
+public final class PauseTrackListener implements EventListener<PauseTrackEvent> {
 
     public PauseTrackListener(CommandEventDispatcher eventDispatcher) {
         EventFactory.registerEvent(PauseTrackEvent.KEYWORD, PauseTrackEvent.class);

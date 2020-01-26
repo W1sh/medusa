@@ -2,18 +2,23 @@ package com.w1sh.medusa.api.dice.listeners;
 
 import com.w1sh.medusa.api.dice.Dice;
 import com.w1sh.medusa.api.dice.events.DuelRollEvent;
+import com.w1sh.medusa.core.data.TextMessage;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
+import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
-import com.w1sh.medusa.utils.Messenger;
 import discord4j.core.object.entity.Member;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@Component
-public class DuelRollEventListener implements EventListener<DuelRollEvent> {
+import java.util.List;
 
+@Component
+public final class DuelRollEventListener implements EventListener<DuelRollEvent> {
+
+    private final ResponseDispatcher responseDispatcher;
     private final Dice dice;
 
     @Value("${event.roll.start}")
@@ -24,10 +29,9 @@ public class DuelRollEventListener implements EventListener<DuelRollEvent> {
     private String rollWin;
     @Value("${event.roll.draw}")
     private String rollDraw;
-    @Value("${event.unsupported}")
-    private String unsupported;
 
-    public DuelRollEventListener(CommandEventDispatcher eventDispatcher, Dice dice) {
+    public DuelRollEventListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher, Dice dice) {
+        this.responseDispatcher = responseDispatcher;
         this.dice = dice;
         EventFactory.registerEvent(DuelRollEvent.KEYWORD, DuelRollEvent.class);
         eventDispatcher.registerListener(this);
@@ -41,62 +45,50 @@ public class DuelRollEventListener implements EventListener<DuelRollEvent> {
     @Override
     public Mono<Void> execute(DuelRollEvent event) {
         return Mono.just(event)
-                .filterWhen(this::validate)
-                .map(ev -> {
-                    String[] splitContent = ev.getMessage().getContent().orElse("").split(" ");
-                    return splitContent[2].split("-");
-                })
-                .map(this::rollTwice)
-                .zipWith(event.getMessage().getUserMentions()
-                        .take(1)
-                        .last())
-                .doOnNext(tuple -> {
-                    Messenger.send(event, rollStart).subscribe();
-
-                    /* Send roll results */
-                    Messenger.send(event, String.format(rollResult, event.getMember()
-                            .map(Member::getNicknameMention)
-                            .orElse("You"), tuple.getT1()[0])).subscribe();
-                    Messenger.send(event, String.format(rollResult, tuple.getT2().getMention(), tuple.getT1()[1]))
-                            .subscribe();
-
-                    /* Decide winner */
-                    if (tuple.getT1()[0] > tuple.getT1()[1]) {
-                        Messenger.send(event, String.format(rollWin, event.getMember()
-                                .map(Member::getNicknameMention)
-                                .orElse("You")))
-                                .subscribe();
-                    } else if (tuple.getT1()[0] < tuple.getT1()[1]) {
-                        Messenger.send(event, String.format(rollWin, tuple.getT2().getMention()))
-                                .subscribe();
-                    } else {
-                        Messenger.send(event, rollDraw).subscribe();
-                    }
-                })
+                .filterWhen(dice::validateRollArgument)
+                .map(ev -> ev.getArguments().get(0).split(Dice.ROLL_ARGUMENT_DELIMITER))
+                .flatMapMany(this::rollTwice)
+                .collectList()
+                .flatMapMany(results -> this.sendResults(results, event))
+                .doOnNext(responseDispatcher::queue)
+                .doAfterTerminate(responseDispatcher::flush)
                 .then();
     }
 
-    public Mono<Boolean> validate(DuelRollEvent event) {
-        return Mono.justOrEmpty(event.getMessage().getContent())
-                .map(content -> content.split(" "))
-                .filter(split -> {
-                    if(split.length != 3) {
-                        Messenger.send(event, unsupported).subscribe();
-                        return false;
-                    } else return true;
-                })
-                .filterWhen(strings -> event.getMessage().getUserMentions().hasElements())
-                .map(strings -> strings[2].split("-"))
-                .filter(split -> {
-                    if(split.length != 2) {
-                        Messenger.send(event, unsupported).subscribe();
-                        return false;
-                    } else return true;
-                })
-                .hasElement();
+    private Flux<Integer> rollTwice(String[] strings){
+        return Flux.merge(dice.roll(Integer.parseInt(strings[0]), Integer.parseInt(strings[1])),
+                dice.roll(Integer.parseInt(strings[0]), Integer.parseInt(strings[1])));
     }
 
-    private int[] rollTwice(String[] strings){
-        return new int[]{ dice.roll(strings[0], strings[1]), dice.roll(strings[0], strings[1]) };
+    private Flux<TextMessage> sendResults(List<Integer> results, DuelRollEvent event){
+        if(results.size() != 2) return Flux.empty();
+
+        Mono<TextMessage> rollStartMessage = event.getMessage().getChannel()
+                .map(chan -> new TextMessage(chan, rollStart,false));
+
+        Mono<TextMessage> rollFirstResultMessage = event.getMessage().getChannel()
+                .map(chan -> new TextMessage(chan, String.format(rollResult, event.getMember()
+                        .flatMap(Member::getNickname).orElse("You"), results.get(0)), false));
+
+        Mono<TextMessage> rollSecondResultMessage = event.getMessage().getChannel()
+                .map(chan -> new TextMessage(chan, String.format(rollResult,
+                        event.getArguments().get(1), results.get(1)), false));
+
+        Mono<TextMessage> rollFinalResult;
+
+        if (results.get(0) > results.get(1)){
+            rollFinalResult = event.getMessage().getChannel()
+                    .map(chan -> new TextMessage(chan, String.format(rollWin, event.getMember()
+                            .flatMap(Member::getNickname).orElse("You")), false));
+        } else if (results.get(1) > results.get(0)) {
+            rollFinalResult = event.getMessage().getChannel()
+                    .map(chan -> new TextMessage(chan, String.format(rollWin,
+                            event.getArguments().get(1)), false));
+        } else {
+            rollFinalResult = event.getMessage().getChannel()
+                    .map(chan -> new TextMessage(chan, rollDraw, false));
+        }
+
+        return Flux.merge(rollStartMessage, rollFirstResultMessage, rollSecondResultMessage, rollFinalResult);
     }
 }

@@ -38,7 +38,7 @@ public final class LeaveVoiceChannelListener implements EventListener<LeaveVoice
         return Mono.justOrEmpty(event.getGuildId())
                 .flatMap(AudioConnectionManager.getInstance()::leaveVoiceChannel)
                 .flatMap(bool -> {
-                    if (bool) {
+                    if (Boolean.TRUE.equals(bool)) {
                         return createLeaveSuccessMessage(event);
                     } else return createNoVoiceStateErrorMessage(event);
                 })

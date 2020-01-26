@@ -1,31 +1,31 @@
 package com.w1sh.medusa.listeners;
 
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.w1sh.medusa.AudioConnectionManager;
+import com.w1sh.medusa.TrackScheduler;
+import com.w1sh.medusa.core.data.Embed;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
+import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
-import com.w1sh.medusa.core.managers.PermissionManager;
 import com.w1sh.medusa.events.PlayTrackEvent;
 import com.w1sh.medusa.utils.Messenger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.awt.*;
 
 @Component
-public class PlayTrackListener implements EventListener<PlayTrackEvent> {
+public final class PlayTrackListener implements EventListener<PlayTrackEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(PlayTrackListener.class);
 
-    @Value("${event.voice.play}")
-    private String voicePlay;
-    @Value("${event.unsupported}")
-    private String unsupported;
+    private final ResponseDispatcher responseDispatcher;
 
-    public PlayTrackListener(CommandEventDispatcher eventDispatcher) {
+    public PlayTrackListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher) {
+        this.responseDispatcher = responseDispatcher;
         EventFactory.registerEvent(PlayTrackEvent.KEYWORD, PlayTrackEvent.class);
         eventDispatcher.registerListener(this);
     }
@@ -38,34 +38,23 @@ public class PlayTrackListener implements EventListener<PlayTrackEvent> {
     @Override
     public Mono<Void> execute(PlayTrackEvent event) {
         return Mono.justOrEmpty(event)
-                .filterWhen(this::validate)
-                .filterWhen(ev -> PermissionManager.getInstance().hasPermissions(ev, ev.getPermissions()))
                 .flatMap(tuple -> AudioConnectionManager.getInstance().requestTrack(event))
-                .doOnNext(scheduler -> scheduler.getPlayingTrack().ifPresent(track -> event.getMessage().getChannel()
-                        .flatMap(channel -> Messenger.send(channel, embedCreateSpec ->
-                                embedCreateSpec.setTitle(":ballot_box_with_check:\tAdded to queue")
-                                        .setColor(Color.GREEN)
-                                        .addField(Messenger.ZERO_WIDTH_SPACE, String.format("**%s**%n[%s](%s) | %s",
-                                                track.getInfo().author,
-                                                track.getInfo().title,
-                                                track.getInfo().uri,
-                                                Messenger.formatDuration(track.getInfo().length)), true)))
-                        .subscribe()
-                ))
-                .doOnError(throwable -> logger.error("Failed to play track", throwable))
+                .flatMap(trackScheduler -> createQueueMessage(trackScheduler, event))
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to play track", throwable)))
+                .doOnNext(responseDispatcher::queue)
+                .doAfterTerminate(responseDispatcher::flush)
                 .then();
     }
 
-    public Mono<Boolean> validate(PlayTrackEvent event) {
-        return Mono.justOrEmpty(event.getMessage().getContent())
-                .map(content -> content.split(" "))
-                .filter(split -> {
-                    if(split.length != 2){
-                        Messenger.send(event, unsupported).subscribe();
-                        return false;
-                    }
-                    return true;
-                })
-                .hasElement();
+    private Mono<Embed> createQueueMessage(TrackScheduler trackScheduler, PlayTrackEvent event) {
+        AudioTrack track = trackScheduler.getPlayingTrack().orElseThrow();
+        return event.getMessage().getChannel()
+                .map(chan -> new Embed(chan, embedCreateSpec -> embedCreateSpec.setTitle(":ballot_box_with_check:\tAdded to queue")
+                        .setColor(Color.GREEN)
+                        .addField(Messenger.ZERO_WIDTH_SPACE, String.format("**%s**%n[%s](%s) | %s",
+                                track.getInfo().author,
+                                track.getInfo().title,
+                                track.getInfo().uri,
+                                Messenger.formatDuration(track.getInfo().length)), true)));
     }
 }
