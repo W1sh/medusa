@@ -1,9 +1,10 @@
 package com.w1sh.medusa.api.misc.listeners;
 
 import com.w1sh.medusa.api.misc.events.UnsupportedEvent;
+import com.w1sh.medusa.core.data.TextMessage;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
+import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.core.listeners.EventListener;
-import com.w1sh.medusa.utils.Messenger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -11,10 +12,13 @@ import reactor.core.publisher.Mono;
 @Component
 public final class UnsupportedEventListener implements EventListener<UnsupportedEvent> {
 
+    private final ResponseDispatcher responseDispatcher;
+
     @Value("${event.unsupported}")
     private String unsupported;
 
-    public UnsupportedEventListener(CommandEventDispatcher eventDispatcher) {
+    public UnsupportedEventListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher) {
+        this.responseDispatcher = responseDispatcher;
         eventDispatcher.registerListener(this);
     }
 
@@ -26,7 +30,9 @@ public final class UnsupportedEventListener implements EventListener<Unsupported
     @Override
     public Mono<Void> execute(UnsupportedEvent event) {
         return event.getMessage().getChannel()
-                .doOnNext(channel -> Messenger.send(event, unsupported).subscribe())
+                .map(chan -> new TextMessage(chan, unsupported, false))
+                .doOnNext(responseDispatcher::queue)
+                .doAfterTerminate(responseDispatcher::flush)
                 .then();
     }
 }
