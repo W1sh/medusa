@@ -11,11 +11,13 @@ public final class Playlist {
 
     @Id
     private String id;
+    private String name;
     private Long user;
     private List<Track> tracks;
 
-    public Playlist(Long user, List<Track> tracks) {
+    public Playlist(Long user, String name, List<Track> tracks) {
         this.id = ObjectId.get().toString();
+        this.name = name;
         this.user = user;
         this.tracks = tracks;
     }
@@ -26,6 +28,14 @@ public final class Playlist {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Long getUser() {
@@ -49,4 +59,5 @@ public final class Playlist {
                 .map(Track::getDuration)
                 .reduce(Long::sum).orElse(0L);
     }
+
 }

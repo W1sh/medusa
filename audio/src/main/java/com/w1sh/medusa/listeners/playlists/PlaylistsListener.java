@@ -59,7 +59,7 @@ public final class PlaylistsListener implements EventListener<PlaylistsEvent> {
                     embedCreateSpec.setTitle(String.format("%s saved playlists",
                             event.getMember().flatMap(Member::getNickname).orElse("")));
                     for (Playlist playlist : playlists) {
-                        embedCreateSpec.addField("Playlist", String.format("** %s %d track(s)** | %s",
+                        embedCreateSpec.addField(String.format("**%s**", playlist.getName()), String.format("** %s %d track(s)** | %s",
                                 Messenger.BULLET,
                                 playlist.getTracks().size(),
                                 Messenger.formatDuration(playlist.getFullDuration())), false);

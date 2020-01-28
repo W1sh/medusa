@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Component
 public final class SavePlaylistListener implements EventListener<SavePlaylistEvent> {
 
@@ -40,7 +42,6 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
 
     @Override
     public Mono<Void> execute(SavePlaylistEvent event) {
-        Long userId = event.getMember().map(member -> member.getId().asLong()).orElseThrow();
 
         return Mono.justOrEmpty(event.getGuildId())
                 .flatMap(AudioConnectionManager.getInstance()::getAudioConnection)
@@ -48,7 +49,7 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
                 .flatMapIterable(TrackScheduler::getFullQueue)
                 .map(at -> new Track(at.getInfo().author, at.getInfo().title, at.getInfo().uri, at.getInfo().length))
                 .collectList()
-                .map(tracks -> new Playlist(userId, tracks))
+                .map(tracks -> createPlaylist(event, tracks))
                 .flatMap(playlistService::save)
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to save playlist", throwable)))
                 .flatMap(playlist -> createSavePlaylistSuccessMessage(event, playlist))
@@ -56,6 +57,13 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
+    }
+
+    private Playlist createPlaylist(SavePlaylistEvent event, List<Track> tracks){
+        Long userId = event.getMember().map(member -> member.getId().asLong()).orElseThrow();
+        String name = event.getArguments().getOrDefault(0, "Playlist");
+
+        return new Playlist(userId, name, tracks);
     }
 
     private Mono<TextMessage> createFailedSaveErrorMessage(SavePlaylistEvent event){
