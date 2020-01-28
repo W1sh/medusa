@@ -3,7 +3,10 @@ package com.w1sh.medusa.listeners;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.w1sh.medusa.AudioConnection;
 import com.w1sh.medusa.AudioConnectionManager;
+import com.w1sh.medusa.TrackScheduler;
+import com.w1sh.medusa.core.data.Embed;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
+import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.events.QueueTrackEvent;
@@ -18,7 +21,10 @@ import java.util.Queue;
 @Component
 public final class QueueTrackListener implements EventListener<QueueTrackEvent> {
 
-    public QueueTrackListener(CommandEventDispatcher eventDispatcher) {
+    private final ResponseDispatcher responseDispatcher;
+
+    public QueueTrackListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher) {
+        this.responseDispatcher = responseDispatcher;
         EventFactory.registerEvent(QueueTrackEvent.KEYWORD, QueueTrackEvent.class);
         eventDispatcher.registerListener(this);
     }
@@ -33,12 +39,19 @@ public final class QueueTrackListener implements EventListener<QueueTrackEvent> 
         return Mono.justOrEmpty(event.getGuildId())
                 .flatMap(AudioConnectionManager.getInstance()::getAudioConnection)
                 .map(AudioConnection::getTrackScheduler)
-                .zipWith(event.getMessage().getChannel())
-                .flatMap(tuple -> Messenger.send(tuple.getT2(), embedCreateSpec -> {
+                .flatMap(trackScheduler -> createQueueEmbed(trackScheduler, event))
+                .doOnNext(responseDispatcher::queue)
+                .doAfterTerminate(responseDispatcher::flush)
+                .then();
+    }
+
+    public Mono<Embed> createQueueEmbed(TrackScheduler trackScheduler, QueueTrackEvent event){
+        return event.getMessage().getChannel()
+                .map(chan -> new Embed(chan, embedCreateSpec -> {
                     embedCreateSpec.setColor(Color.GREEN);
                     embedCreateSpec.setTitle(":notes:\tQueued tracks");
-                    final Optional<AudioTrack> playingTrack = tuple.getT1().getPlayingTrack();
-                    final Queue<AudioTrack> queue = tuple.getT1().getQueue();
+                    final Optional<AudioTrack> playingTrack = trackScheduler.getPlayingTrack();
+                    final Queue<AudioTrack> queue = trackScheduler.getQueue();
                     playingTrack.ifPresent(audioTrack -> embedCreateSpec.addField("Currently playing",
                             String.format("**%s**%n[%s](%s) | %s",
                                     audioTrack.getInfo().author,
@@ -60,8 +73,7 @@ public final class QueueTrackListener implements EventListener<QueueTrackEvent> 
                     }
                     embedCreateSpec.setFooter(String.format("%d queued tracks | Queue duration: %s",
                             queue.size(),
-                            Messenger.formatDuration(tuple.getT1().getQueueDuration())), null);
-                }))
-                .then();
+                            Messenger.formatDuration(trackScheduler.getQueueDuration())), null);
+                }));
     }
 }
