@@ -1,19 +1,23 @@
 package com.w1sh.medusa.api.misc.listeners;
 
 import com.w1sh.medusa.api.misc.events.ChangePrefixEvent;
+import com.w1sh.medusa.core.data.TextMessage;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
+import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
-import com.w1sh.medusa.utils.Messenger;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class ChangePrefixEventListener implements EventListener<ChangePrefixEvent> {
+public final class ChangePrefixEventListener implements EventListener<ChangePrefixEvent> {
 
-    public ChangePrefixEventListener(CommandEventDispatcher eventDispatcher) {
+    private final ResponseDispatcher responseDispatcher;
+
+    public ChangePrefixEventListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher) {
+        this.responseDispatcher = responseDispatcher;
         EventFactory.registerEvent(ChangePrefixEvent.KEYWORD, ChangePrefixEvent.class);
         eventDispatcher.registerListener(this);
     }
@@ -26,20 +30,22 @@ public class ChangePrefixEventListener implements EventListener<ChangePrefixEven
     @Override
     public Mono<Void> execute(ChangePrefixEvent event) {
         return Mono.just(event)
-                .filterWhen(this::validate)
-                .map(ev -> ev.getMessage().getContent().orElse("").split(" ")[1])
-                .doOnNext(prefix -> {
-                    EventFactory.setPrefix(prefix);
-                    Messenger.send(event, String.format("Changed prefix to \"%s\"", prefix)).subscribe();
-                    event.getClient().updatePresence(Presence.online(Activity.watching(String.format("Cringe 2 | %shelp", EventFactory.getPrefix())))).subscribe();
-                })
+                .map(ev -> ev.getArguments().get(0))
+                .doOnNext(EventFactory::setPrefix)
+                .flatMap(prefix -> changePrefixSuccess(prefix, event))
+                .doOnNext(responseDispatcher::queue)
+                .doAfterTerminate(responseDispatcher::flush)
+                .flatMap(t -> changePrefix(event))
                 .then();
     }
 
-    public Mono<Boolean> validate(ChangePrefixEvent event) {
-        return Mono.justOrEmpty(event.getMessage().getContent())
-                .map(message -> message.split(" "))
-                .filter(strings -> strings.length == 2)
-                .hasElement();
+    public Mono<TextMessage> changePrefixSuccess(String prefix, ChangePrefixEvent event){
+        return event.getMessage().getChannel()
+                .map(chan -> new TextMessage(chan, String.format("Changed prefix to \"%s\"", prefix), false));
+    }
+
+    public Mono<Void> changePrefix(ChangePrefixEvent event){
+        Activity activity = Activity.watching(String.format("Cringe 2 | %shelp", EventFactory.getPrefix()));
+        return event.getClient().updatePresence(Presence.online(activity));
     }
 }

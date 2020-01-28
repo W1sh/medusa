@@ -14,7 +14,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Component
-public class ClapifyEventListener implements EventListener<ClapifyEvent> {
+public final class ClapifyEventListener implements EventListener<ClapifyEvent> {
 
     private final ResponseDispatcher responseDispatcher;
 

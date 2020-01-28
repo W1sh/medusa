@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class MultipleInlineListener implements EventListener<MultipleInlineEvent> {
+public final class MultipleInlineListener implements EventListener<MultipleInlineEvent> {
 
     private final CommandEventDispatcher commandEventDispatcher;
     private final ResponseDispatcher responseDispatcher;

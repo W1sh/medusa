@@ -15,7 +15,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 @Component
-public class PingEventListener implements EventListener<PingEvent> {
+public final class PingEventListener implements EventListener<PingEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(PingEventListener.class);
 

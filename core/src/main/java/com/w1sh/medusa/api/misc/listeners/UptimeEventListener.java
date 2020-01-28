@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class UptimeEventListener implements EventListener<UptimeEvent> {
+public final class UptimeEventListener implements EventListener<UptimeEvent> {
 
     public UptimeEventListener(CommandEventDispatcher eventDispatcher) {
         EventFactory.registerEvent(UptimeEvent.KEYWORD, UptimeEvent.class);

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class UnsupportedEventListener implements EventListener<UnsupportedEvent> {
+public final class UnsupportedEventListener implements EventListener<UnsupportedEvent> {
 
     @Value("${event.unsupported}")
     private String unsupported;
