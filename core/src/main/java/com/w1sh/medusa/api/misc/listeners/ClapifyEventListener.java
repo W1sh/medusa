@@ -1,17 +1,25 @@
 package com.w1sh.medusa.api.misc.listeners;
 
 import com.w1sh.medusa.api.misc.events.ClapifyEvent;
+import com.w1sh.medusa.core.data.TextMessage;
 import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
+import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
-import com.w1sh.medusa.utils.Messenger;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+
+import java.util.Collection;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Component
 public class ClapifyEventListener implements EventListener<ClapifyEvent> {
 
-    public ClapifyEventListener(CommandEventDispatcher eventDispatcher) {
+    private final ResponseDispatcher responseDispatcher;
+
+    public ClapifyEventListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher) {
+        this.responseDispatcher = responseDispatcher;
         EventFactory.registerEvent(ClapifyEvent.KEYWORD, ClapifyEvent.class);
         eventDispatcher.registerListener(this);
     }
@@ -24,26 +32,21 @@ public class ClapifyEventListener implements EventListener<ClapifyEvent> {
     @Override
     public Mono<Void> execute(ClapifyEvent event) {
         return Mono.just(event)
-                .filterWhen(this::validate)
-                .map(ev -> ev.getMessage().getContent().orElse("").split(" "))
-                .map(this::clapify)
-                .doOnNext(clappedMessage -> Messenger.send(event, clappedMessage).subscribe())
+                .map(ev -> ev.getArguments().values())
+                .flatMap(words -> clapify(event, words))
+                .doOnNext(responseDispatcher::queue)
+                .doAfterTerminate(responseDispatcher::flush)
                 .then();
     }
 
-    public Mono<Boolean> validate(ClapifyEvent event) {
-        return Mono.justOrEmpty(event.getMessage().getContent())
-                .map(message -> message.split(" "))
-                .filter(strings -> strings.length > 1)
-                .hasElement();
-    }
+    private Mono<TextMessage> clapify(ClapifyEvent event, Collection<String> words){
+        String content =  words.stream()
+                .filter(Predicate.not(String::isBlank))
+                .map(String::toUpperCase)
+                .collect(Collectors.joining(" :clap: ", ":clap: ", " :clap:"));
 
-    private String clapify(String[] words){
-        StringBuilder stringBuilder = new StringBuilder(":clap: ");
-        for(int index = 1; index < words.length; index++){
-            stringBuilder.append(words[index].toUpperCase()).append(" :clap: ");
-        }
-        return stringBuilder.toString();
+        return event.getMessage().getChannel()
+                .map(chan -> new TextMessage(chan, content, false));
     }
 
 }
