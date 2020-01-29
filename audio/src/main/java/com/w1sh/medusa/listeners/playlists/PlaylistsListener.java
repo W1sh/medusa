@@ -8,7 +8,7 @@ import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.events.playlists.PlaylistsEvent;
 import com.w1sh.medusa.mongo.entities.Playlist;
 import com.w1sh.medusa.mongo.services.PlaylistService;
-import com.w1sh.medusa.utils.Messenger;
+import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.core.object.entity.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,9 +60,9 @@ public final class PlaylistsListener implements EventListener<PlaylistsEvent> {
                             event.getMember().flatMap(Member::getNickname).orElse("")));
                     for (Playlist playlist : playlists) {
                         embedCreateSpec.addField(String.format("**%s**", playlist.getName()), String.format("** %s %d track(s)** | %s",
-                                Messenger.BULLET,
+                                ResponseUtils.BULLET,
                                 playlist.getTracks().size(),
-                                Messenger.formatDuration(playlist.getFullDuration())), false);
+                                ResponseUtils.formatDuration(playlist.getFullDuration())), false);
                     }
                 }));
     }

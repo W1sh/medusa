@@ -9,7 +9,7 @@ import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.events.PlayTrackEvent;
-import com.w1sh.medusa.utils.Messenger;
+import com.w1sh.medusa.utils.ResponseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -39,6 +39,7 @@ public final class PlayTrackListener implements EventListener<PlayTrackEvent> {
     public Mono<Void> execute(PlayTrackEvent event) {
         return Mono.justOrEmpty(event)
                 .flatMap(tuple -> AudioConnectionManager.getInstance().requestTrack(event))
+                .filter(trackScheduler -> trackScheduler.getPlayingTrack().isPresent())
                 .flatMap(trackScheduler -> createQueueMessage(trackScheduler, event))
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to play track", throwable)))
                 .doOnNext(responseDispatcher::queue)
@@ -51,10 +52,10 @@ public final class PlayTrackListener implements EventListener<PlayTrackEvent> {
         return event.getMessage().getChannel()
                 .map(chan -> new Embed(chan, embedCreateSpec -> embedCreateSpec.setTitle(":ballot_box_with_check:\tAdded to queue")
                         .setColor(Color.GREEN)
-                        .addField(Messenger.ZERO_WIDTH_SPACE, String.format("**%s**%n[%s](%s) | %s",
+                        .addField(ResponseUtils.ZERO_WIDTH_SPACE, String.format("**%s**%n[%s](%s) | %s",
                                 track.getInfo().author,
                                 track.getInfo().title,
                                 track.getInfo().uri,
-                                Messenger.formatDuration(track.getInfo().length)), true)));
+                                ResponseUtils.formatDuration(track.getInfo().length)), true)));
     }
 }

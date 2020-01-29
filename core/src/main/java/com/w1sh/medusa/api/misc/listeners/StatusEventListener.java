@@ -8,7 +8,7 @@ import com.w1sh.medusa.core.events.Event;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.metrics.Trackers;
-import com.w1sh.medusa.utils.Messenger;
+import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.core.object.entity.MessageChannel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -57,7 +57,7 @@ public final class StatusEventListener implements EventListener<StatusEvent> {
             embedCreateSpec.addField("Memory Usage", String.format("%d MB / %d MB",
                     numberAsMegabytes(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()),
                     numberAsMegabytes(Runtime.getRuntime().totalMemory())), true);
-            embedCreateSpec.addField(Messenger.ZERO_WIDTH_SPACE, Messenger.ZERO_WIDTH_SPACE, true);
+            embedCreateSpec.addField(ResponseUtils.ZERO_WIDTH_SPACE, ResponseUtils.ZERO_WIDTH_SPACE, true);
             embedCreateSpec.addField("Guilds", String.format("%d (%d Avg Users/Guild)",
                     guilds, users/guilds), true);
             embedCreateSpec.addField("Users", users.toString(), true);

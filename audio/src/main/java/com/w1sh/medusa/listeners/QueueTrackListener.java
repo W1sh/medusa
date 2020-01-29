@@ -10,7 +10,7 @@ import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.core.events.EventFactory;
 import com.w1sh.medusa.core.listeners.EventListener;
 import com.w1sh.medusa.events.QueueTrackEvent;
-import com.w1sh.medusa.utils.Messenger;
+import com.w1sh.medusa.utils.ResponseUtils;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -57,9 +57,9 @@ public final class QueueTrackListener implements EventListener<QueueTrackEvent> 
                                     audioTrack.getInfo().author,
                                     audioTrack.getInfo().title,
                                     audioTrack.getInfo().uri,
-                                    Messenger.formatDuration(audioTrack.getInfo().length)), true));
+                                    ResponseUtils.formatDuration(audioTrack.getInfo().length)), true));
                     int queuePosition = 0;
-                    if(!queue.isEmpty()) embedCreateSpec.addField(Messenger.ZERO_WIDTH_SPACE,
+                    if(!queue.isEmpty()) embedCreateSpec.addField(ResponseUtils.ZERO_WIDTH_SPACE,
                             ":arrow_down: **Queue** :arrow_down:", false);
                     for (AudioTrack track : queue) {
                         if(queuePosition < 5) {
@@ -68,12 +68,12 @@ public final class QueueTrackListener implements EventListener<QueueTrackEvent> 
                                     queuePosition,
                                     track.getInfo().title,
                                     track.getInfo().uri,
-                                    Messenger.formatDuration(track.getInfo().length)), false);
+                                    ResponseUtils.formatDuration(track.getInfo().length)), false);
                         } else break;
                     }
                     embedCreateSpec.setFooter(String.format("%d queued tracks | Queue duration: %s",
                             queue.size(),
-                            Messenger.formatDuration(trackScheduler.getQueueDuration())), null);
+                            ResponseUtils.formatDuration(trackScheduler.getQueueDuration())), null);
                 }));
     }
 }

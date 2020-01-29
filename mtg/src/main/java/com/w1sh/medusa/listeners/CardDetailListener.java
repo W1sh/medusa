@@ -9,7 +9,7 @@ import com.w1sh.medusa.events.CardDetailEvent;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.services.CardService;
 import com.w1sh.medusa.utils.CardUtils;
-import com.w1sh.medusa.utils.Messenger;
+import com.w1sh.medusa.utils.ResponseUtils;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -66,10 +66,10 @@ public final class CardDetailListener implements EventListener<CardDetailEvent> 
                                 card.getManaCost()));
                         embedCreateSpec.addField(String.format("**%s**", card.getTypeLine()),
                                 String.format("%s%n*%s*",
-                                        card.getOracleText() == null ? Messenger.ZERO_WIDTH_SPACE : card.getOracleText(),
-                                        card.getFlavorText() == null ? Messenger.ZERO_WIDTH_SPACE : card.getFlavorText()), false);
+                                        card.getOracleText() == null ? ResponseUtils.ZERO_WIDTH_SPACE : card.getOracleText(),
+                                        card.getFlavorText() == null ? ResponseUtils.ZERO_WIDTH_SPACE : card.getFlavorText()), false);
                         if(card.getPower() != null || card.getToughness() != null){
-                            embedCreateSpec.addField(Messenger.ZERO_WIDTH_SPACE,
+                            embedCreateSpec.addField(ResponseUtils.ZERO_WIDTH_SPACE,
                                     String.format("**%s/%s**",
                                             card.getPower(),
                                             card.getToughness()), true);
