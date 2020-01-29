@@ -10,7 +10,7 @@ import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.core.data.Embed;
 import com.w1sh.medusa.core.data.TextMessage;
 import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.utils.Messenger;
+import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.core.object.util.Snowflake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +67,7 @@ public final class TrackEventListener extends AudioEventAdapter {
                                         String.format("[%s](%s) | %s",
                                                 track.getInfo().title,
                                                 track.getInfo().uri,
-                                                Messenger.formatDuration(track.getInfo().length)), false)))
+                                                ResponseUtils.formatDuration(track.getInfo().length)), false)))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .subscribeOn(Schedulers.elastic())
