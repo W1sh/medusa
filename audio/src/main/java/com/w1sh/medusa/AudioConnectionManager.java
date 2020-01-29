@@ -2,6 +2,7 @@ package com.w1sh.medusa;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
+import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.core.events.Event;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
@@ -30,12 +31,14 @@ public class AudioConnectionManager {
 
     private final AudioPlayerManager playerManager;
     private final Map<Long, AudioConnection> audioConnections;
+    private final ResponseDispatcher responseDispatcher;
 
-    public AudioConnectionManager(AudioPlayerManager playerManager) {
+    public AudioConnectionManager(AudioPlayerManager playerManager, ResponseDispatcher responseDispatcher) {
         final AudioConnectionManager previous = instance.getAndSet(this);
         if(previous != null) throw new IllegalArgumentException("Cannot created second AudioConnectionManager");
         this.playerManager = playerManager;
         this.audioConnections = new HashMap<>();
+        this.responseDispatcher = responseDispatcher;
     }
 
     public Mono<TrackScheduler> requestTrack(Long guildId, String trackLink){
@@ -113,7 +116,7 @@ public class AudioConnectionManager {
                                                         VoiceConnection voiceConnection, GuildChannel channel){
         Long guildId = channel.getGuildId().asLong();
         logger.info("Creating new audio connection in guild <{}>", guildId);
-        final AudioConnection audioConnection = new AudioConnection(provider, player, voiceConnection, channel);
+        final AudioConnection audioConnection = new AudioConnection(provider, player, voiceConnection, channel, responseDispatcher);
         audioConnections.put(guildId, audioConnection);
         return Mono.just(audioConnections.get(guildId));
     }

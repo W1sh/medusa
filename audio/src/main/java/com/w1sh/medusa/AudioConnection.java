@@ -1,6 +1,7 @@
 package com.w1sh.medusa;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
+import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.TrackEventListener;
 import discord4j.core.object.entity.GuildChannel;
 import discord4j.core.object.entity.MessageChannel;
@@ -17,8 +18,9 @@ public class AudioConnection {
     private final VoiceConnection voiceConnection;
     private final MessageChannel messageChannel;
 
-    public AudioConnection(SimpleAudioProvider audioProvider, AudioPlayer player, VoiceConnection voiceConnection, GuildChannel messageChannel) {
-        final TrackEventListener trackEventListener = new TrackEventListener(messageChannel.getGuildId().asLong());
+    public AudioConnection(SimpleAudioProvider audioProvider, AudioPlayer player, VoiceConnection voiceConnection,
+                           GuildChannel messageChannel, ResponseDispatcher responseDispatcher) {
+        final TrackEventListener trackEventListener = new TrackEventListener(messageChannel.getGuildId().asLong(), responseDispatcher);
         this.messageChannel = (MessageChannel) messageChannel;
         this.voiceConnection = voiceConnection;
         this.audioProvider = audioProvider;

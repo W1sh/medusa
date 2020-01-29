@@ -7,6 +7,9 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import com.w1sh.medusa.AudioConnection;
 import com.w1sh.medusa.AudioConnectionManager;
+import com.w1sh.medusa.core.data.Embed;
+import com.w1sh.medusa.core.data.TextMessage;
+import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.utils.Messenger;
 import discord4j.core.object.util.Snowflake;
 import org.slf4j.Logger;
@@ -14,16 +17,17 @@ import org.slf4j.LoggerFactory;
 import reactor.core.scheduler.Schedulers;
 
 import java.awt.*;
-import java.util.concurrent.TimeUnit;
 
 public final class TrackEventListener extends AudioEventAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(TrackEventListener.class);
 
     private final Long guildId;
+    private final ResponseDispatcher responseDispatcher;
 
-    public TrackEventListener(Long guildId) {
+    public TrackEventListener(Long guildId, ResponseDispatcher responseDispatcher) {
         this.guildId = guildId;
+        this.responseDispatcher = responseDispatcher;
     }
 
     @Override
@@ -31,7 +35,9 @@ public final class TrackEventListener extends AudioEventAdapter {
         logger.info("Paused audio player in guild with id <{}>", guildId);
         AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
                 .map(AudioConnection::getMessageChannel)
-                .flatMap(c -> Messenger.send(c, ":pause_button: The audio player was paused. Use `!resume` to unpause"))
+                .map(c -> new TextMessage(c, ":pause_button: The audio player was paused. Use `!resume` to unpause", false))
+                .doOnNext(responseDispatcher::queue)
+                .doAfterTerminate(responseDispatcher::flush)
                 .subscribeOn(Schedulers.elastic())
                 .subscribe();
     }
@@ -41,7 +47,9 @@ public final class TrackEventListener extends AudioEventAdapter {
         logger.info("Resumed audio player in guild with id <{}>", guildId);
         AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
                 .map(AudioConnection::getMessageChannel)
-                .flatMap(c -> Messenger.send(c, ":arrow_forward: The audio player was resumed"))
+                .map(c -> new TextMessage(c, ":arrow_forward: The audio player was resumed", false))
+                .doOnNext(responseDispatcher::queue)
+                .doAfterTerminate(responseDispatcher::flush)
                 .subscribeOn(Schedulers.elastic())
                 .subscribe();
     }
@@ -51,7 +59,7 @@ public final class TrackEventListener extends AudioEventAdapter {
         logger.info("Starting track <{}> in guild with id <{}>", track.getInfo().title, guildId);
         AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
                 .map(AudioConnection::getMessageChannel)
-                .flatMap(c -> Messenger.send(c, embedCreateSpec ->
+                .map(c -> new Embed(c, embedCreateSpec ->
                         embedCreateSpec.setTitle(":musical_note:\tCurrently playing")
                                 .setColor(Color.GREEN)
                                 .setThumbnail(getArtwork(track))
@@ -59,11 +67,9 @@ public final class TrackEventListener extends AudioEventAdapter {
                                         String.format("[%s](%s) | %s",
                                                 track.getInfo().title,
                                                 track.getInfo().uri,
-                                                Messenger.formatDuration(track.getInfo().length)), false)
-                                .addField(Messenger.ZERO_WIDTH_SPACE, Messenger.progressBar(
-                                        track.getPosition(), track.getInfo().length), false)))
-                .doOnNext(message -> Schedulers.elastic().schedule(() ->
-                        message.delete().subscribe(), track.getInfo().length, TimeUnit.MILLISECONDS))
+                                                Messenger.formatDuration(track.getInfo().length)), false)))
+                .doOnNext(responseDispatcher::queue)
+                .doAfterTerminate(responseDispatcher::flush)
                 .subscribeOn(Schedulers.elastic())
                 .subscribe();
     }
