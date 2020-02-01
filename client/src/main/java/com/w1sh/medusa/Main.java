@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories;
 
 import javax.annotation.PreDestroy;
 import java.text.SimpleDateFormat;
@@ -15,7 +14,6 @@ import java.time.Instant;
 import java.util.Date;
 
 @SpringBootApplication
-@EnableReactiveMongoRepositories(value = "com.w1sh.medusa.mongo.repos")
 @PropertySource(value = "classpath:text-constants.properties")
 public class Main {
 

@@ -1,10 +1,7 @@
 package com.w1sh.medusa.mongo.entities;
 
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document
 public final class Track {
 
     @Id
@@ -15,7 +12,6 @@ public final class Track {
     private Long duration;
 
     public Track(String author, String title, String uri, Long duration) {
-        this.id = ObjectId.get().toString();
         this.author = author;
         this.title = title;
         this.uri = uri;

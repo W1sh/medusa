@@ -52,13 +52,6 @@
                 <version>2.2.4.RELEASE</version>
             </dependency>
 
-            <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-mongodb-reactive -->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
-                <version>2.2.4.RELEASE</version>
-            </dependency>
-
             <!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-r2dbc -->
             <dependency>
                 <groupId>org.springframework.data</groupId>
@@ -70,6 +63,12 @@
                 <groupId>io.r2dbc</groupId>
                 <artifactId>r2dbc-postgresql</artifactId>
                 <version>0.8.1.RELEASE</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.projectreactor.netty</groupId>
+                        <artifactId>reactor-netty</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!-- https://mvnrepository.com/artifact/io.projectreactor.addons/reactor-extra -->

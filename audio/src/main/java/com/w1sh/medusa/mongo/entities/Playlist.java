@@ -1,12 +1,9 @@
 package com.w1sh.medusa.mongo.entities;
 
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
-@Document
 public final class Playlist {
 
     @Id
@@ -16,7 +13,6 @@ public final class Playlist {
     private List<Track> tracks;
 
     public Playlist(Long user, String name, List<Track> tracks) {
-        this.id = ObjectId.get().toString();
         this.name = name;
         this.user = user;
         this.tracks = tracks;
