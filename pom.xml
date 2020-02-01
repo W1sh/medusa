@@ -59,6 +59,19 @@
                 <version>2.2.4.RELEASE</version>
             </dependency>
 
+            <!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-r2dbc -->
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-r2dbc</artifactId>
+                <version>1.0.0.RELEASE</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.r2dbc</groupId>
+                <artifactId>r2dbc-postgresql</artifactId>
+                <version>0.8.1.RELEASE</version>
+            </dependency>
+
             <!-- https://mvnrepository.com/artifact/io.projectreactor.addons/reactor-extra -->
             <dependency>
                 <groupId>io.projectreactor.addons</groupId>
