@@ -13,6 +13,7 @@
         <module>core</module>
         <module>client</module>
         <module>mtg</module>
+        <module>common</module>
     </modules>
 
     <properties>
@@ -110,6 +111,13 @@
             <dependency>
                 <groupId>com.w1sh</groupId>
                 <artifactId>mtg</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.w1sh</groupId>
+                <artifactId>common</artifactId>
                 <version>1.0-SNAPSHOT</version>
                 <scope>compile</scope>
             </dependency>

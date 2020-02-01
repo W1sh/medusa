@@ -1,10 +1,10 @@
 package com.w1sh.medusa.core;
 
-import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.listeners.EventListener;
-import com.w1sh.medusa.core.listeners.impl.DisconnectListener;
-import com.w1sh.medusa.core.listeners.impl.ReadyListener;
-import com.w1sh.medusa.core.listeners.impl.VoiceStateUpdateListener;
+import com.w1sh.medusa.listeners.DisconnectListener;
+import com.w1sh.medusa.listeners.ReadyListener;
+import com.w1sh.medusa.listeners.VoiceStateUpdateListener;
+import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
+import com.w1sh.medusa.listeners.EventListener;
 import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.Event;
 import discord4j.core.event.domain.message.MessageCreateEvent;

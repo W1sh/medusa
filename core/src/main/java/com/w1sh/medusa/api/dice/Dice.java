@@ -1,8 +1,8 @@
 package com.w1sh.medusa.api.dice;
 
-import com.w1sh.medusa.core.data.TextMessage;
-import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.core.events.Event;
+import com.w1sh.medusa.data.events.Event;
+import com.w1sh.medusa.data.responses.TextMessage;
+import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

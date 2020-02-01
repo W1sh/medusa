@@ -41,5 +41,10 @@
             <groupId>com.w1sh</groupId>
             <artifactId>core</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.w1sh</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
     </dependencies>
 </project>

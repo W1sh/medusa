@@ -1,11 +1,11 @@
 package com.w1sh.medusa.api.misc.listeners;
 
 import com.w1sh.medusa.api.misc.events.UptimeEvent;
-import com.w1sh.medusa.core.data.TextMessage;
-import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.core.events.EventFactory;
-import com.w1sh.medusa.core.listeners.EventListener;
+import com.w1sh.medusa.data.events.EventFactory;
+import com.w1sh.medusa.data.responses.TextMessage;
+import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
+import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.metrics.Trackers;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;

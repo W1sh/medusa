@@ -21,6 +21,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.w1sh</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

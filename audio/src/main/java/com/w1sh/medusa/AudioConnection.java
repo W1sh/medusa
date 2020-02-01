@@ -1,7 +1,7 @@
 package com.w1sh.medusa;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.TrackEventListener;
 import discord4j.core.object.entity.GuildChannel;
 import discord4j.core.object.entity.MessageChannel;

@@ -2,11 +2,11 @@ package com.w1sh.medusa.api.dice.listeners;
 
 import com.w1sh.medusa.api.dice.Dice;
 import com.w1sh.medusa.api.dice.events.RollEvent;
-import com.w1sh.medusa.core.data.TextMessage;
-import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.core.events.EventFactory;
-import com.w1sh.medusa.core.listeners.EventListener;
+import com.w1sh.medusa.data.events.EventFactory;
+import com.w1sh.medusa.data.responses.TextMessage;
+import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
+import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.listeners.EventListener;
 import discord4j.core.object.entity.Member;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

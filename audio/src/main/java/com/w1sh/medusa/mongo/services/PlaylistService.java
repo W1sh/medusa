@@ -22,7 +22,6 @@ public final class PlaylistService {
 
     private static final Logger logger = LoggerFactory.getLogger(PlaylistService.class);
 
-
     private final PlaylistRepo playlistRepo;
     private final Cache<Long, List<Playlist>> playlistsCache;
 
