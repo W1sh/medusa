@@ -1,6 +1,6 @@
-package com.w1sh.medusa.mongo.repos;
+package com.w1sh.medusa.repos;
 
-import com.w1sh.medusa.mongo.entities.Playlist;
+import com.w1sh.medusa.data.Playlist;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 
 public interface PlaylistRepo extends ReactiveCrudRepository<Playlist, String> {

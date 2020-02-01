@@ -1,9 +1,9 @@
-package com.w1sh.medusa.mongo.services;
+package com.w1sh.medusa.services;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.w1sh.medusa.mongo.entities.Playlist;
-import com.w1sh.medusa.mongo.repos.PlaylistRepo;
+import com.w1sh.medusa.data.Playlist;
+import com.w1sh.medusa.repos.PlaylistRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

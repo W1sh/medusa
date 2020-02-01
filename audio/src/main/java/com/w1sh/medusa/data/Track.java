@@ -1,4 +1,4 @@
-package com.w1sh.medusa.mongo.entities;
+package com.w1sh.medusa.data;
 
 import org.springframework.data.annotation.Id;
 
