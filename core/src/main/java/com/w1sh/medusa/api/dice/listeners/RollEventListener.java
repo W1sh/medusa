@@ -41,7 +41,7 @@ public final class RollEventListener implements EventListener<RollEvent> {
 
     @Override
     public Mono<Void> execute(RollEvent event) {
-        Flux<TextMessage> rollMono = Mono.just(event)
+        Flux<TextMessage> resultsFlux = Mono.just(event)
                 .filterWhen(dice::validateRollArgument)
                 .map(ev -> ev.getArguments().get(0).split(Dice.ROLL_ARGUMENT_DELIMITER))
                 .flatMap(limits -> dice.roll(Integer.parseInt(limits[0]), Integer.parseInt(limits[1])))
@@ -51,12 +51,13 @@ public final class RollEventListener implements EventListener<RollEvent> {
 
         Mono<Void> saveRollMono = Mono.justOrEmpty(event.getMember())
                 .map(member -> member.getId().asLong())
-                .flatMap(userService::findById)
+                .flatMap(userService::findByUserId)
                 .doOnNext(user -> user.setRolls(user.getRolls() + 1))
                 .flatMap(userService::save)
                 .then();
 
-        return rollMono.then(saveRollMono);
+        return resultsFlux.last()
+                .then(saveRollMono);
     }
 
     private Flux<TextMessage> sendResults(Integer result, RollEvent event){

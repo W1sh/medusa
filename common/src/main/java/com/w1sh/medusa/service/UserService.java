@@ -32,8 +32,8 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public Mono<User> findById(Long userId) {
-        return userRepository.findById(userId)
+    public Mono<User> findByUserId(Long userId) {
+        return userRepository.findByUserId(String.valueOf(userId))
                 .defaultIfEmpty(new User(userId));
     }
 

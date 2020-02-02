@@ -1,6 +1,7 @@
 package com.w1sh.medusa.data;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Table(value = "core.users")
@@ -8,15 +9,17 @@ public class User {
 
     @Id
     private Long id;
+    @Column(value = "user_id")
     private Long userId;
     private Long rolls;
-    private Long duelrolls;
+    @Column(value = "duel_rolls")
+    private Long duelRolls;
     private Long points;
 
     public User(Long userId) {
         this.userId = userId;
         this.rolls = 0L;
-        this.duelrolls = 0L;
+        this.duelRolls = 0L;
         this.points = 0L;
     }
 
@@ -44,12 +47,12 @@ public class User {
         this.rolls = rolls;
     }
 
-    public Long getDuelrolls() {
-        return duelrolls;
+    public Long getDuelRolls() {
+        return duelRolls;
     }
 
-    public void setDuelrolls(Long duelrolls) {
-        this.duelrolls = duelrolls;
+    public void setDuelRolls(Long duelRolls) {
+        this.duelRolls = duelRolls;
     }
 
     public Long getPoints() {
