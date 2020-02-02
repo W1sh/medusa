@@ -1,9 +1,11 @@
 package com.w1sh.medusa.data;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.List;
 
+@Table(value = "playlists")
 public final class Playlist {
 
     @Id

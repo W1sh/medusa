@@ -1,7 +1,9 @@
 package com.w1sh.medusa.data;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
+@Table(value = "tracks")
 public final class Track {
 
     @Id
