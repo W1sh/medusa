@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.repos.UserRepository;
+import discord4j.core.object.entity.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,13 @@ public class UserService {
     public Mono<User> findByUserId(Long userId) {
         return userRepository.findByUserId(String.valueOf(userId))
                 .defaultIfEmpty(new User(userId));
+    }
+
+    public Mono<Void> distributePoints(Member member) {
+        return findByUserId(member.getId().asLong())
+                .doOnNext(user -> user.setPoints(user.getPoints() + 100))
+                .flatMap(this::save)
+                .then();
     }
 
 }

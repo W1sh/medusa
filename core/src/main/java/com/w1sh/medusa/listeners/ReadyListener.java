@@ -26,7 +26,7 @@ public class ReadyListener implements EventListener<ReadyEvent> {
                         .take(size)
                         .last())
                 .doOnNext(ev -> logger.info("All guilds have been received, the client is fully connected"))
-                .flatMap(ev -> event.getClient().getGuilds().count())
+                .flatMap(ev -> ev.getClient().getGuilds().count())
                 .doOnNext(guilds -> logger.info("Currently serving {} guilds", guilds))
                 .then();
     }
