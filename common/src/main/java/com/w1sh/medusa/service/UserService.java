@@ -7,6 +7,7 @@ import com.w1sh.medusa.repos.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 
@@ -25,6 +26,15 @@ public class UserService {
                 .expireAfterAccess(Duration.ofHours(1))
                 .recordStats()
                 .build();
+    }
+
+    public Mono<User> save(User user){
+        return userRepository.save(user);
+    }
+
+    public Mono<User> findById(Long userId) {
+        return userRepository.findById(userId)
+                .defaultIfEmpty(new User(userId));
     }
 
 }
