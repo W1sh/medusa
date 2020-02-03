@@ -7,6 +7,7 @@ import com.w1sh.medusa.repos.UserRepository;
 import discord4j.core.object.entity.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -19,6 +20,9 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final Cache<Long, User> usersCache;
+
+    @Value("${points.reward.amount}")
+    private String rewardAmount;
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -40,7 +44,7 @@ public class UserService {
 
     public Mono<Void> distributePoints(Member member) {
         return findByUserId(member.getId().asLong())
-                .doOnNext(user -> user.setPoints(user.getPoints() + 100))
+                .doOnNext(user -> user.setPoints(user.getPoints() + Integer.parseInt(rewardAmount)))
                 .flatMap(this::save)
                 .then();
     }

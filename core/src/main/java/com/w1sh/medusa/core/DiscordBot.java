@@ -15,9 +15,8 @@ import discord4j.core.object.presence.Presence;
 import discord4j.core.object.presence.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -35,6 +34,12 @@ public class DiscordBot {
     private final DisconnectListener disconnectListener;
     private final CommandEventDispatcher commandEventDispatcher;
     private final UserService userService;
+
+    @Value("${points.reward.delay}")
+    private String rewardDelay;
+
+    @Value("${points.reward.period}")
+    private String rewardPeriod;
 
     public DiscordBot(DiscordClient client, VoiceStateUpdateListener voiceStateUpdateListener,
                       ReadyListener readyListener, DisconnectListener disconnectListener,
@@ -56,7 +61,10 @@ public class DiscordBot {
 
         setupCommandEventDispatcher();
 
-        Schedulers.boundedElastic().schedulePeriodically(this::schedulePointDistribution, 1, 1, TimeUnit.MINUTES);
+        Schedulers.boundedElastic().schedulePeriodically(this::schedulePointDistribution,
+                Integer.parseInt(rewardDelay),
+                Integer.parseInt(rewardPeriod),
+                TimeUnit.MINUTES);
 
         client.login().block();
     }
