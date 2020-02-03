@@ -1,9 +1,8 @@
 package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.AudioConnectionManager;
-import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.events.EventFactory;
-import com.w1sh.medusa.core.listeners.EventListener;
+import com.w1sh.medusa.data.events.EventFactory;
+import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.events.ResumeTrackEvent;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;

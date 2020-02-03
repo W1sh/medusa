@@ -1,12 +1,12 @@
 package com.w1sh.medusa.api.misc.listeners;
 
 import com.w1sh.medusa.api.misc.events.StatusEvent;
-import com.w1sh.medusa.core.data.Embed;
-import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.core.events.Event;
-import com.w1sh.medusa.core.events.EventFactory;
-import com.w1sh.medusa.core.listeners.EventListener;
+import com.w1sh.medusa.data.events.Event;
+import com.w1sh.medusa.data.events.EventFactory;
+import com.w1sh.medusa.data.responses.Embed;
+import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
+import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.metrics.Trackers;
 import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.core.object.entity.MessageChannel;

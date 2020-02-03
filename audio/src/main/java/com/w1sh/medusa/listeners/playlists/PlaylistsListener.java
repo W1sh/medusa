@@ -1,13 +1,13 @@
 package com.w1sh.medusa.listeners.playlists;
 
-import com.w1sh.medusa.core.data.Embed;
-import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.core.events.EventFactory;
-import com.w1sh.medusa.core.listeners.EventListener;
+import com.w1sh.medusa.data.events.EventFactory;
+import com.w1sh.medusa.data.responses.Embed;
+import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
+import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.playlists.PlaylistsEvent;
-import com.w1sh.medusa.mongo.entities.Playlist;
-import com.w1sh.medusa.mongo.services.PlaylistService;
+import com.w1sh.medusa.listeners.EventListener;
+import com.w1sh.medusa.data.Playlist;
+import com.w1sh.medusa.services.PlaylistService;
 import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.core.object.entity.Member;
 import org.slf4j.Logger;

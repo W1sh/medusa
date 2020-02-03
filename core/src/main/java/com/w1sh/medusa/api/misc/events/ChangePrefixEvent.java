@@ -1,6 +1,6 @@
 package com.w1sh.medusa.api.misc.events;
 
-import com.w1sh.medusa.core.events.Event;
+import com.w1sh.medusa.data.events.Event;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 
 public class ChangePrefixEvent extends Event {

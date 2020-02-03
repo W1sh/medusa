@@ -2,11 +2,12 @@ package com.w1sh.medusa.api.dice.listeners;
 
 import com.w1sh.medusa.api.dice.Dice;
 import com.w1sh.medusa.api.dice.events.RollEvent;
-import com.w1sh.medusa.core.data.TextMessage;
-import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.core.events.EventFactory;
-import com.w1sh.medusa.core.listeners.EventListener;
+import com.w1sh.medusa.data.events.EventFactory;
+import com.w1sh.medusa.data.responses.TextMessage;
+import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
+import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.listeners.EventListener;
+import com.w1sh.medusa.service.UserService;
 import discord4j.core.object.entity.Member;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,7 @@ import reactor.core.publisher.Mono;
 public final class RollEventListener implements EventListener<RollEvent> {
 
     private final ResponseDispatcher responseDispatcher;
+    private final UserService userService;
     private final Dice dice;
 
     @Value("${event.roll.start}")
@@ -24,8 +26,9 @@ public final class RollEventListener implements EventListener<RollEvent> {
     @Value("${event.roll.result}")
     private String rollResult;
 
-    public RollEventListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher, Dice dice) {
+    public RollEventListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher, UserService userService, Dice dice) {
         this.responseDispatcher = responseDispatcher;
+        this.userService = userService;
         this.dice = dice;
         EventFactory.registerEvent(RollEvent.KEYWORD, RollEvent.class);
         eventDispatcher.registerListener(this);
@@ -38,14 +41,23 @@ public final class RollEventListener implements EventListener<RollEvent> {
 
     @Override
     public Mono<Void> execute(RollEvent event) {
-        return Mono.just(event)
+        Flux<TextMessage> resultsFlux = Mono.just(event)
                 .filterWhen(dice::validateRollArgument)
                 .map(ev -> ev.getArguments().get(0).split(Dice.ROLL_ARGUMENT_DELIMITER))
                 .flatMap(limits -> dice.roll(Integer.parseInt(limits[0]), Integer.parseInt(limits[1])))
                 .flatMapMany(result -> sendResults(result, event))
                 .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
+                .doAfterTerminate(responseDispatcher::flush);
+
+        Mono<Void> saveRollMono = Mono.justOrEmpty(event.getMember())
+                .map(member -> member.getId().asLong())
+                .flatMap(userService::findByUserId)
+                .doOnNext(user -> user.setRolls(user.getRolls() + 1))
+                .flatMap(userService::save)
                 .then();
+
+        return resultsFlux.last()
+                .then(saveRollMono);
     }
 
     private Flux<TextMessage> sendResults(Integer result, RollEvent event){

@@ -1,10 +1,9 @@
 package com.w1sh.medusa.listeners;
 
-import com.w1sh.medusa.core.data.Embed;
-import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.core.events.EventFactory;
-import com.w1sh.medusa.core.listeners.EventListener;
+import com.w1sh.medusa.data.events.EventFactory;
+import com.w1sh.medusa.data.responses.Embed;
+import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
+import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.CardDetailEvent;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.services.CardService;

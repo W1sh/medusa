@@ -2,8 +2,8 @@ package com.w1sh.medusa;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
-import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.core.events.Event;
+import com.w1sh.medusa.data.events.Event;
+import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.GuildChannel;

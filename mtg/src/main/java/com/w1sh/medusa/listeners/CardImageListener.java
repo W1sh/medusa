@@ -1,18 +1,15 @@
 package com.w1sh.medusa.listeners;
 
-import com.w1sh.medusa.core.data.Embed;
-import com.w1sh.medusa.core.dispatchers.CommandEventDispatcher;
-import com.w1sh.medusa.core.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.core.events.EventFactory;
-import com.w1sh.medusa.core.listeners.EventListener;
+import com.w1sh.medusa.data.events.EventFactory;
+import com.w1sh.medusa.data.responses.Embed;
+import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
+import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.CardImageEvent;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.services.CardService;
 import com.w1sh.medusa.utils.CardUtils;
-import discord4j.core.object.entity.MessageChannel;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 
 import java.awt.*;
 
