@@ -8,6 +8,8 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -15,6 +17,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public final class TrackScheduler implements AudioLoadResultHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(TrackScheduler.class);
+    private static final Integer MAX_QUEUE_SIZE = 250;
 
     private final AudioPlayer player;
     private final BlockingQueue<AudioTrack> queue;
@@ -23,27 +26,32 @@ public final class TrackScheduler implements AudioLoadResultHandler {
 
     TrackScheduler(final AudioPlayer player) {
         this.player = player;
-        this.queue = new LinkedBlockingQueue<>();
-        this.playingTrack = null;
+        this.queue = new LinkedBlockingQueue<>(MAX_QUEUE_SIZE);
     }
 
     public void nextTrack(boolean skip) {
         if (skip) {
-            final Optional<AudioTrack> track = Optional.ofNullable(this.queue.poll());
-            track.ifPresent(t -> {
-                playingTrack = t;
-                player.stopTrack();
-                player.playTrack(playingTrack);
-            });
+            next(true);
         } else {
             if (player.getPlayingTrack() == null) {
-                final Optional<AudioTrack> track = Optional.ofNullable(this.queue.poll());
-                track.ifPresent(t -> {
-                    playingTrack = t;
-                    player.playTrack(playingTrack);
-                });
+                next(false);
             }
         }
+    }
+
+    private void next(boolean skip) {
+        Optional.ofNullable(this.queue.poll()).ifPresent(t -> {
+            playingTrack = t;
+            if(skip) player.stopTrack();
+            player.playTrack(playingTrack);
+        });
+    }
+
+    public void shuffle(){
+        final var list = new ArrayList<>(queue);
+        Collections.shuffle(list);
+        queue.clear();
+        queue.addAll(list);
     }
 
     @Override
