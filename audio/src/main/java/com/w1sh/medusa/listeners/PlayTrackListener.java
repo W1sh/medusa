@@ -38,7 +38,6 @@ public final class PlayTrackListener implements EventListener<PlayTrackEvent> {
     public Mono<Void> execute(PlayTrackEvent event) {
         return Mono.justOrEmpty(event)
                 .flatMap(tuple -> AudioConnectionManager.getInstance().requestTrack(event))
-                .filter(trackScheduler -> trackScheduler.getPlayingTrack().isPresent())
                 .flatMap(trackScheduler -> createQueueMessage(trackScheduler, event))
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to play track", throwable)))
                 .doOnNext(responseDispatcher::queue)
@@ -47,7 +46,7 @@ public final class PlayTrackListener implements EventListener<PlayTrackEvent> {
     }
 
     private Mono<Embed> createQueueMessage(TrackScheduler trackScheduler, PlayTrackEvent event) {
-        AudioTrack track = trackScheduler.getPlayingTrack().orElseThrow();
+        final AudioTrack track = trackScheduler.getQueue().getLast();
         return event.getMessage().getChannel()
                 .map(chan -> new Embed(chan, embedCreateSpec -> embedCreateSpec.setTitle(":ballot_box_with_check:\tAdded to queue")
                         .setColor(Color.GREEN)

@@ -11,7 +11,9 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public final class TrackScheduler implements AudioLoadResultHandler {
@@ -20,13 +22,13 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     private static final Integer MAX_QUEUE_SIZE = 250;
 
     private final AudioPlayer player;
-    private final BlockingQueue<AudioTrack> queue;
+    private final BlockingDeque<AudioTrack> queue;
 
     private AudioTrack playingTrack;
 
     TrackScheduler(final AudioPlayer player) {
         this.player = player;
-        this.queue = new LinkedBlockingQueue<>(MAX_QUEUE_SIZE);
+        this.queue = new LinkedBlockingDeque<>(MAX_QUEUE_SIZE);
     }
 
     public void nextTrack(boolean skip) {
@@ -98,12 +100,12 @@ public final class TrackScheduler implements AudioLoadResultHandler {
         if(player.isPaused()) player.setPaused(false);
     }
 
-    public BlockingQueue<AudioTrack> getQueue() {
+    public BlockingDeque<AudioTrack> getQueue() {
         return queue;
     }
 
-    public BlockingQueue<AudioTrack> getFullQueue(){
-        BlockingQueue<AudioTrack> fullQueue = new LinkedBlockingQueue<>();
+    public BlockingDeque<AudioTrack> getFullQueue(){
+        BlockingDeque<AudioTrack> fullQueue = new LinkedBlockingDeque<>();
         getPlayingTrack().ifPresent(fullQueue::add);
         fullQueue.addAll(queue);
         return fullQueue;
