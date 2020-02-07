@@ -3,7 +3,7 @@ package com.w1sh.medusa.validators;
 import com.w1sh.medusa.data.events.Event;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
-import discord4j.core.object.entity.GuildChannel;
+import discord4j.core.object.entity.channel.GuildChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -25,7 +25,7 @@ public final class PermissionsValidator implements Validator {
     public Mono<Boolean> validate(Event event) {
         return event.getMessage().getChannel()
                 .ofType(GuildChannel.class)
-                .flatMap(guildChannel -> guildChannel.getEffectivePermissions(event.getClient().getSelfId().orElseThrow()))
+                .flatMap(guildChannel -> guildChannel.getEffectivePermissions(event.getClient().getSelfId().block()))
                 .flatMap(effPermissions -> Flux.fromIterable(event.getPermissions())
                         .all(effPermissions::contains))
                 .flatMap(bool -> {

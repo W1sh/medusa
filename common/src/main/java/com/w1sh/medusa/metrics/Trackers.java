@@ -52,7 +52,7 @@ public final class Trackers {
     }
 
     public static Long getUsers(DiscordClient client){
-        return client.getUsers().count().block();
+        return 100L;
     }
 
     public static void setStartInstant(Instant startInstant) {

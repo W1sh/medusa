@@ -9,7 +9,7 @@ import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.metrics.Trackers;
 import com.w1sh.medusa.utils.ResponseUtils;
-import discord4j.core.object.entity.MessageChannel;
+import discord4j.core.object.entity.channel.MessageChannel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -45,14 +45,14 @@ public final class StatusEventListener implements EventListener<StatusEvent> {
     }
 
     private Embed createStatusEmbed(MessageChannel messageChannel, Event event){
-        Long guilds = Trackers.getGuilds(event.getClient());
-        Long users = Trackers.getUsers(event.getClient());
+        Long guilds = 100L;
+        Long users = 100L;
 
         return new Embed(messageChannel, embedCreateSpec -> {
             embedCreateSpec.setColor(Color.GREEN);
-            embedCreateSpec.setTitle(String.format("Medusa - Shard %d/%d",
-                    event.getClient().getServiceMediator().getClientConfig().getShardIndex() + 1,
-                    event.getClient().getServiceMediator().getClientConfig().getShardCount()));
+            /*embedCreateSpec.setTitle(String.format("Medusa - Shard %d/%d",
+                    event.getClient().getClientConfig().getShardIndex() + 1,
+                    event.getClient().getServiceMediator().getClientConfig().getShardCount()));*/
             embedCreateSpec.addField("Uptime", Trackers.getUptime(), true);
             embedCreateSpec.addField("Memory Usage", String.format("%d MB / %d MB",
                     numberAsMegabytes(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()),
