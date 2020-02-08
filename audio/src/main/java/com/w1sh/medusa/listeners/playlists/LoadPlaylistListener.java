@@ -2,13 +2,12 @@ package com.w1sh.medusa.listeners.playlists;
 
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.TrackScheduler;
+import com.w1sh.medusa.data.Playlist;
 import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.Embed;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.playlists.LoadPlaylistEvent;
 import com.w1sh.medusa.listeners.EventListener;
-import com.w1sh.medusa.data.Playlist;
 import com.w1sh.medusa.services.PlaylistService;
 import com.w1sh.medusa.utils.ResponseUtils;
 import org.slf4j.Logger;
@@ -21,16 +20,15 @@ import java.awt.*;
 @Component
 public final class LoadPlaylistListener implements EventListener<LoadPlaylistEvent> {
 
-    private static final Logger logger = LoggerFactory.getLogger(LoadPlaylistEvent.class);
+    private static final Logger logger = LoggerFactory.getLogger(LoadPlaylistListener.class);
 
     private final PlaylistService playlistService;
     private final ResponseDispatcher responseDispatcher;
 
-    public LoadPlaylistListener(PlaylistService playlistService, CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher) {
+    public LoadPlaylistListener(PlaylistService playlistService, ResponseDispatcher responseDispatcher) {
         this.playlistService = playlistService;
         this.responseDispatcher = responseDispatcher;
         EventFactory.registerEvent(LoadPlaylistEvent.KEYWORD, LoadPlaylistEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override

@@ -28,11 +28,10 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
     private final PlaylistService playlistService;
     private final ResponseDispatcher responseDispatcher;
 
-    public SavePlaylistListener(ResponseDispatcher responseDispatcher, CommandEventDispatcher eventDispatcher, PlaylistService playlistService) {
+    public SavePlaylistListener(ResponseDispatcher responseDispatcher, PlaylistService playlistService) {
         this.responseDispatcher = responseDispatcher;
         this.playlistService = playlistService;
         EventFactory.registerEvent(SavePlaylistEvent.KEYWORD, SavePlaylistEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override

@@ -4,7 +4,6 @@ import com.w1sh.medusa.api.misc.events.StatusEvent;
 import com.w1sh.medusa.data.events.Event;
 import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.Embed;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.metrics.Trackers;
@@ -24,10 +23,9 @@ public final class StatusEventListener implements EventListener<StatusEvent> {
 
     private final ResponseDispatcher responseDispatcher;
 
-    public StatusEventListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher) {
+    public StatusEventListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
         EventFactory.registerEvent(StatusEvent.KEYWORD, StatusEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override

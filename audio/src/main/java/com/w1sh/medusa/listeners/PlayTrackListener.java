@@ -5,7 +5,6 @@ import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.TrackScheduler;
 import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.Embed;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.PlayTrackEvent;
 import com.w1sh.medusa.utils.ResponseUtils;
@@ -23,10 +22,9 @@ public final class PlayTrackListener implements EventListener<PlayTrackEvent> {
 
     private final ResponseDispatcher responseDispatcher;
 
-    public PlayTrackListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher) {
+    public PlayTrackListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
         EventFactory.registerEvent(PlayTrackEvent.KEYWORD, PlayTrackEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override

@@ -2,7 +2,6 @@ package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.Embed;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.CardImageEvent;
 import com.w1sh.medusa.resources.Card;
@@ -19,12 +18,10 @@ public final class CardImageListener implements EventListener<CardImageEvent> {
     private final CardService cardService;
     private final ResponseDispatcher responseDispatcher;
 
-    public CardImageListener(CommandEventDispatcher eventDispatcher, CardService cardService,
-                             ResponseDispatcher responseDispatcher) {
+    public CardImageListener(CardService cardService, ResponseDispatcher responseDispatcher) {
         this.cardService = cardService;
         this.responseDispatcher = responseDispatcher;
         EventFactory.registerEvent(CardImageEvent.INLINE_PREFIX, CardImageEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override

@@ -4,7 +4,6 @@ import com.w1sh.medusa.AudioConnection;
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.Embed;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.StopTrackEvent;
 import org.springframework.stereotype.Component;
@@ -17,10 +16,9 @@ public final class StopTrackListener implements EventListener<StopTrackEvent> {
 
     private final ResponseDispatcher responseDispatcher;
 
-    public StopTrackListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher) {
+    public StopTrackListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
         EventFactory.registerEvent(StopTrackEvent.KEYWORD, StopTrackEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override

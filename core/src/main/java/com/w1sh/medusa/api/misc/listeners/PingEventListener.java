@@ -3,7 +3,6 @@ package com.w1sh.medusa.api.misc.listeners;
 import com.w1sh.medusa.api.misc.events.PingEvent;
 import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import org.slf4j.Logger;
@@ -21,10 +20,9 @@ public final class PingEventListener implements EventListener<PingEvent> {
 
     private final ResponseDispatcher responseDispatcher;
 
-    public PingEventListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher) {
+    public PingEventListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
         EventFactory.registerEvent(PingEvent.KEYWORD, PingEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override

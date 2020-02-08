@@ -1,12 +1,11 @@
 package com.w1sh.medusa.listeners.playlists;
 
+import com.w1sh.medusa.data.Playlist;
 import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.playlists.DeletePlaylistEvent;
 import com.w1sh.medusa.listeners.EventListener;
-import com.w1sh.medusa.data.Playlist;
 import com.w1sh.medusa.services.PlaylistService;
 import discord4j.core.object.entity.Member;
 import org.slf4j.Logger;
@@ -24,11 +23,10 @@ public final class DeletePlaylistListener implements EventListener<DeletePlaylis
     private final PlaylistService playlistService;
     private final ResponseDispatcher responseDispatcher;
 
-    public DeletePlaylistListener(PlaylistService playlistService, ResponseDispatcher responseDispatcher, CommandEventDispatcher eventDispatcher) {
+    public DeletePlaylistListener(PlaylistService playlistService, ResponseDispatcher responseDispatcher) {
         this.playlistService = playlistService;
         this.responseDispatcher = responseDispatcher;
         EventFactory.registerEvent(DeletePlaylistEvent.KEYWORD, DeletePlaylistEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override

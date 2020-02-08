@@ -26,11 +26,10 @@ public final class PlaylistsListener implements EventListener<PlaylistsEvent> {
     private final PlaylistService playlistService;
     private final ResponseDispatcher responseDispatcher;
 
-    public PlaylistsListener(ResponseDispatcher responseDispatcher, CommandEventDispatcher eventDispatcher, PlaylistService playlistService) {
+    public PlaylistsListener(ResponseDispatcher responseDispatcher, PlaylistService playlistService) {
         this.responseDispatcher = responseDispatcher;
         this.playlistService = playlistService;
         EventFactory.registerEvent(PlaylistsEvent.KEYWORD, PlaylistsEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override

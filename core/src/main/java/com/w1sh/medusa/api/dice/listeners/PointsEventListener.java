@@ -4,7 +4,6 @@ import com.w1sh.medusa.api.dice.events.PointsEvent;
 import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.service.UserService;
@@ -18,11 +17,10 @@ public class PointsEventListener implements EventListener<PointsEvent> {
     private final ResponseDispatcher responseDispatcher;
     private final UserService userService;
 
-    public PointsEventListener(ResponseDispatcher responseDispatcher, UserService userService, CommandEventDispatcher eventDispatcher) {
+    public PointsEventListener(ResponseDispatcher responseDispatcher, UserService userService) {
         this.responseDispatcher = responseDispatcher;
         this.userService = userService;
         EventFactory.registerEvent(PointsEvent.KEYWORD, PointsEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override

@@ -3,7 +3,6 @@ package com.w1sh.medusa.api.misc.listeners;
 import com.w1sh.medusa.api.misc.events.ChangePrefixEvent;
 import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import discord4j.core.object.presence.Activity;
@@ -16,10 +15,9 @@ public final class ChangePrefixEventListener implements EventListener<ChangePref
 
     private final ResponseDispatcher responseDispatcher;
 
-    public ChangePrefixEventListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher) {
+    public ChangePrefixEventListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
         EventFactory.registerEvent(ChangePrefixEvent.KEYWORD, ChangePrefixEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override

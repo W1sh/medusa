@@ -4,7 +4,6 @@ import com.w1sh.medusa.api.dice.Dice;
 import com.w1sh.medusa.api.dice.events.RollEvent;
 import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.service.UserService;
@@ -26,12 +25,11 @@ public final class RollEventListener implements EventListener<RollEvent> {
     @Value("${event.roll.result}")
     private String rollResult;
 
-    public RollEventListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher, UserService userService, Dice dice) {
+    public RollEventListener(ResponseDispatcher responseDispatcher, UserService userService, Dice dice) {
         this.responseDispatcher = responseDispatcher;
         this.userService = userService;
         this.dice = dice;
         EventFactory.registerEvent(RollEvent.KEYWORD, RollEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override

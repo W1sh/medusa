@@ -4,7 +4,6 @@ import com.w1sh.medusa.api.dice.events.RouletteEvent;
 import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.service.UserService;
@@ -21,13 +20,11 @@ public class RouletteEventListener implements EventListener<RouletteEvent> {
     private final UserService userService;
     private final Random random;
 
-    public RouletteEventListener(ResponseDispatcher responseDispatcher, UserService userService,
-                                 CommandEventDispatcher eventDispatcher, Random random) {
+    public RouletteEventListener(ResponseDispatcher responseDispatcher, UserService userService, Random random) {
         this.responseDispatcher = responseDispatcher;
         this.userService = userService;
         this.random = random;
         EventFactory.registerEvent(RouletteEvent.KEYWORD, RouletteEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override
