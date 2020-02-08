@@ -16,7 +16,9 @@ public abstract class Event extends MessageCreateEvent {
     private List<Permission> permissions;
 
     public Event(MessageCreateEvent event){
-        super(null,null,null,null,null);
+        super(event.getClient(), event.getShardInfo(), event.getMessage(),
+                event.getGuildId().map(Snowflake::asLong).orElseThrow(),
+                event.getMember().orElseThrow());
         this.minArguments = 0;
         this.arguments = new HashMap<>();
         this.permissions = new ArrayList<>();
