@@ -1,4 +1,4 @@
-package com.w1sh.medusa.core;
+package com.w1sh.medusa.utils;
 
 import com.w1sh.medusa.service.UserService;
 import discord4j.core.GatewayDiscordClient;
@@ -16,9 +16,9 @@ import reactor.core.scheduler.Schedulers;
 import java.util.concurrent.TimeUnit;
 
 @Component
-public class TaskExecutor {
+public final class Executor {
 
-    private static final Logger logger = LoggerFactory.getLogger(TaskExecutor.class);
+    private static final Logger logger = LoggerFactory.getLogger(Executor.class);
 
     private final UserService userService;
 
@@ -28,11 +28,11 @@ public class TaskExecutor {
     @Value("${points.reward.period}")
     private String rewardPeriod;
 
-    public TaskExecutor(UserService userService) {
+    public Executor(UserService userService) {
         this.userService = userService;
     }
 
-    public void startPointDistribution(GatewayDiscordClient gateway){
+    public void startPointDistribution(GatewayDiscordClient gateway) {
         Schedulers.boundedElastic().schedulePeriodically(() -> schedulePointDistribution(gateway),
                 Integer.parseInt(rewardDelay),
                 Integer.parseInt(rewardPeriod),

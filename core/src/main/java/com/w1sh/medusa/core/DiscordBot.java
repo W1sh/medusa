@@ -4,6 +4,7 @@ import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.dispatchers.MedusaEventDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.utils.ApplicationContextUtils;
+import com.w1sh.medusa.utils.Executor;
 import com.w1sh.medusa.validators.ArgumentValidator;
 import com.w1sh.medusa.validators.PermissionsValidator;
 import discord4j.core.DiscordClient;
@@ -29,20 +30,19 @@ public class DiscordBot {
 
     private final ApplicationContextUtils applicationContextUtils;
     private final MedusaEventDispatcher medusaEventDispatcher;
-    private final TaskExecutor taskExecutor;
+    private final Executor executor;
 
     private final ArgumentValidator argumentValidator;
     private final PermissionsValidator permissionsValidator;
 
-
     @Value("${discord.token}")
     private String token;
 
-    public DiscordBot(ApplicationContextUtils applicationContextUtils, MedusaEventDispatcher medusaEventDispatcher, TaskExecutor taskExecutor,
+    public DiscordBot(ApplicationContextUtils applicationContextUtils, MedusaEventDispatcher medusaEventDispatcher, Executor executor,
                       ArgumentValidator argumentValidator, PermissionsValidator permissionsValidator) {
         this.applicationContextUtils = applicationContextUtils;
         this.medusaEventDispatcher = medusaEventDispatcher;
-        this.taskExecutor = taskExecutor;
+        this.executor = executor;
 
         this.argumentValidator = argumentValidator;
         this.permissionsValidator = permissionsValidator;
@@ -72,7 +72,7 @@ public class DiscordBot {
 
         setupEventDispatcher(gateway);
 
-        taskExecutor.startPointDistribution(gateway);
+        executor.startPointDistribution(gateway);
 
         gateway.onDisconnect().block();
     }
