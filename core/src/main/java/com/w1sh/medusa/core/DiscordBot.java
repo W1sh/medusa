@@ -2,8 +2,7 @@ package com.w1sh.medusa.core;
 
 import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.dispatchers.MedusaEventDispatcher;
-import com.w1sh.medusa.listeners.EventListener;
-import com.w1sh.medusa.utils.ApplicationContextUtils;
+import com.w1sh.medusa.utils.EventDispatcherInitializer;
 import com.w1sh.medusa.utils.Executor;
 import com.w1sh.medusa.validators.ArgumentValidator;
 import com.w1sh.medusa.validators.PermissionsValidator;
@@ -28,7 +27,7 @@ public class DiscordBot {
 
     private static final Logger logger = LoggerFactory.getLogger(DiscordBot.class);
 
-    private final ApplicationContextUtils applicationContextUtils;
+    private final EventDispatcherInitializer eventDispatcherInitializer;
     private final MedusaEventDispatcher medusaEventDispatcher;
     private final Executor executor;
 
@@ -38,9 +37,9 @@ public class DiscordBot {
     @Value("${discord.token}")
     private String token;
 
-    public DiscordBot(ApplicationContextUtils applicationContextUtils, MedusaEventDispatcher medusaEventDispatcher, Executor executor,
+    public DiscordBot(EventDispatcherInitializer eventDispatcherInitializer, MedusaEventDispatcher medusaEventDispatcher, Executor executor,
                       ArgumentValidator argumentValidator, PermissionsValidator permissionsValidator) {
-        this.applicationContextUtils = applicationContextUtils;
+        this.eventDispatcherInitializer = eventDispatcherInitializer;
         this.medusaEventDispatcher = medusaEventDispatcher;
         this.executor = executor;
 
@@ -66,9 +65,8 @@ public class DiscordBot {
 
         assert gateway != null;
 
-        var listeners = applicationContextUtils.findAllByType(EventListener.class);
-        listeners.forEach(medusaEventDispatcher::registerListener);
-        logger.info("Found and registered {} event listeners", listeners.size());
+        eventDispatcherInitializer.registenListeners();
+        eventDispatcherInitializer.registerEvents();
 
         setupEventDispatcher(gateway);
 
