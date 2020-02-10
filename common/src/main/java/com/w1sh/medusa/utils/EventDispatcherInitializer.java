@@ -1,6 +1,7 @@
 package com.w1sh.medusa.utils;
 
 import com.w1sh.medusa.data.events.Event;
+import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.events.Registered;
 import com.w1sh.medusa.dispatchers.MedusaEventDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
@@ -31,7 +32,15 @@ public class EventDispatcherInitializer {
 
     public void registerEvents() {
         var reflections = new Reflections("com.w1sh.medusa");
-        var classes = reflections.getTypesAnnotatedWith(Registered.class);
-        // TODO: register events to event factory
+        var events = reflections.getSubTypesOf(Event.class);
+        for (Class<? extends Event> clazz : events) {
+            Registered registered = clazz.getAnnotation(Registered.class);
+            if(registered != null){
+                logger.info("Registering new event of type <{}>", clazz.getSimpleName());
+                String prefix = registered.prefix();
+                EventFactory.registerEvent(prefix, clazz);
+            }
+        }
+        logger.info("Found and registered {} event listeners", events.size());
     }
 }
