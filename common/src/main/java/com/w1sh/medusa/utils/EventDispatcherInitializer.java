@@ -11,6 +11,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import java.util.HashSet;
+import java.util.Set;
+
 @Component
 public class EventDispatcherInitializer {
 
@@ -18,21 +22,30 @@ public class EventDispatcherInitializer {
 
     private final ApplicationContext applicationContext;
     private final MedusaEventDispatcher medusaEventDispatcher;
+    private final Reflections reflections;
 
-    public EventDispatcherInitializer(ApplicationContext applicationContext, MedusaEventDispatcher medusaEventDispatcher) {
+    private Set<EventListener> listeners;
+    private Set<Class<? extends Event>> events;
+
+    public EventDispatcherInitializer(ApplicationContext applicationContext, MedusaEventDispatcher medusaEventDispatcher,
+                                      Reflections reflections) {
         this.applicationContext = applicationContext;
         this.medusaEventDispatcher = medusaEventDispatcher;
+        this.reflections = reflections;
     }
 
-    public void registenListeners() {
-        final var listeners = applicationContext.getBeansOfType(EventListener.class).values();
+    @PostConstruct
+    public void init(){
+        listeners = findAllListeners();
+        events = findAllEvents();
+    }
+
+    public void registerListeners() {
         listeners.forEach(medusaEventDispatcher::registerListener);
         logger.info("Found and registered {} event listeners", listeners.size());
     }
 
     public void registerEvents() {
-        var reflections = new Reflections("com.w1sh.medusa");
-        var events = reflections.getSubTypesOf(Event.class);
         for (Class<? extends Event> clazz : events) {
             Registered registered = clazz.getAnnotation(Registered.class);
             if(registered != null){
@@ -40,7 +53,21 @@ public class EventDispatcherInitializer {
                 String prefix = registered.prefix();
                 EventFactory.registerEvent(prefix, clazz);
             }
+            boolean hasListener = listeners.stream()
+                    .map(eventListener -> eventListener.getEventType().getSimpleName())
+                    .anyMatch(eventName -> eventName.equalsIgnoreCase(clazz.getSimpleName()));
+            if (!hasListener) {
+                logger.warn("Event of type <{}> has no listener registered!", clazz.getSimpleName());
+            }
         }
         logger.info("Found and registered {} event listeners", events.size());
+    }
+
+    private Set<EventListener> findAllListeners(){
+        return new HashSet<>(applicationContext.getBeansOfType(EventListener.class).values());
+    }
+
+    private Set<Class<? extends Event>> findAllEvents(){
+        return reflections.getSubTypesOf(Event.class);
     }
 }

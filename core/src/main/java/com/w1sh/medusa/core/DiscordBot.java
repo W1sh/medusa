@@ -65,7 +65,7 @@ public class DiscordBot {
 
         assert gateway != null;
 
-        eventDispatcherInitializer.registenListeners();
+        eventDispatcherInitializer.registerListeners();
         eventDispatcherInitializer.registerEvents();
 
         setupEventDispatcher(gateway);
