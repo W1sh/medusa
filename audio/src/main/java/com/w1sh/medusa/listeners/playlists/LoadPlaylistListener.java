@@ -3,7 +3,6 @@ package com.w1sh.medusa.listeners.playlists;
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.TrackScheduler;
 import com.w1sh.medusa.data.Playlist;
-import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.Embed;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.playlists.LoadPlaylistEvent;
