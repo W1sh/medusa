@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class PointsEventListener implements EventListener<PointsEvent> {
+public final class PointsEventListener implements EventListener<PointsEvent> {
 
     private final ResponseDispatcher responseDispatcher;
     private final UserService userService;

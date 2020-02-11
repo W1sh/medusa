@@ -4,12 +4,7 @@ import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.dispatchers.MedusaEventDispatcher;
 import com.w1sh.medusa.utils.EventDispatcherInitializer;
 import com.w1sh.medusa.utils.Executor;
-import com.w1sh.medusa.validators.ArgumentValidator;
-import com.w1sh.medusa.validators.PermissionsValidator;
 import discord4j.core.DiscordClient;
-import discord4j.core.GatewayDiscordClient;
-import discord4j.core.event.EventDispatcher;
-import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.shard.LocalShardCoordinator;
@@ -31,20 +26,14 @@ public class DiscordBot {
     private final MedusaEventDispatcher medusaEventDispatcher;
     private final Executor executor;
 
-    private final ArgumentValidator argumentValidator;
-    private final PermissionsValidator permissionsValidator;
-
     @Value("${discord.token}")
     private String token;
 
-    public DiscordBot(EventDispatcherInitializer eventDispatcherInitializer, MedusaEventDispatcher medusaEventDispatcher, Executor executor,
-                      ArgumentValidator argumentValidator, PermissionsValidator permissionsValidator) {
+    public DiscordBot(EventDispatcherInitializer eventDispatcherInitializer, MedusaEventDispatcher medusaEventDispatcher,
+                      Executor executor) {
         this.eventDispatcherInitializer = eventDispatcherInitializer;
         this.medusaEventDispatcher = medusaEventDispatcher;
         this.executor = executor;
-
-        this.argumentValidator = argumentValidator;
-        this.permissionsValidator = permissionsValidator;
     }
 
     @PostConstruct
@@ -55,7 +44,6 @@ public class DiscordBot {
         var gateway = client.gateway()
                 .setSharding(ShardingStrategy.recommended())
                 .setShardCoordinator(new LocalShardCoordinator())
-                .setEventDispatcher(EventDispatcher.buffering())
                 .setAwaitConnections(true)
                 .setStoreService(new JdkStoreService())
                 .setEventDispatcher(medusaEventDispatcher)
@@ -65,25 +53,12 @@ public class DiscordBot {
 
         assert gateway != null;
 
+        eventDispatcherInitializer.setupDispatcher(gateway);
         eventDispatcherInitializer.registerListeners();
         eventDispatcherInitializer.registerEvents();
-
-        setupEventDispatcher(gateway);
 
         executor.startPointDistribution(gateway);
 
         gateway.onDisconnect().block();
     }
-
-    private void setupEventDispatcher(GatewayDiscordClient gateway){
-        gateway.on(MessageCreateEvent.class)
-                .filter(event -> event.getClass().equals(MessageCreateEvent.class))
-                .filter(event -> event.getMember().isPresent() && event.getMember().map(user -> !user.isBot()).orElse(false))
-                .map(EventFactory::extractEvents)
-                .filterWhen(argumentValidator::validate)
-                .filterWhen(permissionsValidator::validate)
-                .doOnSubscribe(ev -> logger.info("Received new event of type <{}>", ev.getClass().getSimpleName()))
-                .subscribe(medusaEventDispatcher::publish);
-    }
-
 }

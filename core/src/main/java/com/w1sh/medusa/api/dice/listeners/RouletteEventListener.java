@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 import java.util.Random;
 
 @Component
-public class RouletteEventListener implements EventListener<RouletteEvent> {
+public final class RouletteEventListener implements EventListener<RouletteEvent> {
 
     private final ResponseDispatcher responseDispatcher;
     private final UserService userService;
