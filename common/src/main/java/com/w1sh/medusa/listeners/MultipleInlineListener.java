@@ -16,7 +16,6 @@ public final class MultipleInlineListener implements EventListener<MultipleInlin
     public MultipleInlineListener(MedusaEventDispatcher medusaEventDispatcher, ResponseDispatcher responseDispatcher) {
         this.medusaEventDispatcher = medusaEventDispatcher;
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(MultipleInlineEvent.KEYWORD, MultipleInlineEvent.class);
     }
 
     @Override

@@ -9,10 +9,6 @@ import reactor.core.publisher.Mono;
 @Component
 public final class PauseTrackListener implements EventListener<PauseTrackEvent> {
 
-    public PauseTrackListener() {
-        EventFactory.registerEvent(PauseTrackEvent.KEYWORD, PauseTrackEvent.class);
-    }
-
     @Override
     public Class<PauseTrackEvent> getEventType() {
         return PauseTrackEvent.class;

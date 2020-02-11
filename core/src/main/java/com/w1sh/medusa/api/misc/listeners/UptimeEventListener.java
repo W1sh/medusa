@@ -16,7 +16,6 @@ public final class UptimeEventListener implements EventListener<UptimeEvent> {
 
     public UptimeEventListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(UptimeEvent.KEYWORD, UptimeEvent.class);
     }
 
     @Override

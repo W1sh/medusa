@@ -25,7 +25,6 @@ public final class StatusEventListener implements EventListener<StatusEvent> {
 
     public StatusEventListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(StatusEvent.KEYWORD, StatusEvent.class);
     }
 
     @Override

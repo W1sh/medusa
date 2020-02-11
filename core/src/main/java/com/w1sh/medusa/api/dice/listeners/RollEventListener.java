@@ -29,7 +29,6 @@ public final class RollEventListener implements EventListener<RollEvent> {
         this.responseDispatcher = responseDispatcher;
         this.userService = userService;
         this.dice = dice;
-        EventFactory.registerEvent(RollEvent.KEYWORD, RollEvent.class);
     }
 
     @Override

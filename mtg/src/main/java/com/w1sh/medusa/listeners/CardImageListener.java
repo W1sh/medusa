@@ -21,7 +21,6 @@ public final class CardImageListener implements EventListener<CardImageEvent> {
     public CardImageListener(CardService cardService, ResponseDispatcher responseDispatcher) {
         this.cardService = cardService;
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(CardImageEvent.INLINE_PREFIX, CardImageEvent.class);
     }
 
     @Override

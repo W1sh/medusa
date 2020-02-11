@@ -26,7 +26,6 @@ public final class DeletePlaylistListener implements EventListener<DeletePlaylis
     public DeletePlaylistListener(PlaylistService playlistService, ResponseDispatcher responseDispatcher) {
         this.playlistService = playlistService;
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(DeletePlaylistEvent.KEYWORD, DeletePlaylistEvent.class);
     }
 
     @Override

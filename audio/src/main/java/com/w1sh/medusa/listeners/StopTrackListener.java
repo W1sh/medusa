@@ -18,7 +18,6 @@ public final class StopTrackListener implements EventListener<StopTrackEvent> {
 
     public StopTrackListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(StopTrackEvent.KEYWORD, StopTrackEvent.class);
     }
 
     @Override

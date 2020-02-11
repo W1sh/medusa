@@ -20,7 +20,6 @@ public final class JoinVoiceChannelListener implements EventListener<JoinVoiceCh
 
     public JoinVoiceChannelListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(JoinVoiceChannelEvent.KEYWORD, JoinVoiceChannelEvent.class);
     }
 
     @Override

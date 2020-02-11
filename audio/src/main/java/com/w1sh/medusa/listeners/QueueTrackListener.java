@@ -23,7 +23,6 @@ public final class QueueTrackListener implements EventListener<QueueTrackEvent> 
 
     public QueueTrackListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(QueueTrackEvent.KEYWORD, QueueTrackEvent.class);
     }
 
     @Override

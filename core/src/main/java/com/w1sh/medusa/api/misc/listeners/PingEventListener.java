@@ -22,7 +22,6 @@ public final class PingEventListener implements EventListener<PingEvent> {
 
     public PingEventListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(PingEvent.KEYWORD, PingEvent.class);
     }
 
     @Override

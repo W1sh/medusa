@@ -17,7 +17,6 @@ public final class ChangePrefixEventListener implements EventListener<ChangePref
 
     public ChangePrefixEventListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(ChangePrefixEvent.KEYWORD, ChangePrefixEvent.class);
     }
 
     @Override

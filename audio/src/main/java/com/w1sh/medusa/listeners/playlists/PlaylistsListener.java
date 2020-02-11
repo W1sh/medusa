@@ -28,7 +28,6 @@ public final class PlaylistsListener implements EventListener<PlaylistsEvent> {
     public PlaylistsListener(ResponseDispatcher responseDispatcher, PlaylistService playlistService) {
         this.responseDispatcher = responseDispatcher;
         this.playlistService = playlistService;
-        EventFactory.registerEvent(PlaylistsEvent.KEYWORD, PlaylistsEvent.class);
     }
 
     @Override

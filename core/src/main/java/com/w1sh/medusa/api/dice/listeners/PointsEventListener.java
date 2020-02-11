@@ -20,7 +20,6 @@ public final class PointsEventListener implements EventListener<PointsEvent> {
     public PointsEventListener(ResponseDispatcher responseDispatcher, UserService userService) {
         this.responseDispatcher = responseDispatcher;
         this.userService = userService;
-        EventFactory.registerEvent(PointsEvent.KEYWORD, PointsEvent.class);
     }
 
     @Override

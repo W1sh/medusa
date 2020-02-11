@@ -24,7 +24,6 @@ public final class PlayTrackListener implements EventListener<PlayTrackEvent> {
 
     public PlayTrackListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(PlayTrackEvent.KEYWORD, PlayTrackEvent.class);
     }
 
     @Override

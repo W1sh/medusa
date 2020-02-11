@@ -20,7 +20,6 @@ public final class LeaveVoiceChannelListener implements EventListener<LeaveVoice
 
     public LeaveVoiceChannelListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(LeaveVoiceChannelEvent.KEYWORD, LeaveVoiceChannelEvent.class);
     }
 
     @Override

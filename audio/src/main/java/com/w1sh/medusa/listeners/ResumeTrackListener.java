@@ -9,10 +9,6 @@ import reactor.core.publisher.Mono;
 @Component
 public final class ResumeTrackListener implements EventListener<ResumeTrackEvent> {
 
-    public ResumeTrackListener() {
-        EventFactory.registerEvent(ResumeTrackEvent.KEYWORD, ResumeTrackEvent.class);
-    }
-
     @Override
     public Class<ResumeTrackEvent> getEventType() {
         return ResumeTrackEvent.class;

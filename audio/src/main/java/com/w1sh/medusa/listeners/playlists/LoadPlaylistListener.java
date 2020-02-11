@@ -28,7 +28,6 @@ public final class LoadPlaylistListener implements EventListener<LoadPlaylistEve
     public LoadPlaylistListener(PlaylistService playlistService, ResponseDispatcher responseDispatcher) {
         this.playlistService = playlistService;
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(LoadPlaylistEvent.KEYWORD, LoadPlaylistEvent.class);
     }
 
     @Override

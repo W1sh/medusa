@@ -22,7 +22,6 @@ public final class CardDetailListener implements EventListener<CardDetailEvent> 
     public CardDetailListener(CardService cardService, ResponseDispatcher responseDispatcher) {
         this.cardService = cardService;
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(CardDetailEvent.INLINE_PREFIX, CardDetailEvent.class);
     }
 
     @Override

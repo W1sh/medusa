@@ -35,7 +35,6 @@ public final class DuelRollEventListener implements EventListener<DuelRollEvent>
         this.responseDispatcher = responseDispatcher;
         this.userService = userService;
         this.dice = dice;
-        EventFactory.registerEvent(DuelRollEvent.KEYWORD, DuelRollEvent.class);
     }
 
     @Override

@@ -24,7 +24,6 @@ public final class RouletteEventListener implements EventListener<RouletteEvent>
         this.responseDispatcher = responseDispatcher;
         this.userService = userService;
         this.random = random;
-        EventFactory.registerEvent(RouletteEvent.KEYWORD, RouletteEvent.class);
     }
 
     @Override

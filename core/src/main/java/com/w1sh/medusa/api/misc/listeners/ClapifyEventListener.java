@@ -19,7 +19,6 @@ public final class ClapifyEventListener implements EventListener<ClapifyEvent> {
 
     public ClapifyEventListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(ClapifyEvent.KEYWORD, ClapifyEvent.class);
     }
 
     @Override

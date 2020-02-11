@@ -20,7 +20,6 @@ public final class SkipTrackListener implements EventListener<SkipTrackEvent> {
 
     public SkipTrackListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(SkipTrackEvent.KEYWORD, SkipTrackEvent.class);
     }
 
     @Override
