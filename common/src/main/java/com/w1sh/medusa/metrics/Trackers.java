@@ -1,6 +1,5 @@
 package com.w1sh.medusa.metrics;
 
-import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.Event;
 
 import java.time.Duration;
@@ -11,6 +10,8 @@ public final class Trackers {
 
     private static Instant startInstant;
     private static HashMap<Class<?>, Long> eventCount = new HashMap<>();
+
+    private Trackers(){}
 
     public static void track(Event event){
         if(eventCount.containsKey(event.getClass())){
@@ -45,14 +46,6 @@ public final class Trackers {
 
     public static Long getTotalEventCount(){
         return eventCount.values().stream().reduce(Long::sum).orElse(0L);
-    }
-
-    public static Long getGuilds(DiscordClient client){
-        return client.getGuilds().count().block();
-    }
-
-    public static Long getUsers(DiscordClient client){
-        return 100L;
     }
 
     public static void setStartInstant(Instant startInstant) {
