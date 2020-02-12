@@ -21,6 +21,8 @@ public final class EventFactory {
     private static final Map<String, Class<? extends Event>> EVENTS = new HashMap<>(10);
     private static final Pattern inlineEventPattern = Pattern.compile("\\{\\{.+?(?:}})");
     private static final String ARGUMENT_DELIMITER = " ";
+    private static final Pattern inlineSpecialsPattern = Pattern.compile("[{!}]");
+    private static final Pattern wordPattern = Pattern.compile("\\w");
 
     private static String prefix = "!";
 
@@ -57,8 +59,8 @@ public final class EventFactory {
         try {
             int order = 1;
             for(String match : matches){
-                final String argument = match.replaceAll("[{!}]", "");
-                final String inlineEventPrefix = match.substring(0, 3).replaceAll("\\w", "");
+                final String argument = inlineSpecialsPattern.matcher(match).replaceAll("");
+                final String inlineEventPrefix = wordPattern.matcher(match.substring(0, 3)).replaceAll("");
                 final Class<?> clazz = EVENTS.getOrDefault(inlineEventPrefix, UnsupportedEvent.class);
                 final InlineEvent inlineEvent = (InlineEvent) clazz.getConstructor(MessageCreateEvent.class).newInstance(event);
                 inlineEvent.setInlineArgument(argument);

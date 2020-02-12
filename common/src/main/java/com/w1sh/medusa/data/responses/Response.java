@@ -6,9 +6,9 @@ import java.util.Objects;
 
 public abstract class Response implements Comparable<Response>{
 
-    private MessageChannel channel;
-    private boolean fragment;
-    private Integer order;
+    private final MessageChannel channel;
+    private final boolean fragment;
+    private final Integer order;
 
     public Response(MessageChannel channel, boolean fragment) {
         this.channel = channel;

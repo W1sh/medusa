@@ -6,7 +6,7 @@ import java.util.Objects;
 
 public class TextMessage extends Response {
 
-    private String content;
+    private final String content;
 
     public TextMessage(MessageChannel channel, String content, boolean fragment) {
         super(channel, fragment);

@@ -20,6 +20,7 @@ import javax.annotation.PostConstruct;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class EventDispatcherInitializer {
@@ -51,7 +52,7 @@ public class EventDispatcherInitializer {
         events = findAllEvents();
     }
 
-    public void setupDispatcher(GatewayDiscordClient gateway){
+    public void setupDispatcher(final GatewayDiscordClient gateway){
         gateway.on(MessageCreateEvent.class)
                 .filter(event -> event.getClass().equals(MessageCreateEvent.class) &&
                         event.getMember().isPresent() && event.getMember().map(user -> !user.isBot()).orElse(false))
@@ -67,17 +68,17 @@ public class EventDispatcherInitializer {
     }
 
     public void registerEvents() {
-        for (Class<? extends Event> clazz : events) {
+        var candidates = events.stream()
+                .filter(event -> !Modifier.isAbstract(event.getModifiers()))
+                .collect(Collectors.toList());
+        for (Class<? extends Event> clazz : candidates) {
             Registered registered = clazz.getAnnotation(Registered.class);
             if(registered != null){
-                logger.info("Registering new event of type <{}>", clazz.getSimpleName());
                 String prefix = registered.prefix();
                 EventFactory.registerEvent(prefix, clazz);
+                logger.info("Registering new event of type <{}>", clazz.getSimpleName());
             }
-            boolean hasListener = listeners.stream()
-                    .map(eventListener -> eventListener.getEventType().getSimpleName())
-                    .anyMatch(eventName -> eventName.equalsIgnoreCase(clazz.getSimpleName()));
-            if (!hasListener && !Modifier.isAbstract(clazz.getModifiers())) {
+            if (!hasListenerRegistered(clazz)) {
                 logger.warn("Event of type <{}> has no listener registered!", clazz.getSimpleName());
             }
         }
@@ -90,5 +91,11 @@ public class EventDispatcherInitializer {
 
     private Set<Class<? extends Event>> findAllEvents(){
         return reflections.getSubTypesOf(Event.class);
+    }
+
+    private boolean hasListenerRegistered(final Class<? extends Event> clazz){
+        return listeners.stream()
+                .map(eventListener -> eventListener.getEventType().getSimpleName())
+                .anyMatch(eventName -> eventName.equalsIgnoreCase(clazz.getSimpleName()));
     }
 }

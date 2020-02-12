@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 
 public class Embed extends Response{
 
-    private Consumer<EmbedCreateSpec> embedCreateSpec;
+    private final Consumer<EmbedCreateSpec> embedCreateSpec;
 
     public Embed(MessageChannel channel, Consumer<EmbedCreateSpec> embedCreateSpec) {
         super(channel, false);

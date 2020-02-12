@@ -25,7 +25,8 @@ public final class PermissionsValidator implements Validator {
     public Mono<Boolean> validate(Event event) {
         return event.getMessage().getChannel()
                 .ofType(GuildChannel.class)
-                .flatMap(guildChannel -> guildChannel.getEffectivePermissions(event.getClient().getSelfId().block()))
+                .zipWith(event.getClient().getSelfId())
+                .flatMap(tuple -> tuple.getT1().getEffectivePermissions(tuple.getT2()))
                 .flatMap(effPermissions -> Flux.fromIterable(event.getPermissions())
                         .all(effPermissions::contains))
                 .flatMap(bool -> {

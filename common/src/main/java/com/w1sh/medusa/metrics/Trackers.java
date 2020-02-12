@@ -9,7 +9,7 @@ import java.util.HashMap;
 public final class Trackers {
 
     private static Instant startInstant;
-    private static HashMap<Class<?>, Long> eventCount = new HashMap<>();
+    private static final HashMap<Class<?>, Long> eventCount = new HashMap<>();
 
     private Trackers(){}
 
@@ -23,7 +23,7 @@ public final class Trackers {
     public static String getUptime(){
         final long seconds = Duration.between(startInstant, Instant.now()).getSeconds();
         final long absSeconds = Math.abs(seconds);
-        String positive = "";
+        String positive;
         if(absSeconds >= 3600){
             positive = String.format("%d %s, %d %s and %d %s",
                     absSeconds / 3600,

@@ -40,8 +40,8 @@ public class DiscordBot {
     public void init(){
         logger.info("Setting up client...");
 
-        var client = DiscordClient.create(token);
-        var gateway = client.gateway()
+        final var client = DiscordClient.create(token);
+        final var gateway = client.gateway()
                 .setSharding(ShardingStrategy.recommended())
                 .setShardCoordinator(new LocalShardCoordinator())
                 .setAwaitConnections(true)

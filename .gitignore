@@ -18,7 +18,6 @@ nbdist/
 # Build artifacts
 *.jar
 out/
-build/
 target/
 **/bin/
 
