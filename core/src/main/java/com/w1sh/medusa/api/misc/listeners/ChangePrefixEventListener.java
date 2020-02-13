@@ -14,9 +14,11 @@ import reactor.core.publisher.Mono;
 public final class ChangePrefixEventListener implements EventListener<ChangePrefixEvent> {
 
     private final ResponseDispatcher responseDispatcher;
+    private final EventFactory eventFactory;
 
-    public ChangePrefixEventListener(ResponseDispatcher responseDispatcher) {
+    public ChangePrefixEventListener(ResponseDispatcher responseDispatcher, EventFactory eventFactory) {
         this.responseDispatcher = responseDispatcher;
+        this.eventFactory = eventFactory;
     }
 
     @Override
@@ -28,7 +30,7 @@ public final class ChangePrefixEventListener implements EventListener<ChangePref
     public Mono<Void> execute(ChangePrefixEvent event) {
         return Mono.just(event)
                 .map(ev -> ev.getArguments().get(0))
-                .doOnNext(EventFactory::setPrefix)
+                .doOnNext(eventFactory::setPrefix)
                 .flatMap(prefix -> changePrefixSuccess(prefix, event))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
@@ -42,7 +44,7 @@ public final class ChangePrefixEventListener implements EventListener<ChangePref
     }
 
     public Mono<Void> changePrefix(ChangePrefixEvent event){
-        Activity activity = Activity.watching(String.format("Cringe 2 | %shelp", EventFactory.getPrefix()));
+        Activity activity = Activity.watching(String.format("Cringe 2 | %shelp", eventFactory.getPrefix()));
         return event.getClient().updatePresence(Presence.online(activity));
     }
 }

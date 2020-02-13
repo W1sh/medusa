@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
-public class EventDispatcherInitializer {
+public final class EventDispatcherInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(EventDispatcherInitializer.class);
 
@@ -32,18 +32,20 @@ public class EventDispatcherInitializer {
     private final Reflections reflections;
     private final ArgumentValidator argumentValidator;
     private final PermissionsValidator permissionsValidator;
-
+    private final EventFactory eventFactory;
 
     private Set<EventListener> listeners;
     private Set<Class<? extends Event>> events;
 
     public EventDispatcherInitializer(ApplicationContext applicationContext, MedusaEventDispatcher medusaEventDispatcher,
-                                      Reflections reflections, ArgumentValidator argumentValidator, PermissionsValidator permissionsValidator) {
+                                      Reflections reflections, ArgumentValidator argumentValidator, PermissionsValidator permissionsValidator,
+                                      EventFactory eventFactory) {
         this.applicationContext = applicationContext;
         this.medusaEventDispatcher = medusaEventDispatcher;
         this.reflections = reflections;
         this.argumentValidator = argumentValidator;
         this.permissionsValidator = permissionsValidator;
+        this.eventFactory = eventFactory;
     }
 
     @PostConstruct
@@ -56,7 +58,7 @@ public class EventDispatcherInitializer {
         gateway.on(MessageCreateEvent.class)
                 .filter(event -> event.getClass().equals(MessageCreateEvent.class) &&
                         event.getMember().isPresent() && event.getMember().map(user -> !user.isBot()).orElse(false))
-                .map(EventFactory::extractEvents)
+                .map(eventFactory::extractEvents)
                 .filterWhen(ev -> BooleanUtils.and(argumentValidator.validate(ev), permissionsValidator.validate(ev)))
                 .doOnSubscribe(ev -> logger.info("Received new event of type <{}>", ev.getClass().getSimpleName()))
                 .subscribe(medusaEventDispatcher::publish);
@@ -75,7 +77,7 @@ public class EventDispatcherInitializer {
             Registered registered = clazz.getAnnotation(Registered.class);
             if(registered != null){
                 String prefix = registered.prefix();
-                EventFactory.registerEvent(prefix, clazz);
+                eventFactory.registerEvent(prefix, clazz);
                 logger.info("Registering new event of type <{}>", clazz.getSimpleName());
             }
             if (!hasListenerRegistered(clazz)) {

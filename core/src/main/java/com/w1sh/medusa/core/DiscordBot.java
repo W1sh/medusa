@@ -1,6 +1,5 @@
 package com.w1sh.medusa.core;
 
-import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.dispatchers.MedusaEventDispatcher;
 import com.w1sh.medusa.utils.EventDispatcherInitializer;
 import com.w1sh.medusa.utils.Executor;
@@ -47,7 +46,7 @@ public class DiscordBot {
                 .setAwaitConnections(true)
                 .setStoreService(new JdkStoreService())
                 .setEventDispatcher(medusaEventDispatcher)
-                .setInitialPresence(shard -> Presence.online(Activity.watching(String.format("Cringe 2 | %shelp", EventFactory.getPrefix()))))
+                .setInitialPresence(shardInfo -> Presence.online(Activity.watching("you turn to stone")))
                 .connect()
                 .block();
 
