@@ -58,7 +58,7 @@ public final class EventDispatcherInitializer {
         gateway.on(MessageCreateEvent.class)
                 .filter(event -> event.getClass().equals(MessageCreateEvent.class) &&
                         event.getMember().isPresent() && event.getMember().map(user -> !user.isBot()).orElse(false))
-                .map(eventFactory::extractEvents)
+                .flatMap(eventFactory::extractEvents)
                 .filterWhen(ev -> BooleanUtils.and(argumentValidator.validate(ev), permissionsValidator.validate(ev)))
                 .doOnSubscribe(ev -> logger.info("Received new event of type <{}>", ev.getClass().getSimpleName()))
                 .subscribe(medusaEventDispatcher::publish);
