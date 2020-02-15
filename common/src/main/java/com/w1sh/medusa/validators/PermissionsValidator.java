@@ -4,11 +4,16 @@ import com.w1sh.medusa.data.events.Event;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import discord4j.core.object.entity.channel.GuildChannel;
+import discord4j.core.object.util.PermissionSet;
+import discord4j.core.object.util.Snowflake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 @Component
 public final class PermissionsValidator implements Validator {
@@ -25,17 +30,11 @@ public final class PermissionsValidator implements Validator {
     public Mono<Boolean> validate(Event event) {
         return event.getMessage().getChannel()
                 .ofType(GuildChannel.class)
-                .zipWith(event.getClient().getSelfId())
-                .flatMap(tuple -> tuple.getT1().getEffectivePermissions(tuple.getT2()))
+                .transform(flatZipWith(event.getClient().getSelfId(), this::hasPermissions))
                 .flatMap(effPermissions -> Flux.fromIterable(event.getPermissions())
-                        .all(effPermissions::contains))
-                .flatMap(bool -> {
-                    if(Boolean.FALSE.equals(bool)){
-                        return createErrorMessage(event);
-                    }else return Mono.empty();
-                })
-                .hasElement()
-                .map(b -> !b);
+                        .all(effPermissions::contains)
+                        .flatMap(bool -> Boolean.FALSE.equals(bool) ? createErrorMessage(event) : Mono.empty()))
+                .transform(isEmpty());
     }
 
     private Mono<TextMessage> createErrorMessage(Event event){
@@ -48,5 +47,17 @@ public final class PermissionsValidator implements Validator {
                     responseDispatcher.queue(textMessage);
                 })
                 .doAfterTerminate(responseDispatcher::flush);
+    }
+
+    private Mono<PermissionSet> hasPermissions(GuildChannel channel, Snowflake snowflake) {
+        return channel.getEffectivePermissions(snowflake);
+    }
+
+    public <A, B, C> Function<Mono<A>, Mono<C>> flatZipWith(Mono<? extends B> b, BiFunction<A, B, Mono<C>> combinator) {
+        return pipeline -> pipeline.zipWith(b, combinator).flatMap(Function.identity());
+    }
+
+    public <A> Function<Mono<A>, Mono<Boolean>> isEmpty() {
+        return pipeline -> pipeline.hasElement().map(bool -> !bool);
     }
 }

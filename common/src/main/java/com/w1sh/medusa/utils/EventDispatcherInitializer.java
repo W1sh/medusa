@@ -76,8 +76,7 @@ public final class EventDispatcherInitializer {
         for (Class<? extends Event> clazz : candidates) {
             Registered registered = clazz.getAnnotation(Registered.class);
             if(registered != null){
-                String prefix = registered.prefix();
-                eventFactory.registerEvent(prefix, clazz);
+                eventFactory.registerEvent(registered.prefix(), clazz);
                 logger.info("Registering new event of type <{}>", clazz.getSimpleName());
             }
             if (!hasListenerRegistered(clazz)) {
