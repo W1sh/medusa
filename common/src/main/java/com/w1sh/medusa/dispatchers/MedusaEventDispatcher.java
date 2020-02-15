@@ -7,10 +7,7 @@ import discord4j.core.event.domain.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.EmitterProcessor;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.FluxProcessor;
-import reactor.core.publisher.FluxSink;
+import reactor.core.publisher.*;
 import reactor.core.scheduler.Scheduler;
 import reactor.scheduler.forkjoin.ForkJoinPoolScheduler;
 import reactor.util.annotation.NonNull;
@@ -31,21 +28,26 @@ public class MedusaEventDispatcher implements EventDispatcher {
     }
 
     @Override
-    @NonNull
-    public <E extends Event> Flux<E> on(final @NonNull Class<E> eventClass) {
-        return processor.publishOn(scheduler)
-                .ofType(eventClass);
-    }
-
-    @Override
     public void publish(final @NonNull Event event) {
-        logger.info("Received new event of type <{}>", event.getClass().getSimpleName());
-        sink.next(event);
+        if(!processor.hasCompleted()){
+            logger.info("Received new event of type <{}>", event.getClass().getSimpleName());
+            sink.next(event);
+        } else {
+            logger.warn("Dropping new event of type <{}> because event dispatcher has already completed", event.getClass().getSimpleName());
+        }
     }
 
     @Override
     public void shutdown() {
+        logger.info("Shutting down event dispatcher");
         sink.complete();
+    }
+
+    @Override
+    @NonNull
+    public <E extends Event> Flux<E> on(final @NonNull Class<E> eventClass) {
+        return processor.publishOn(scheduler)
+                .ofType(eventClass);
     }
 
     public <T extends Event> void registerListener(final @NonNull EventListener<T> eventListener) {
