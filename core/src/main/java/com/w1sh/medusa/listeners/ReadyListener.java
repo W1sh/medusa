@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class ReadyListener implements EventListener<ReadyEvent> {
+public final class ReadyListener implements EventListener<ReadyEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(ReadyListener.class);
 
@@ -19,8 +19,7 @@ public class ReadyListener implements EventListener<ReadyEvent> {
 
     @Override
     public Mono<Void> execute(ReadyEvent event) {
-        return Mono.justOrEmpty(event)
-                .map(ev -> ev.getGuilds().size())
+        return Mono.justOrEmpty(event.getGuilds().size())
                 .flatMap(size -> event.getClient().getEventDispatcher()
                         .on(GuildCreateEvent.class)
                         .take(size)

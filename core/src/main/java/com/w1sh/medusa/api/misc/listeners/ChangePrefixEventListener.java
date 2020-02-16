@@ -3,7 +3,6 @@ package com.w1sh.medusa.api.misc.listeners;
 import com.w1sh.medusa.api.misc.events.ChangePrefixEvent;
 import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import discord4j.core.object.presence.Activity;
@@ -15,11 +14,11 @@ import reactor.core.publisher.Mono;
 public final class ChangePrefixEventListener implements EventListener<ChangePrefixEvent> {
 
     private final ResponseDispatcher responseDispatcher;
+    private final EventFactory eventFactory;
 
-    public ChangePrefixEventListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher) {
+    public ChangePrefixEventListener(ResponseDispatcher responseDispatcher, EventFactory eventFactory) {
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(ChangePrefixEvent.KEYWORD, ChangePrefixEvent.class);
-        eventDispatcher.registerListener(this);
+        this.eventFactory = eventFactory;
     }
 
     @Override
@@ -31,7 +30,7 @@ public final class ChangePrefixEventListener implements EventListener<ChangePref
     public Mono<Void> execute(ChangePrefixEvent event) {
         return Mono.just(event)
                 .map(ev -> ev.getArguments().get(0))
-                .doOnNext(EventFactory::setPrefix)
+                .doOnNext(eventFactory::setPrefix)
                 .flatMap(prefix -> changePrefixSuccess(prefix, event))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
@@ -45,7 +44,7 @@ public final class ChangePrefixEventListener implements EventListener<ChangePref
     }
 
     public Mono<Void> changePrefix(ChangePrefixEvent event){
-        Activity activity = Activity.watching(String.format("Cringe 2 | %shelp", EventFactory.getPrefix()));
+        Activity activity = Activity.watching(String.format("Cringe 2 | %shelp", eventFactory.getPrefix()));
         return event.getClient().updatePresence(Presence.online(activity));
     }
 }

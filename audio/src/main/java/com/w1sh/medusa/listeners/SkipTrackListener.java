@@ -3,9 +3,7 @@ package com.w1sh.medusa.listeners;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.w1sh.medusa.AudioConnection;
 import com.w1sh.medusa.AudioConnectionManager;
-import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.Embed;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.SkipTrackEvent;
 import org.springframework.stereotype.Component;
@@ -19,10 +17,8 @@ public final class SkipTrackListener implements EventListener<SkipTrackEvent> {
 
     private final ResponseDispatcher responseDispatcher;
 
-    public SkipTrackListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher) {
+    public SkipTrackListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(SkipTrackEvent.KEYWORD, SkipTrackEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override

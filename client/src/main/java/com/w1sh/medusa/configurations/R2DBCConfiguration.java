@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration;
 import org.springframework.data.r2dbc.core.DatabaseClient;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
+import reactor.util.annotation.NonNull;
 
 import static io.r2dbc.spi.ConnectionFactoryOptions.*;
 
@@ -28,6 +29,7 @@ public class R2DBCConfiguration extends AbstractR2dbcConfiguration{
     private String database;
 
     @Override
+    @NonNull
     public ConnectionFactory connectionFactory() {
         return ConnectionFactories.get(ConnectionFactoryOptions.builder()
                 .option(DRIVER, driver)
@@ -38,8 +40,8 @@ public class R2DBCConfiguration extends AbstractR2dbcConfiguration{
                 .build());
     }
 
-    public @Bean
-    DatabaseClient databaseClient(){
+    @Bean
+    public DatabaseClient databaseClient(){
         return DatabaseClient.create(connectionFactory());
     }
 }

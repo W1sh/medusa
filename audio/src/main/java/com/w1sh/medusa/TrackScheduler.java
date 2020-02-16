@@ -81,7 +81,7 @@ public final class TrackScheduler implements AudioLoadResultHandler {
 
     public long getQueueDuration(){
         long duration = player.getPlayingTrack().getInfo().length;
-        for (AudioTrack audioTrack : getQueue()) {
+        for (AudioTrack audioTrack : queue) {
             duration += audioTrack.getInfo().length;
         }
         return duration;

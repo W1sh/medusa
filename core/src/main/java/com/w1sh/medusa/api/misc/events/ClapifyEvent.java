@@ -1,9 +1,11 @@
 package com.w1sh.medusa.api.misc.events;
 
 import com.w1sh.medusa.data.events.Event;
+import com.w1sh.medusa.data.events.Registered;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 
-public class ClapifyEvent extends Event {
+@Registered(prefix = "clapify")
+public final class ClapifyEvent extends Event {
 
     public static final String KEYWORD = "clapify";
 

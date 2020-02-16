@@ -1,9 +1,7 @@
 package com.w1sh.medusa.api.misc.listeners;
 
 import com.w1sh.medusa.api.misc.events.UptimeEvent;
-import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.metrics.Trackers;
@@ -15,10 +13,8 @@ public final class UptimeEventListener implements EventListener<UptimeEvent> {
 
     private final ResponseDispatcher responseDispatcher;
 
-    public UptimeEventListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher) {
+    public UptimeEventListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(UptimeEvent.KEYWORD, UptimeEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override
