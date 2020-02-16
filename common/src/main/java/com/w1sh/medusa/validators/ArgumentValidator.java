@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
 @Component
 public final class ArgumentValidator implements Validator {
 
@@ -24,13 +27,8 @@ public final class ArgumentValidator implements Validator {
         return Mono.justOrEmpty(event)
                 .filter(e -> e.getArguments().size() >= e.getMinArguments())
                 .hasElement()
-                .flatMap(bool -> {
-                    if(Boolean.FALSE.equals(bool)){
-                        return createErrorMessage(event);
-                    }else return Mono.empty();
-                })
-                .hasElement()
-                .map(b -> !b);
+                .transform(ifElse(b -> Mono.empty(), b -> createErrorMessage(event)))
+                .transform(isEmpty());
     }
 
     private Mono<TextMessage> createErrorMessage(Event event){
@@ -43,5 +41,14 @@ public final class ArgumentValidator implements Validator {
                     responseDispatcher.queue(textMessage);
                 })
                 .doAfterTerminate(responseDispatcher::flush);
+    }
+
+    public <A> Function<Mono<Boolean>, Mono<A>> ifElse(Function<Boolean, Mono<A>> ifTransformer,
+                                                       Function<Boolean, Mono<A>> elseTransformer) {
+        return pipeline -> pipeline.flatMap(bool -> Boolean.TRUE.equals(bool) ? ifTransformer.apply(true) : elseTransformer.apply(false));
+    }
+
+    public <A> Function<Mono<A>, Mono<Boolean>> isEmpty() {
+        return pipeline -> pipeline.hasElement().map(bool -> !bool);
     }
 }
