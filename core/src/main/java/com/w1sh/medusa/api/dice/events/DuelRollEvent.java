@@ -1,8 +1,10 @@
 package com.w1sh.medusa.api.dice.events;
 
 import com.w1sh.medusa.data.events.Event;
+import com.w1sh.medusa.data.events.Registered;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 
+@Registered(prefix = "duelroll")
 public final class DuelRollEvent extends Event {
 
     public static final String KEYWORD = "duelroll";

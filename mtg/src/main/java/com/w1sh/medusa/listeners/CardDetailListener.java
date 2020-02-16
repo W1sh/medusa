@@ -1,8 +1,6 @@
 package com.w1sh.medusa.listeners;
 
-import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.Embed;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.CardDetailEvent;
 import com.w1sh.medusa.resources.Card;
@@ -20,12 +18,9 @@ public final class CardDetailListener implements EventListener<CardDetailEvent> 
     private final CardService cardService;
     private final ResponseDispatcher responseDispatcher;
 
-    public CardDetailListener(CommandEventDispatcher eventDispatcher, CardService cardService,
-                              ResponseDispatcher responseDispatcher) {
+    public CardDetailListener(CardService cardService, ResponseDispatcher responseDispatcher) {
         this.cardService = cardService;
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(CardDetailEvent.INLINE_PREFIX, CardDetailEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override

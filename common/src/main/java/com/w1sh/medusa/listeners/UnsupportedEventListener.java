@@ -2,7 +2,6 @@ package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.data.events.UnsupportedEvent;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -16,9 +15,8 @@ public final class UnsupportedEventListener implements EventListener<Unsupported
     @Value("${event.unsupported}")
     private String unsupported;
 
-    public UnsupportedEventListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher) {
+    public UnsupportedEventListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
-        eventDispatcher.registerListener(this);
     }
 
     @Override

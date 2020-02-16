@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class VoiceStateUpdateListener implements EventListener<VoiceStateUpdateEvent> {
+public final class VoiceStateUpdateListener implements EventListener<VoiceStateUpdateEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(VoiceStateUpdateListener.class);
 

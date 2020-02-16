@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class DisconnectListener implements EventListener<DisconnectEvent> {
+public final class DisconnectListener implements EventListener<DisconnectEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(DisconnectListener.class);
 

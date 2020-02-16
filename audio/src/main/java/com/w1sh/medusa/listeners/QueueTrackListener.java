@@ -4,9 +4,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.w1sh.medusa.AudioConnection;
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.TrackScheduler;
-import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.Embed;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.QueueTrackEvent;
 import com.w1sh.medusa.utils.ResponseUtils;
@@ -22,10 +20,8 @@ public final class QueueTrackListener implements EventListener<QueueTrackEvent> 
 
     private final ResponseDispatcher responseDispatcher;
 
-    public QueueTrackListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher) {
+    public QueueTrackListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(QueueTrackEvent.KEYWORD, QueueTrackEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override

@@ -1,9 +1,7 @@
 package com.w1sh.medusa.api.misc.listeners;
 
 import com.w1sh.medusa.api.misc.events.ClapifyEvent;
-import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import org.springframework.stereotype.Component;
@@ -18,10 +16,8 @@ public final class ClapifyEventListener implements EventListener<ClapifyEvent> {
 
     private final ResponseDispatcher responseDispatcher;
 
-    public ClapifyEventListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher) {
+    public ClapifyEventListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(ClapifyEvent.KEYWORD, ClapifyEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override

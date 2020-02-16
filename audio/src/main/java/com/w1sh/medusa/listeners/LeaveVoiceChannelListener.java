@@ -1,18 +1,14 @@
 package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.AudioConnectionManager;
-import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.LeaveVoiceChannelEvent;
 import discord4j.core.object.entity.Member;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-@DependsOn({"audioConnectionManager"})
 @Component
 public final class LeaveVoiceChannelListener implements EventListener<LeaveVoiceChannelEvent> {
 
@@ -21,10 +17,8 @@ public final class LeaveVoiceChannelListener implements EventListener<LeaveVoice
 
     private final ResponseDispatcher responseDispatcher;
 
-    public LeaveVoiceChannelListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher) {
+    public LeaveVoiceChannelListener(ResponseDispatcher responseDispatcher) {
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(LeaveVoiceChannelEvent.KEYWORD, LeaveVoiceChannelEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override

@@ -2,9 +2,7 @@ package com.w1sh.medusa.api.dice.listeners;
 
 import com.w1sh.medusa.api.dice.Dice;
 import com.w1sh.medusa.api.dice.events.DuelRollEvent;
-import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.service.UserService;
@@ -32,12 +30,10 @@ public final class DuelRollEventListener implements EventListener<DuelRollEvent>
     @Value("${event.roll.draw}")
     private String rollDraw;
 
-    public DuelRollEventListener(CommandEventDispatcher eventDispatcher, ResponseDispatcher responseDispatcher, UserService userService, Dice dice) {
+    public DuelRollEventListener(ResponseDispatcher responseDispatcher, UserService userService, Dice dice) {
         this.responseDispatcher = responseDispatcher;
         this.userService = userService;
         this.dice = dice;
-        EventFactory.registerEvent(DuelRollEvent.KEYWORD, DuelRollEvent.class);
-        eventDispatcher.registerListener(this);
     }
 
     @Override

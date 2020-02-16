@@ -1,9 +1,11 @@
 package com.w1sh.medusa.api.dice.events;
 
 import com.w1sh.medusa.data.events.Event;
+import com.w1sh.medusa.data.events.Registered;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 
-public class RouletteEvent extends Event {
+@Registered(prefix = "roulette")
+public final class RouletteEvent extends Event {
 
     public static final String KEYWORD = "roulette";
     private static final Integer NUM_ALLOWED_ARGS = 1;
