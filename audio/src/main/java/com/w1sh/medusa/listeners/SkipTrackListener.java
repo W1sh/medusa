@@ -43,11 +43,10 @@ public final class SkipTrackListener implements EventListener<SkipTrackEvent> {
         audioConnection.getTrackScheduler().nextTrack(true);
 
         return event.getMessage().getChannel()
-                .map(channel -> new Embed(channel, embedCreateSpec ->
-                        embedCreateSpec.setTitle(":track_next:\tSkipped track")
-                                .setDescription(String.format("[%s](%s)",
-                                        audioTrack.map(track -> track.getInfo().title).orElse(""),
-                                        audioTrack.map(track -> track.getInfo().uri).orElse("")))
-                                .setColor(Color.GREEN)));
+                .map(channel -> new Embed(channel, embedCreateSpec -> embedCreateSpec.setTitle(":track_next:\tSkipped track")
+                        .setDescription(String.format("[%s](%s)",
+                                audioTrack.map(track -> track.getInfo().title).orElse(""),
+                                audioTrack.map(track -> track.getInfo().uri).orElse("")))
+                        .setColor(Color.GREEN)));
     }
 }

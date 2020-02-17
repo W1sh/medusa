@@ -44,9 +44,8 @@ public final class JoinVoiceChannelListener implements EventListener<JoinVoiceCh
 
     private Mono<TextMessage> createEmptyVoiceStateErrorMessage(JoinVoiceChannelEvent event){
         return event.getMessage().getChannel()
-                .zipWith(Mono.justOrEmpty(event.getMember().flatMap(Member::getNickname)))
-                .map(tuple -> new TextMessage(tuple.getT1(), String.format("**%s**, you are not in a voice channel!",
-                        tuple.getT2()), false));
+                .map(chan -> new TextMessage(chan, String.format("**%s**, you are not in a voice channel!",
+                        event.getMember().flatMap(Member::getNickname).orElse("You")), false));
     }
 
     private Mono<TextMessage> createJoinSuccessMessage(JoinVoiceChannelEvent event){

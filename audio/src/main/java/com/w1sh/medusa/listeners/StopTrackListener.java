@@ -28,14 +28,17 @@ public final class StopTrackListener implements EventListener<StopTrackEvent> {
 
     @Override
     public Mono<Void> execute(StopTrackEvent event) {
-        return Mono.justOrEmpty(event.getGuildId())
+        Mono<Embed> embedMono = Mono.justOrEmpty(event.getGuildId())
                 .flatMap(audioConnectionManager::getAudioConnection)
                 .flatMap(audioConnection -> createStopMessage(audioConnection, event))
                 .doOnNext(responseDispatcher::queue)
-                .flatMap(a -> Mono.justOrEmpty(event.getGuildId()))
+                .doAfterTerminate(responseDispatcher::flush);
+
+        Mono<Void> scheduleLeaveMono = Mono.justOrEmpty(event.getGuildId())
                 .flatMap(audioConnectionManager::scheduleLeave)
-                .doAfterTerminate(responseDispatcher::flush)
                 .then();
+
+        return embedMono.then(scheduleLeaveMono);
     }
 
     public Mono<Embed> createStopMessage(AudioConnection audioConnection, StopTrackEvent event){
@@ -43,23 +46,21 @@ public final class StopTrackListener implements EventListener<StopTrackEvent> {
         audioConnection.getTrackScheduler().stopQueue();
         return event.getMessage().getChannel()
                 .filter(c -> audioConnection.getTrackScheduler().getPlayingTrack().isPresent())
-                .map(channel -> new Embed(channel, embedCreateSpec ->
-                        embedCreateSpec.setTitle(":stop_button:\tStopped queue")
-                                .setColor(Color.GREEN)
-                                .setDescription(String.format(
-                                        "Stopped playing **%s**%n%nCleared **%d** tracks from queue. Queue is now empty.",
-                                        audioConnection.getTrackScheduler().getPlayingTrack().map(track -> track.getInfo().title).orElse(""),
-                                        queueSize))
-                                .setFooter("The bot will automatically leave after 2 min unless new tracks are added.", null)))
+                .map(channel -> new Embed(channel, embedCreateSpec -> embedCreateSpec.setTitle(":stop_button:\tStopped queue")
+                        .setColor(Color.GREEN)
+                        .setDescription(String.format(
+                                "Stopped playing **%s**%n%nCleared **%d** tracks from queue. Queue is now empty.",
+                                audioConnection.getTrackScheduler().getPlayingTrack().map(track -> track.getInfo().title).orElse(""),
+                                queueSize))
+                        .setFooter("The bot will automatically leave after 2 min unless new tracks are added.", null)))
                 .switchIfEmpty(createEmptyQueueStopMessage(event));
     }
 
     public Mono<Embed> createEmptyQueueStopMessage(StopTrackEvent event){
         return event.getMessage().getChannel()
-                .map(channel -> new Embed(channel, embedCreateSpec ->
-                        embedCreateSpec.setTitle(":stop_button:\tStopped queue")
-                                .setColor(Color.GREEN)
-                                .setDescription(String.format("Stopped queue%n%nCleared all tracks from queue. Queue is now empty."))
-                                .setFooter("The bot will automatically leave after 2 min unless new tracks are added.", null)));
+                .map(channel -> new Embed(channel, embedCreateSpec -> embedCreateSpec.setTitle(":stop_button:\tStopped queue")
+                        .setColor(Color.GREEN)
+                        .setDescription(String.format("Stopped queue%n%nCleared all tracks from queue. Queue is now empty."))
+                        .setFooter("The bot will automatically leave after 2 min unless new tracks are added.", null)));
     }
 }
