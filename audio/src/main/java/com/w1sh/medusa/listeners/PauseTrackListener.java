@@ -8,6 +8,12 @@ import reactor.core.publisher.Mono;
 @Component
 public final class PauseTrackListener implements EventListener<PauseTrackEvent> {
 
+    private final AudioConnectionManager audioConnectionManager;
+
+    public PauseTrackListener(AudioConnectionManager audioConnectionManager) {
+        this.audioConnectionManager = audioConnectionManager;
+    }
+
     @Override
     public Class<PauseTrackEvent> getEventType() {
         return PauseTrackEvent.class;
@@ -16,7 +22,7 @@ public final class PauseTrackListener implements EventListener<PauseTrackEvent> 
     @Override
     public Mono<Void> execute(PauseTrackEvent event) {
         return Mono.justOrEmpty(event.getGuildId())
-                .flatMap(AudioConnectionManager.getInstance()::getAudioConnection)
+                .flatMap(audioConnectionManager::getAudioConnection)
                 .doOnNext(audioConnection -> audioConnection.getTrackScheduler().pause())
                 .then();
     }

@@ -16,9 +16,11 @@ public final class LeaveVoiceChannelListener implements EventListener<LeaveVoice
     private String voiceLeave;
 
     private final ResponseDispatcher responseDispatcher;
+    private final AudioConnectionManager audioConnectionManager;
 
-    public LeaveVoiceChannelListener(ResponseDispatcher responseDispatcher) {
+    public LeaveVoiceChannelListener(ResponseDispatcher responseDispatcher, AudioConnectionManager audioConnectionManager) {
         this.responseDispatcher = responseDispatcher;
+        this.audioConnectionManager = audioConnectionManager;
     }
 
     @Override
@@ -29,7 +31,7 @@ public final class LeaveVoiceChannelListener implements EventListener<LeaveVoice
     @Override
     public Mono<Void> execute(LeaveVoiceChannelEvent event) {
         return Mono.justOrEmpty(event.getGuildId())
-                .flatMap(AudioConnectionManager.getInstance()::leaveVoiceChannel)
+                .flatMap(audioConnectionManager::leaveVoiceChannel)
                 .flatMap(bool -> {
                     if (Boolean.TRUE.equals(bool)) {
                         return createLeaveSuccessMessage(event);

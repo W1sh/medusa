@@ -14,9 +14,11 @@ import java.awt.*;
 public final class StopTrackListener implements EventListener<StopTrackEvent> {
 
     private final ResponseDispatcher responseDispatcher;
+    private final AudioConnectionManager audioConnectionManager;
 
-    public StopTrackListener(ResponseDispatcher responseDispatcher) {
+    public StopTrackListener(ResponseDispatcher responseDispatcher, AudioConnectionManager audioConnectionManager) {
         this.responseDispatcher = responseDispatcher;
+        this.audioConnectionManager = audioConnectionManager;
     }
 
     @Override
@@ -26,13 +28,12 @@ public final class StopTrackListener implements EventListener<StopTrackEvent> {
 
     @Override
     public Mono<Void> execute(StopTrackEvent event) {
-        return Mono.justOrEmpty(event)
-                .flatMap(ev -> Mono.justOrEmpty(ev.getGuildId()))
-                .flatMap(AudioConnectionManager.getInstance()::getAudioConnection)
+        return Mono.justOrEmpty(event.getGuildId())
+                .flatMap(audioConnectionManager::getAudioConnection)
                 .flatMap(audioConnection -> createStopMessage(audioConnection, event))
                 .doOnNext(responseDispatcher::queue)
                 .flatMap(a -> Mono.justOrEmpty(event.getGuildId()))
-                .flatMap(AudioConnectionManager.getInstance()::scheduleLeave)
+                .flatMap(audioConnectionManager::scheduleLeave)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
     }

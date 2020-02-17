@@ -33,31 +33,31 @@ public final class TrackEventListener extends AudioEventAdapter {
     @Override
     public void onPlayerPause(AudioPlayer player) {
         logger.info("Paused audio player in guild with id <{}>", guildId);
-        AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
+        /*AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
                 .map(AudioConnection::getMessageChannel)
                 .map(c -> new TextMessage(c, ":pause_button: The audio player was paused. Use `!resume` to unpause", false))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .subscribeOn(Schedulers.elastic())
-                .subscribe();
+                .subscribe();*/
     }
 
     @Override
     public void onPlayerResume(AudioPlayer player) {
         logger.info("Resumed audio player in guild with id <{}>", guildId);
-        AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
+        /*AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
                 .map(AudioConnection::getMessageChannel)
                 .map(c -> new TextMessage(c, ":arrow_forward: The audio player was resumed", false))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .subscribeOn(Schedulers.elastic())
-                .subscribe();
+                .subscribe();*/
     }
 
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
         logger.info("Starting track <{}> in guild with id <{}>", track.getInfo().title, guildId);
-        AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
+        /*AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
                 .map(AudioConnection::getMessageChannel)
                 .map(c -> new Embed(c, embedCreateSpec ->
                         embedCreateSpec.setTitle(":musical_note:\tCurrently playing")
@@ -71,13 +71,13 @@ public final class TrackEventListener extends AudioEventAdapter {
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .subscribeOn(Schedulers.elastic())
-                .subscribe();
+                .subscribe();*/
     }
 
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
         logger.info("Track <{}> on guild <{}> ended with reason <{}>", track.getInfo().title, guildId, endReason);
-        AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
+        /*AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
                 .map(AudioConnection::getTrackScheduler)
                 .doOnNext(trackScheduler -> {
                     if(endReason.mayStartNext){
@@ -85,7 +85,7 @@ public final class TrackEventListener extends AudioEventAdapter {
                     }
                 })
                 .subscribeOn(Schedulers.elastic())
-                .subscribe();
+                .subscribe();*/
     }
 
     @Override

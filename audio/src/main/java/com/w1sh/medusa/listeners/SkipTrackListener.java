@@ -16,9 +16,11 @@ import java.util.Optional;
 public final class SkipTrackListener implements EventListener<SkipTrackEvent> {
 
     private final ResponseDispatcher responseDispatcher;
+    private final AudioConnectionManager audioConnectionManager;
 
-    public SkipTrackListener(ResponseDispatcher responseDispatcher) {
+    public SkipTrackListener(ResponseDispatcher responseDispatcher, AudioConnectionManager audioConnectionManager) {
         this.responseDispatcher = responseDispatcher;
+        this.audioConnectionManager = audioConnectionManager;
     }
 
     @Override
@@ -28,9 +30,8 @@ public final class SkipTrackListener implements EventListener<SkipTrackEvent> {
 
     @Override
     public Mono<Void> execute(SkipTrackEvent event) {
-        return Mono.justOrEmpty(event)
-                .flatMap(ev -> Mono.justOrEmpty(ev.getGuildId()))
-                .flatMap(AudioConnectionManager.getInstance()::getAudioConnection)
+        return Mono.justOrEmpty(event.getGuildId())
+                .flatMap(audioConnectionManager::getAudioConnection)
                 .flatMap(audioConnection -> createSkipMessage(audioConnection, event))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)

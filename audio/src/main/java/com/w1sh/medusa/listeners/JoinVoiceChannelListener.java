@@ -16,9 +16,11 @@ public final class JoinVoiceChannelListener implements EventListener<JoinVoiceCh
     private String voiceJoin;
 
     private final ResponseDispatcher responseDispatcher;
+    private final AudioConnectionManager audioConnectionManager;
 
-    public JoinVoiceChannelListener(ResponseDispatcher responseDispatcher) {
+    public JoinVoiceChannelListener(ResponseDispatcher responseDispatcher, AudioConnectionManager audioConnectionManager) {
         this.responseDispatcher = responseDispatcher;
+        this.audioConnectionManager = audioConnectionManager;
     }
 
     @Override
@@ -32,7 +34,7 @@ public final class JoinVoiceChannelListener implements EventListener<JoinVoiceCh
                 .filterWhen(ev -> Mono.justOrEmpty(ev.getMember())
                         .flatMap(Member::getVoiceState)
                         .hasElement())
-                .flatMap(AudioConnectionManager.getInstance()::joinVoiceChannel)
+                .flatMap(audioConnectionManager::joinVoiceChannel)
                 .flatMap(audioConnection -> createJoinSuccessMessage(event))
                 .switchIfEmpty(createEmptyVoiceStateErrorMessage(event))
                 .doOnNext(responseDispatcher::queue)

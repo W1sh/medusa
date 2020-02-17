@@ -1,9 +1,7 @@
 package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.AudioConnectionManager;
-import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.CommandEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.ShuffleQueueEvent;
 import org.springframework.stereotype.Component;
@@ -13,11 +11,11 @@ import reactor.core.publisher.Mono;
 public final class ShuffleQueueListener implements EventListener<ShuffleQueueEvent> {
 
     private final ResponseDispatcher responseDispatcher;
+    private final AudioConnectionManager audioConnectionManager;
 
-    public ShuffleQueueListener(ResponseDispatcher responseDispatcher, CommandEventDispatcher eventDispatcher) {
+    public ShuffleQueueListener(ResponseDispatcher responseDispatcher, AudioConnectionManager audioConnectionManager) {
         this.responseDispatcher = responseDispatcher;
-        EventFactory.registerEvent(ShuffleQueueEvent.KEYWORD, ShuffleQueueEvent.class);
-        eventDispatcher.registerListener(this);
+        this.audioConnectionManager = audioConnectionManager;
     }
 
     @Override
@@ -28,7 +26,7 @@ public final class ShuffleQueueListener implements EventListener<ShuffleQueueEve
     @Override
     public Mono<Void> execute(ShuffleQueueEvent event) {
         return Mono.justOrEmpty(event.getGuildId())
-                .flatMap(AudioConnectionManager.getInstance()::getAudioConnection)
+                .flatMap(audioConnectionManager::getAudioConnection)
                 .doOnNext(audioConnection -> audioConnection.getTrackScheduler().shuffle())
                 .flatMap(audioConnection -> createShuffleMessage(event))
                 .doOnNext(responseDispatcher::queue)

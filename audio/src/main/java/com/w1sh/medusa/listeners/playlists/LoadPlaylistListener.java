@@ -23,10 +23,12 @@ public final class LoadPlaylistListener implements EventListener<LoadPlaylistEve
 
     private final PlaylistService playlistService;
     private final ResponseDispatcher responseDispatcher;
+    private final AudioConnectionManager audioConnectionManager;
 
-    public LoadPlaylistListener(PlaylistService playlistService, ResponseDispatcher responseDispatcher) {
+    public LoadPlaylistListener(PlaylistService playlistService, ResponseDispatcher responseDispatcher, AudioConnectionManager audioConnectionManager) {
         this.playlistService = playlistService;
         this.responseDispatcher = responseDispatcher;
+        this.audioConnectionManager = audioConnectionManager;
     }
 
     @Override
@@ -44,7 +46,7 @@ public final class LoadPlaylistListener implements EventListener<LoadPlaylistEve
                 .flatMapIterable(Playlist::getTracks)
                 .flatMap(track -> event.getGuild()
                         .map(guild -> guild.getId().asLong())
-                        .flatMap(id -> AudioConnectionManager.getInstance().requestTrack(id, track.getUri())))
+                        .flatMap(id -> audioConnectionManager.requestTrack(id, track.getUri())))
                 .last()
                 .flatMap(trackScheduler -> createEmbed(trackScheduler, event))
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to load playlist", throwable)))

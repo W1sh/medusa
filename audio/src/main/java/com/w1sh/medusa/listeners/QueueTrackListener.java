@@ -19,9 +19,11 @@ import java.util.Queue;
 public final class QueueTrackListener implements EventListener<QueueTrackEvent> {
 
     private final ResponseDispatcher responseDispatcher;
+    private final AudioConnectionManager audioConnectionManager;
 
-    public QueueTrackListener(ResponseDispatcher responseDispatcher) {
+    public QueueTrackListener(ResponseDispatcher responseDispatcher, AudioConnectionManager audioConnectionManager) {
         this.responseDispatcher = responseDispatcher;
+        this.audioConnectionManager = audioConnectionManager;
     }
 
     @Override
@@ -32,7 +34,7 @@ public final class QueueTrackListener implements EventListener<QueueTrackEvent> 
     @Override
     public Mono<Void> execute(QueueTrackEvent event) {
         return Mono.justOrEmpty(event.getGuildId())
-                .flatMap(AudioConnectionManager.getInstance()::getAudioConnection)
+                .flatMap(audioConnectionManager::getAudioConnection)
                 .map(AudioConnection::getTrackScheduler)
                 .flatMap(trackScheduler -> createQueueEmbed(trackScheduler, event))
                 .doOnNext(responseDispatcher::queue)

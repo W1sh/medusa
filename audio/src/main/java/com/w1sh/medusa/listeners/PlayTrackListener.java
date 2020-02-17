@@ -20,9 +20,11 @@ public final class PlayTrackListener implements EventListener<PlayTrackEvent> {
     private static final Logger logger = LoggerFactory.getLogger(PlayTrackListener.class);
 
     private final ResponseDispatcher responseDispatcher;
+    private final AudioConnectionManager audioConnectionManager;
 
-    public PlayTrackListener(ResponseDispatcher responseDispatcher) {
+    public PlayTrackListener(ResponseDispatcher responseDispatcher, AudioConnectionManager audioConnectionManager) {
         this.responseDispatcher = responseDispatcher;
+        this.audioConnectionManager = audioConnectionManager;
     }
 
     @Override
@@ -33,7 +35,7 @@ public final class PlayTrackListener implements EventListener<PlayTrackEvent> {
     @Override
     public Mono<Void> execute(PlayTrackEvent event) {
         return Mono.justOrEmpty(event)
-                .flatMap(tuple -> AudioConnectionManager.getInstance().requestTrack(event))
+                .flatMap(tuple -> audioConnectionManager.requestTrack(event))
                 .flatMap(trackScheduler -> createQueueMessage(trackScheduler, event))
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to play track", throwable)))
                 .doOnNext(responseDispatcher::queue)
