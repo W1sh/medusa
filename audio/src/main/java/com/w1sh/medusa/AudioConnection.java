@@ -13,17 +13,15 @@ public class AudioConnection {
 
     private static final Logger logger = LoggerFactory.getLogger(AudioConnection.class);
 
-    private final SimpleAudioProvider audioProvider;
     private final TrackScheduler trackScheduler;
     private final VoiceConnection voiceConnection;
     private final MessageChannel messageChannel;
 
-    public AudioConnection(SimpleAudioProvider audioProvider, AudioPlayer player, VoiceConnection voiceConnection,
+    public AudioConnection(AudioPlayer player, VoiceConnection voiceConnection,
                            GuildChannel messageChannel, ResponseDispatcher responseDispatcher) {
         final TrackEventListener trackEventListener = new TrackEventListener(messageChannel.getGuildId().asLong(), responseDispatcher);
         this.messageChannel = (MessageChannel) messageChannel;
         this.voiceConnection = voiceConnection;
-        this.audioProvider = audioProvider;
         this.trackScheduler = new TrackScheduler(player);
         this.trackScheduler.getPlayer().addListener(trackEventListener);
     }
@@ -44,9 +42,5 @@ public class AudioConnection {
 
     public VoiceConnection getVoiceConnection() {
         return voiceConnection;
-    }
-
-    public SimpleAudioProvider getAudioProvider() {
-        return audioProvider;
     }
 }
