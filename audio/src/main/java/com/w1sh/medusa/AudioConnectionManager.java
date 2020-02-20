@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.w1sh.medusa.data.events.Event;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.listeners.TrackEventListener;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
@@ -104,7 +105,13 @@ public final class AudioConnectionManager {
     private Mono<AudioConnection> createAudioConnection(AudioPlayer player, VoiceConnection voiceConnection, GuildChannel channel){
 
         final Long guildId = channel.getGuildId().asLong();
-        final AudioConnection audioConnection = new AudioConnection(player, voiceConnection, channel, responseDispatcher);
+        final TrackEventListener trackEventListener = new TrackEventListener(guildId, responseDispatcher);
+
+        Mono<Void> disconnect = voiceConnection.disconnect()
+                .doOnNext(a -> logger.info("Destroying audio connection in guild <{}>", guildId))
+                .then();
+
+        final AudioConnection audioConnection = new AudioConnection(player, disconnect, trackEventListener);
 
         logger.info("Creating new audio connection in guild <{}>", guildId);
         audioConnections.put(guildId, audioConnection);
