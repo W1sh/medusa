@@ -24,7 +24,4 @@ public class AudioConnection {
         return trackScheduler;
     }
 
-    public Mono<Void> getDisconnect() {
-        return disconnect;
-    }
 }

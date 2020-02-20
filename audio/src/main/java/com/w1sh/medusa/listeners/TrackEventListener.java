@@ -11,9 +11,11 @@ import com.w1sh.medusa.data.responses.Embed;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.utils.ResponseUtils;
-import discord4j.core.object.util.Snowflake;
+import discord4j.core.object.entity.channel.GuildChannel;
+import discord4j.core.object.entity.channel.MessageChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.awt.*;
@@ -22,43 +24,43 @@ public final class TrackEventListener extends AudioEventAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(TrackEventListener.class);
 
+    private final AudioConnectionManager audioConnectionManager;
+    private final GuildChannel guildChannel;
     private final Long guildId;
     private final ResponseDispatcher responseDispatcher;
 
-    public TrackEventListener(Long guildId, ResponseDispatcher responseDispatcher) {
-        this.guildId = guildId;
+    public TrackEventListener(AudioConnectionManager audioConnectionManager, GuildChannel guildChannel, ResponseDispatcher responseDispatcher) {
+        this.audioConnectionManager = audioConnectionManager;
+        this.guildChannel = guildChannel;
         this.responseDispatcher = responseDispatcher;
+        this.guildId = guildChannel.getGuildId().asLong();
     }
 
     @Override
     public void onPlayerPause(AudioPlayer player) {
-        logger.info("Paused audio player in guild with id <{}>", guildId);
-        /*AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
-                .map(AudioConnection::getMessageChannel)
+        Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
                 .map(c -> new TextMessage(c, ":pause_button: The audio player was paused. Use `!resume` to unpause", false))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
+                .doOnSuccess(msg -> logger.info("Paused audio player in guild with id <{}>", guildChannel.getGuildId().asLong()))
                 .subscribeOn(Schedulers.elastic())
-                .subscribe();*/
+                .subscribe();
     }
 
     @Override
     public void onPlayerResume(AudioPlayer player) {
-        logger.info("Resumed audio player in guild with id <{}>", guildId);
-        /*AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
-                .map(AudioConnection::getMessageChannel)
+        Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
                 .map(c -> new TextMessage(c, ":arrow_forward: The audio player was resumed", false))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
+                .doOnSuccess(msg -> logger.info("Resumed audio player in guild with id <{}>", guildId))
                 .subscribeOn(Schedulers.elastic())
-                .subscribe();*/
+                .subscribe();
     }
 
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
-        logger.info("Starting track <{}> in guild with id <{}>", track.getInfo().title, guildId);
-        /*AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
-                .map(AudioConnection::getMessageChannel)
+        Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
                 .map(c -> new Embed(c, embedCreateSpec ->
                         embedCreateSpec.setTitle(":musical_note:\tCurrently playing")
                                 .setColor(Color.GREEN)
@@ -70,22 +72,23 @@ public final class TrackEventListener extends AudioEventAdapter {
                                                 ResponseUtils.formatDuration(track.getInfo().length)), false)))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
+                .doOnSuccess(e -> logger.info("Starting track <{}> in guild with id <{}>", track.getInfo().title, guildId))
                 .subscribeOn(Schedulers.elastic())
-                .subscribe();*/
+                .subscribe();
     }
 
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
-        logger.info("Track <{}> on guild <{}> ended with reason <{}>", track.getInfo().title, guildId, endReason);
-        /*AudioConnectionManager.getInstance().getAudioConnection(Snowflake.of(guildId))
+        audioConnectionManager.getAudioConnection(guildChannel.getGuildId())
                 .map(AudioConnection::getTrackScheduler)
                 .doOnNext(trackScheduler -> {
                     if(endReason.mayStartNext){
                         trackScheduler.nextTrack(false);
                     }
                 })
+                .doOnSuccess(ts -> logger.info("Track <{}> on guild <{}> ended with reason <{}>", track.getInfo().title, guildId, endReason))
                 .subscribeOn(Schedulers.elastic())
-                .subscribe();*/
+                .subscribe();
     }
 
     @Override

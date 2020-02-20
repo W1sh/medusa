@@ -64,11 +64,11 @@ public final class AudioConnectionManager {
                 .flatMap(chan -> {
                     final AudioPlayer audioPlayer = playerManager.createPlayer();
                     final SimpleAudioProvider audioProvider = new SimpleAudioProvider(audioPlayer);
-                    logger.info("Client joined voice channel in guild <{}>", event.getGuildId().map(Snowflake::asLong).orElse(0L));
                     return chan.join(spec1 -> spec1.setProvider(audioProvider))
                             .zipWith(event.getMessage().getChannel())
                             .flatMap(tuple -> createAudioConnection(audioPlayer, tuple.getT1(), ((GuildChannel) tuple.getT2())));
                 })
+                .doOnSuccess(audioConnection -> logger.info("Client joined voice channel in guild <{}>", event.getGuildId().map(Snowflake::asLong).orElse(0L)))
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to leave join channel", throwable)));
     }
 
@@ -105,10 +105,10 @@ public final class AudioConnectionManager {
     private Mono<AudioConnection> createAudioConnection(AudioPlayer player, VoiceConnection voiceConnection, GuildChannel channel){
 
         final Long guildId = channel.getGuildId().asLong();
-        final TrackEventListener trackEventListener = new TrackEventListener(guildId, responseDispatcher);
+        final TrackEventListener trackEventListener = new TrackEventListener(this, channel, responseDispatcher);
 
         Mono<Void> disconnect = voiceConnection.disconnect()
-                .doOnNext(a -> logger.info("Destroying audio connection in guild <{}>", guildId))
+                .doOnSuccess(a -> logger.info("Destroying audio connection in guild <{}>", guildId))
                 .then();
 
         final AudioConnection audioConnection = new AudioConnection(player, disconnect, trackEventListener);
