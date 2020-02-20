@@ -7,8 +7,6 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 @Registered(prefix = "status")
 public final class StatusEvent extends Event {
 
-    public static final String KEYWORD = "status";
-
     public StatusEvent(MessageCreateEvent event) {
         super(event);
     }

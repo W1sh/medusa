@@ -7,8 +7,6 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 @Registered(prefix = "deleteplaylist")
 public final class DeletePlaylistEvent extends Event {
 
-    public static final String KEYWORD = "deleteplaylist";
-
     public DeletePlaylistEvent(MessageCreateEvent event) {
         super(event);
     }

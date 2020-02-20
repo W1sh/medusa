@@ -10,8 +10,6 @@ import java.util.Collections;
 @Registered(prefix = "join")
 public final class JoinVoiceChannelEvent extends Event {
 
-    public static final String KEYWORD = "join";
-
     public JoinVoiceChannelEvent(MessageCreateEvent event) {
         super(event, Collections.singletonList(Permission.CONNECT));
     }

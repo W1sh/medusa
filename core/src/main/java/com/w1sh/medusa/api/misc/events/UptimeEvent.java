@@ -7,8 +7,6 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 @Registered(prefix = "uptime")
 public final class UptimeEvent extends Event {
 
-    public static final String KEYWORD = "uptime";
-
     public UptimeEvent(MessageCreateEvent event) {
         super(event);
     }

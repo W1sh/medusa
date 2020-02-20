@@ -7,8 +7,6 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 @Registered(prefix = "ping")
 public final class PingEvent extends Event {
 
-    public static final String KEYWORD = "ping";
-
     public PingEvent(MessageCreateEvent event) {
         super(event);
     }

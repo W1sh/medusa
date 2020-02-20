@@ -7,7 +7,6 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 @Registered(prefix = "roulette")
 public final class RouletteEvent extends Event {
 
-    public static final String KEYWORD = "roulette";
     private static final Integer NUM_ALLOWED_ARGS = 1;
 
     public RouletteEvent(MessageCreateEvent event) {

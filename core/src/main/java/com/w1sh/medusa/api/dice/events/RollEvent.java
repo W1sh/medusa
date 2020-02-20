@@ -7,7 +7,6 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 @Registered(prefix = "roll")
 public final class RollEvent extends Event {
 
-    public static final String KEYWORD = "roll";
     private static final Integer NUM_ALLOWED_ARGS = 1;
 
     public RollEvent(MessageCreateEvent event) {

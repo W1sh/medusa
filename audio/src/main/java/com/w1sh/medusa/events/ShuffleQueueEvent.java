@@ -7,8 +7,6 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 @Registered(prefix = "shuffle")
 public final class ShuffleQueueEvent extends Event {
 
-    public static final String KEYWORD = "shuffle";
-
     public ShuffleQueueEvent(MessageCreateEvent event) {
         super(event);
     }
