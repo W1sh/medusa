@@ -5,7 +5,6 @@ import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.data.responses.Embed;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.StopTrackEvent;
-import discord4j.core.object.util.Snowflake;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
