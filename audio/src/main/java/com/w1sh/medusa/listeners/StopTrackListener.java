@@ -5,6 +5,7 @@ import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.data.responses.Embed;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.StopTrackEvent;
+import discord4j.core.object.util.Snowflake;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -28,17 +29,12 @@ public final class StopTrackListener implements EventListener<StopTrackEvent> {
 
     @Override
     public Mono<Void> execute(StopTrackEvent event) {
-        Mono<Embed> embedMono = Mono.justOrEmpty(event.getGuildId())
-                .flatMap(audioConnectionManager::getAudioConnection)
+        return Mono.justOrEmpty(event.getGuildId())
+                .flatMap(audioConnectionManager::scheduleLeave)
                 .flatMap(audioConnection -> createStopMessage(audioConnection, event))
                 .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush);
-
-        Mono<Void> scheduleLeaveMono = Mono.justOrEmpty(event.getGuildId())
-                .flatMap(audioConnectionManager::scheduleLeave)
+                .doAfterTerminate(responseDispatcher::flush)
                 .then();
-
-        return embedMono.then(scheduleLeaveMono);
     }
 
     public Mono<Embed> createStopMessage(AudioConnection audioConnection, StopTrackEvent event){

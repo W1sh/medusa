@@ -8,6 +8,7 @@ public class AudioConnection {
 
     private final TrackScheduler trackScheduler;
     private final Mono<Void> disconnect;
+    private boolean leaving;
 
     public AudioConnection(AudioPlayer player, Mono<Void> disconnect, TrackEventListener trackEventListener) {
         this.disconnect = disconnect;
@@ -24,4 +25,11 @@ public class AudioConnection {
         return trackScheduler;
     }
 
+    public boolean isLeaving() {
+        return leaving;
+    }
+
+    public void setLeaving(boolean leaving) {
+        this.leaving = leaving;
+    }
 }

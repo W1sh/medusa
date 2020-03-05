@@ -22,6 +22,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 @Component
 public final class AudioConnectionManager {
@@ -73,21 +74,23 @@ public final class AudioConnectionManager {
     }
 
     public Mono<Boolean> leaveVoiceChannel(Snowflake guildIdSnowflake) {
-        logger.info("Client leaving voice channel in guild <{}>", guildIdSnowflake.asLong());
         return Mono.just(guildIdSnowflake)
+                .doOnSuccess(snowflake -> logger.info("Client leaving voice channel in guild <{}>", snowflake.asLong()))
                 .flatMap(this::getAudioConnection)
                 .doOnNext(connection -> destroyAudioConnection(guildIdSnowflake.asLong(), connection))
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to leave voice channel", throwable)))
                 .hasElement();
     }
 
-    public Mono<Snowflake> scheduleLeave(Snowflake guildIdSnowflake) {
+    public Mono<AudioConnection> scheduleLeave(Snowflake guildId) {
         final Duration timeout = Duration.ofSeconds(120);
-        return Mono.just(guildIdSnowflake)
-                .doOnNext(snowflake -> {
+        return getAudioConnection(guildId)
+                .filter(Predicate.not(AudioConnection::isLeaving))
+                .doOnNext(connection -> {
+                    connection.setLeaving(true);
                     logger.info("Scheduling client to leave voice channel in guild <{}> after <{}> seconds",
-                            snowflake.asLong(), timeout.getSeconds());
-                    Schedulers.elastic().schedule(() -> leaveVoiceChannel(snowflake).subscribe(), 120, TimeUnit.SECONDS);
+                            guildId.asLong(), timeout.getSeconds());
+                    Schedulers.elastic().schedule(() -> leaveVoiceChannel(guildId).subscribe(), 120, TimeUnit.SECONDS);
                 });
     }
 
