@@ -3,6 +3,7 @@ package com.w1sh.medusa.data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Table(value = "playlists")
@@ -13,11 +14,14 @@ public final class Playlist {
     private String name;
     private Long user;
     private List<Track> tracks;
+    private LocalDateTime createdOn;
+    private LocalDateTime updatedOn;
 
     public Playlist(Long user, String name, List<Track> tracks) {
         this.name = name;
         this.user = user;
         this.tracks = tracks;
+        this.createdOn = LocalDateTime.now();
     }
 
     public String getId() {
@@ -52,10 +56,25 @@ public final class Playlist {
         this.tracks = tracks;
     }
 
+    public LocalDateTime getCreatedOn() {
+        return createdOn;
+    }
+
+    public void setCreatedOn(LocalDateTime createdOn) {
+        this.createdOn = createdOn;
+    }
+
+    public LocalDateTime getUpdatedOn() {
+        return updatedOn;
+    }
+
+    public void setUpdatedOn(LocalDateTime updatedOn) {
+        this.updatedOn = updatedOn;
+    }
+
     public Long getFullDuration(){
         return tracks.stream()
                 .map(Track::getDuration)
                 .reduce(Long::sum).orElse(0L);
     }
-
 }
