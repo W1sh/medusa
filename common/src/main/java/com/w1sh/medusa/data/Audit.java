@@ -1,16 +1,16 @@
 package com.w1sh.medusa.data;
 
+import org.springframework.data.relational.core.mapping.Column;
+
 import java.time.LocalDateTime;
 
 public class Audit {
 
+    @Column(value = "created_on")
     private LocalDateTime createdOn;
 
-    private LocalDateTime updateOn;
-
-    public Audit() {
-        createdOn = LocalDateTime.now();
-    }
+    @Column(value = "updated_on")
+    private LocalDateTime updatedOn;
 
     public LocalDateTime getCreatedOn() {
         return createdOn;
@@ -20,11 +20,11 @@ public class Audit {
         this.createdOn = createdOn;
     }
 
-    public LocalDateTime getUpdateOn() {
-        return updateOn;
+    public LocalDateTime getUpdatedOn() {
+        return updatedOn;
     }
 
-    public void setUpdateOn(LocalDateTime updateOn) {
-        this.updateOn = updateOn;
+    public void setUpdatedOn(LocalDateTime updatedOn) {
+        this.updatedOn = updatedOn;
     }
 }
