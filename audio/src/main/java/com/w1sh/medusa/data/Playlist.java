@@ -14,14 +14,13 @@ public final class Playlist {
     private String name;
     private Long user;
     private List<Track> tracks;
-    private LocalDateTime createdOn;
-    private LocalDateTime updatedOn;
+    private Audit audit;
 
     public Playlist(Long user, String name, List<Track> tracks) {
         this.name = name;
         this.user = user;
         this.tracks = tracks;
-        this.createdOn = LocalDateTime.now();
+        this.audit = new Audit();
     }
 
     public String getId() {
@@ -56,20 +55,12 @@ public final class Playlist {
         this.tracks = tracks;
     }
 
-    public LocalDateTime getCreatedOn() {
-        return createdOn;
+    public Audit getAudit() {
+        return audit;
     }
 
-    public void setCreatedOn(LocalDateTime createdOn) {
-        this.createdOn = createdOn;
-    }
-
-    public LocalDateTime getUpdatedOn() {
-        return updatedOn;
-    }
-
-    public void setUpdatedOn(LocalDateTime updatedOn) {
-        this.updatedOn = updatedOn;
+    public void setAudit(Audit audit) {
+        this.audit = audit;
     }
 
     public Long getFullDuration(){

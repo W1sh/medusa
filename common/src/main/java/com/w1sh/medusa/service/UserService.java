@@ -39,6 +39,10 @@ public class UserService {
 
     public Mono<User> save(User user){
         return userRepository.save(user)
+                .onErrorResume(throwable -> {
+                    logger.error("Failed to save user with id \"{}\"", user.getId(), throwable);
+                    return Mono.empty();
+                })
                 .doOnNext(u -> usersCache.put(u.getUserId(), u));
     }
 
