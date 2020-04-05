@@ -54,7 +54,6 @@ public class R2DBCConfiguration extends AbstractR2dbcConfiguration{
     @Bean
     @Override
     public R2dbcCustomConversions r2dbcCustomConversions() {
-
         List<Converter<?, ?>> converterList = new ArrayList<>();
         converterList.add(new UserConverter.UserReadConverter());
         converterList.add(new UserConverter.UserWriteConverter());

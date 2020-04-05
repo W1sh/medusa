@@ -40,7 +40,6 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
 
     @Override
     public Mono<Void> execute(SavePlaylistEvent event) {
-
         return Mono.justOrEmpty(event.getGuildId())
                 .flatMap(audioConnectionManager::getAudioConnection)
                 .map(AudioConnection::getTrackScheduler)
@@ -60,7 +59,6 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
     private Playlist createPlaylist(SavePlaylistEvent event, List<Track> tracks){
         Long userId = event.getMember().map(member -> member.getId().asLong()).orElseThrow();
         String name = event.getArguments().getOrDefault(0, "Playlist");
-
         return new Playlist(userId, name, tracks);
     }
 

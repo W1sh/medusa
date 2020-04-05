@@ -14,6 +14,8 @@ import java.time.format.DateTimeFormatter;
 
 public class UserConverter {
 
+    private UserConverter(){}
+
     @ReadingConverter
     public static class UserReadConverter implements Converter<Row, User> {
 
