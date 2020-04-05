@@ -12,8 +12,7 @@ public class AudioConnection {
 
     public AudioConnection(AudioPlayer player, Mono<Void> disconnect, TrackEventListener trackEventListener) {
         this.disconnect = disconnect;
-        this.trackScheduler = new TrackScheduler(player);
-        this.trackScheduler.getPlayer().addListener(trackEventListener);
+        this.trackScheduler = new TrackScheduler(player, trackEventListener);
     }
 
     public void destroy(){

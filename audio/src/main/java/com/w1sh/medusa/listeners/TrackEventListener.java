@@ -91,6 +91,43 @@ public final class TrackEventListener extends AudioEventAdapter {
                 .subscribe();
     }
 
+    public void onTrackLoaded(AudioTrack track){
+        Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
+                .map(chan -> new Embed(chan, embedCreateSpec -> embedCreateSpec.setTitle(":ballot_box_with_check:\tAdded to queue")
+                        .setColor(Color.GREEN)
+                        .addField(ResponseUtils.ZERO_WIDTH_SPACE, String.format("**%s**%n[%s](%s) | %s",
+                                track.getInfo().author,
+                                track.getInfo().title,
+                                track.getInfo().uri,
+                                ResponseUtils.formatDuration(track.getInfo().length)), true)))
+                .doOnNext(responseDispatcher::queue)
+                .doAfterTerminate(responseDispatcher::flush)
+                .doOnSuccess(e -> logger.info("Starting track <{}> in guild with id <{}>", track.getInfo().title, guildId))
+                .subscribeOn(Schedulers.elastic())
+                .subscribe();
+    }
+
+    public void onTrackStopped(AudioPlayer player, int queueSize) {
+        Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
+                .filter(c -> player.getPlayingTrack() != null)
+                .map(channel -> new Embed(channel, embedCreateSpec -> embedCreateSpec.setTitle(":stop_button:\tStopped queue")
+                        .setColor(Color.GREEN)
+                        .setDescription(String.format(
+                                "Stopped playing **%s**%n%nCleared **%d** tracks from queue. Queue is now empty.",
+                                player.getPlayingTrack() != null ? player.getPlayingTrack().getInfo().title : "",
+                                queueSize))
+                        .setFooter("The bot will automatically leave after 2 min unless new tracks are added.", null)))
+                .switchIfEmpty(Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
+                        .map(channel -> new Embed(channel, embedCreateSpec -> embedCreateSpec.setTitle(":stop_button:\tStopped queue")
+                                .setColor(Color.GREEN)
+                                .setDescription(String.format("Stopped queue%n%nCleared all tracks from queue. Queue is now empty."))
+                                .setFooter("The bot will automatically leave after 2 min unless new tracks are added.", null))))
+                .doOnNext(responseDispatcher::queue)
+                .doAfterTerminate(responseDispatcher::flush)
+                .subscribeOn(Schedulers.elastic())
+                .subscribe();
+    }
+
     @Override
     public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
         logger.error("Track <{}> on guild <{}> failed with exception", track.getInfo().title, guildId, exception);

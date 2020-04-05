@@ -5,6 +5,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import com.w1sh.medusa.listeners.TrackEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,12 +21,15 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     private static final Integer MAX_QUEUE_SIZE = 250;
 
     private final AudioPlayer player;
+    private final TrackEventListener trackEventListener;
     private final BlockingDeque<AudioTrack> queue;
 
     private AudioTrack playingTrack;
 
-    TrackScheduler(final AudioPlayer player) {
+    TrackScheduler(final AudioPlayer player, final TrackEventListener trackEventListener) {
         this.player = player;
+        this.trackEventListener = trackEventListener;
+        this.player.addListener(trackEventListener);
         this.queue = new LinkedBlockingDeque<>(MAX_QUEUE_SIZE);
     }
 
@@ -57,6 +61,7 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     @Override
     public void trackLoaded(final AudioTrack track) {
         // LavaPlayer found an audio source for us to play
+        trackEventListener.onTrackLoaded(track);
         queue.add(track);
         nextTrack(false);
     }
@@ -86,6 +91,7 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     }
 
     public void stopQueue(){
+        trackEventListener.onTrackStopped(player, queue.size());
         player.stopTrack();
         queue.clear();
     }
