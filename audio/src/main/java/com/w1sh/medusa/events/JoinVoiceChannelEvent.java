@@ -3,7 +3,7 @@ package com.w1sh.medusa.events;
 import com.w1sh.medusa.data.events.Event;
 import com.w1sh.medusa.data.events.Registered;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.util.Permission;
+import discord4j.rest.util.Permission;
 
 import java.util.Collections;
 

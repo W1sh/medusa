@@ -35,7 +35,7 @@ public final class EventFactory {
     }
 
     public Mono<Event> extractEvents(final MessageCreateEvent event){
-        final String message = event.getMessage().getContent().orElse("");
+        final String message = event.getMessage().getContent();
 
         if (message.startsWith(prefix)){
             final String eventKeyword = message.split(ARGUMENT_DELIMITER)[0].substring(1);
@@ -78,7 +78,7 @@ public final class EventFactory {
     }
 
     private Event extractArguments(final Event event){
-        final String[] content = event.getMessage().getContent().orElse("").split(ARGUMENT_DELIMITER);
+        final String[] content = event.getMessage().getContent().split(ARGUMENT_DELIMITER);
         final List<String> argumentsList = Arrays.asList(content).subList(1, content.length);
         Map<Integer, String> arguments = IntStream.range(0, argumentsList.size())
                 .boxed()

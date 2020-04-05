@@ -7,6 +7,7 @@ import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
+import discord4j.discordjson.json.ActivityUpdateRequest;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -44,7 +45,7 @@ public final class ChangePrefixEventListener implements EventListener<ChangePref
     }
 
     public Mono<Void> changePrefix(ChangePrefixEvent event){
-        Activity activity = Activity.watching(String.format("Cringe 2 | %shelp", eventFactory.getPrefix()));
-        return event.getClient().updatePresence(Presence.online(activity));
+        ActivityUpdateRequest activityUpdateRequest = Activity.watching(String.format("Cringe 2 | %shelp", eventFactory.getPrefix()));
+        return event.getClient().updatePresence(Presence.online(activityUpdateRequest));
     }
 }

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.awt.*;
+import java.util.Optional;
 
 @Component
 public final class LoadPlaylistListener implements EventListener<LoadPlaylistEvent> {
@@ -38,10 +39,11 @@ public final class LoadPlaylistListener implements EventListener<LoadPlaylistEve
 
     @Override
     public Mono<Void> execute(LoadPlaylistEvent event) {
+        Integer playlistId = Optional.of(event.getMessage().getContent()).map(c -> Integer.parseInt(c.split(" ")[1])).orElse(1);
         return Mono.justOrEmpty(event.getMember())
                 .map(member -> member.getId().asLong())
                 .flatMapMany(playlistService::findAllByUserId)
-                .take(event.getMessage().getContent().map(c -> Integer.parseInt(c.split(" ")[1])).orElse(1))
+                .take(playlistId)
                 .last()
                 .flatMapIterable(Playlist::getTracks)
                 .flatMap(track -> event.getGuild()
