@@ -20,7 +20,8 @@ public class UserConverter {
     public static class UserReadConverter implements Converter<Row, User> {
 
         public User convert(Row source) {
-            User user = new User(source.get("id", Long.class));
+            User user = new User();
+            user.setId(source.get("id", Long.class));
             user.setUserId(source.get("user_id", Long.class));
             user.setRolls(source.get("rolls", Long.class));
             user.setDuelRolls(source.get("duel_rolls", Long.class));

@@ -24,6 +24,8 @@ public class User {
     @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY)
     private Audit audit;
 
+    public User() { }
+
     public User(Long userId) {
         this.userId = userId;
         this.rolls = 0L;

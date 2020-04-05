@@ -49,7 +49,7 @@ public class UserService {
     public Mono<User> findByUserId(Long userId) {
         return CacheMono.lookup(key -> Mono.justOrEmpty(usersCache.getIfPresent(key))
                 .map(Signal::next), userId)
-                .onCacheMissResume(() -> userRepository.findByUserId(String.valueOf(userId))
+                .onCacheMissResume(() -> userRepository.findByUserId(userId)
                         .defaultIfEmpty(new User(userId))
                         .subscribeOn(Schedulers.elastic()))
                 .andWriteWith((key, signal) -> Mono.fromRunnable(
