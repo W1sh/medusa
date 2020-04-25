@@ -121,7 +121,8 @@ public final class TrackScheduler implements AudioLoadResultHandler {
 
     public void destroy(){
         playingTrack = null;
-        stopQueue();
+        player.stopTrack();
+        queue.clear();
         player.destroy();
     }
 

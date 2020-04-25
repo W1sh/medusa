@@ -87,6 +87,7 @@ public final class AudioConnectionManager {
         return getAudioConnection(guildId)
                 .filter(Predicate.not(AudioConnection::isLeaving))
                 .doOnNext(connection -> {
+                    connection.getTrackScheduler().stopQueue();
                     connection.setLeaving(true);
                     logger.info("Scheduling client to leave voice channel in guild <{}> after <{}> seconds",
                             guildId.asLong(), timeout.getSeconds());
@@ -119,6 +120,10 @@ public final class AudioConnectionManager {
         logger.info("Creating new audio connection in guild <{}>", guildId);
         audioConnections.put(guildId, audioConnection);
         return Mono.just(audioConnections.get(guildId));
+    }
+
+    private void updateResponseChannel(AudioConnection audioConnection) {
+
     }
 
     private void destroyAudioConnection(Long guildId, AudioConnection connection){

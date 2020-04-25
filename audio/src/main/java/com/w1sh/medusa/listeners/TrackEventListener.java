@@ -25,9 +25,9 @@ public final class TrackEventListener extends AudioEventAdapter {
     private static final Logger logger = LoggerFactory.getLogger(TrackEventListener.class);
 
     private final AudioConnectionManager audioConnectionManager;
-    private final GuildChannel guildChannel;
     private final Long guildId;
     private final ResponseDispatcher responseDispatcher;
+    private GuildChannel guildChannel;
 
     public TrackEventListener(AudioConnectionManager audioConnectionManager, GuildChannel guildChannel, ResponseDispatcher responseDispatcher) {
         this.audioConnectionManager = audioConnectionManager;
@@ -143,5 +143,13 @@ public final class TrackEventListener extends AudioEventAdapter {
             return String.format("https://img.youtube.com/vi/%s/hqdefault.jpg", audioTrack.getIdentifier());
         }
         return null;
+    }
+
+    public GuildChannel getGuildChannel() {
+        return guildChannel;
+    }
+
+    public void setGuildChannel(GuildChannel guildChannel) {
+        this.guildChannel = guildChannel;
     }
 }
