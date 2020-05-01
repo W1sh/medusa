@@ -9,6 +9,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.channel.GuildChannel;
+import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.rest.util.Snowflake;
 import discord4j.voice.VoiceConnection;
 import org.slf4j.Logger;
@@ -45,17 +46,20 @@ public final class AudioConnectionManager {
                 .doOnNext(trackScheduler -> playerManager.loadItem(trackLink, trackScheduler));
     }
 
-    public Mono<TrackScheduler> requestTrack(Event event){
+    public Mono<MessageChannel> requestTrack(Event event){
         Long guildId = event.getGuildId().map(Snowflake::asLong).orElse(0L);
         return Mono.justOrEmpty(event)
                 .map(ev -> ev.getArguments().get(0))
                 .zipWith(Mono.justOrEmpty(audioConnections.get(guildId))
                         .switchIfEmpty(joinVoiceChannel(event))
                         .map(AudioConnection::getTrackScheduler))
-                .doOnNext(tuple -> playerManager.loadItem(tuple.getT1(), tuple.getT2()))
+                .flatMap(tuple -> event.getMessage().getChannel()
+                        .doOnNext(messageChannel -> {
+                            tuple.getT2().updateResponseChannel((GuildChannel) messageChannel);
+                            playerManager.loadItem(tuple.getT1(), tuple.getT2());
+                        }))
                 .doOnSuccess(tuple -> logger.info("Loaded song request to voice channel in guild <{}>", guildId))
-                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to load requested track", throwable)))
-                .map(Tuple2::getT2);
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to load requested track", throwable)));
     }
 
     public Mono<AudioConnection> joinVoiceChannel(MessageCreateEvent event) {
@@ -82,17 +86,21 @@ public final class AudioConnectionManager {
                 .hasElement();
     }
 
-    public Mono<AudioConnection> scheduleLeave(Snowflake guildId) {
+    public Mono<AudioConnection> scheduleLeave(Event event) {
         final Duration timeout = Duration.ofSeconds(120);
-        return getAudioConnection(guildId)
+        return Mono.justOrEmpty(event.getGuildId())
+                .flatMap(this::getAudioConnection)
                 .filter(Predicate.not(AudioConnection::isLeaving))
-                .doOnNext(connection -> {
-                    connection.getTrackScheduler().stopQueue();
-                    connection.setLeaving(true);
+                .zipWhen(connection -> event.getMessage().getChannel())
+                .doOnNext(tuple -> {
+                    tuple.getT1().getTrackScheduler().updateResponseChannel((GuildChannel) tuple.getT2());
+                    tuple.getT1().getTrackScheduler().stopQueue();
+                    tuple.getT1().setLeaving(true);
                     logger.info("Scheduling client to leave voice channel in guild <{}> after <{}> seconds",
-                            guildId.asLong(), timeout.getSeconds());
-                    Schedulers.elastic().schedule(() -> leaveVoiceChannel(guildId).subscribe(), 120, TimeUnit.SECONDS);
-                });
+                            ((GuildChannel) tuple.getT2()).getGuildId().asLong(), timeout.getSeconds());
+                    Schedulers.elastic().schedule(() -> leaveVoiceChannel(((GuildChannel) tuple.getT2()).getGuildId()).subscribe(), 120, TimeUnit.SECONDS);
+                })
+                .map(Tuple2::getT1);
     }
 
     public void shutdown(){
@@ -120,10 +128,6 @@ public final class AudioConnectionManager {
         logger.info("Creating new audio connection in guild <{}>", guildId);
         audioConnections.put(guildId, audioConnection);
         return Mono.just(audioConnections.get(guildId));
-    }
-
-    private void updateResponseChannel(AudioConnection audioConnection) {
-
     }
 
     private void destroyAudioConnection(Long guildId, AudioConnection connection){

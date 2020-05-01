@@ -21,7 +21,7 @@ public final class StopTrackListener implements EventListener<StopTrackEvent> {
 
     @Override
     public Mono<Void> execute(StopTrackEvent event) {
-        return Mono.justOrEmpty(event.getGuildId())
+        return Mono.justOrEmpty(event)
                 .flatMap(audioConnectionManager::scheduleLeave)
                 .then();
     }

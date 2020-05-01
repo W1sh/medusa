@@ -6,6 +6,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.w1sh.medusa.listeners.TrackEventListener;
+import discord4j.core.object.entity.channel.GuildChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,6 +95,10 @@ public final class TrackScheduler implements AudioLoadResultHandler {
         trackEventListener.onTrackStopped(player, queue.size());
         player.stopTrack();
         queue.clear();
+    }
+
+    public void updateResponseChannel(GuildChannel guildChannel) {
+        trackEventListener.setGuildChannel(guildChannel);
     }
 
     public void pause(){
