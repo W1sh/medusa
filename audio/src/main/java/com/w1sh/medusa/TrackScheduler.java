@@ -47,7 +47,10 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     private void next(boolean skip) {
         Optional.ofNullable(this.queue.poll()).ifPresent(t -> {
             playingTrack = t;
-            if(skip) player.stopTrack();
+            if(skip){
+                trackEventListener.onTrackSkip(t);
+                player.stopTrack();
+            }
             player.playTrack(playingTrack);
         });
     }
@@ -62,7 +65,7 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     @Override
     public void trackLoaded(final AudioTrack track) {
         // LavaPlayer found an audio source for us to play
-        trackEventListener.onTrackLoaded(track);
+        trackEventListener.onTrackLoad(track);
         queue.add(track);
         nextTrack(false);
     }
@@ -92,7 +95,7 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     }
 
     public void stopQueue(){
-        trackEventListener.onTrackStopped(player, queue.size());
+        trackEventListener.onTrackStop(player, queue.size());
         player.stopTrack();
         queue.clear();
     }

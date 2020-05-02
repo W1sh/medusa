@@ -91,7 +91,7 @@ public final class TrackEventListener extends AudioEventAdapter {
                 .subscribe();
     }
 
-    public void onTrackLoaded(AudioTrack track){
+    public void onTrackLoad(AudioTrack track){
         Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
                 .map(chan -> new Embed(chan, embedCreateSpec -> embedCreateSpec.setTitle(":ballot_box_with_check:\tAdded to queue")
                         .setColor(Color.GREEN)
@@ -107,7 +107,7 @@ public final class TrackEventListener extends AudioEventAdapter {
                 .subscribe();
     }
 
-    public void onTrackStopped(AudioPlayer player, int queueSize) {
+    public void onTrackStop(AudioPlayer player, int queueSize) {
         Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
                 .filter(c -> player.getPlayingTrack() != null)
                 .map(channel -> new Embed(channel, embedCreateSpec -> embedCreateSpec.setTitle(":stop_button:\tStopped queue")
@@ -122,6 +122,19 @@ public final class TrackEventListener extends AudioEventAdapter {
                                 .setColor(Color.GREEN)
                                 .setDescription(String.format("Stopped queue%n%nCleared all tracks from queue. Queue is now empty."))
                                 .setFooter("The bot will automatically leave after 2 min unless new tracks are added.", null))))
+                .doOnNext(responseDispatcher::queue)
+                .doAfterTerminate(responseDispatcher::flush)
+                .subscribeOn(Schedulers.elastic())
+                .subscribe();
+    }
+
+    public void onTrackSkip(AudioTrack audioTrack){
+        Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
+                .map(channel -> new Embed(channel, embedCreateSpec -> embedCreateSpec.setTitle(":track_next:\tSkipped track")
+                        .setDescription(String.format("[%s](%s)",
+                                audioTrack.getInfo().title,
+                                audioTrack.getInfo().uri))
+                        .setColor(Color.GREEN)))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .subscribeOn(Schedulers.elastic())
