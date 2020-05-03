@@ -43,21 +43,7 @@ public final class TrackScheduler implements AudioLoadResultHandler {
             }
         }
     }
-
-    private void next(boolean skip) {
-        Optional.ofNullable(this.queue.poll()).ifPresentOrElse(t -> {
-            playingTrack = t;
-            if(skip){
-                trackEventListener.onTrackSkip(t);
-                player.stopTrack();
-            }
-            player.playTrack(playingTrack);
-        }, () -> {
-            trackEventListener.onTrackSkip(this.playingTrack);
-            player.stopTrack();
-        });
-    }
-
+    
     public void shuffle(){
         final var list = new ArrayList<>(queue);
         Collections.shuffle(list);
@@ -88,6 +74,20 @@ public final class TrackScheduler implements AudioLoadResultHandler {
         // LavaPlayer could not parse an audio source for some reason
         logger.error("Failed to load track", exception);
     }
+
+    private void next(boolean skip) {
+        Optional.ofNullable(this.queue.poll()).ifPresentOrElse(t -> {
+            playingTrack = t;
+            if(skip) skip();
+            player.playTrack(playingTrack);
+        }, this::skip);
+    }
+
+    private void skip() {
+        trackEventListener.onTrackSkip(this.playingTrack);
+        player.stopTrack();
+    }
+
 
     public long getQueueDuration(){
         long duration = player.getPlayingTrack().getInfo().length;
