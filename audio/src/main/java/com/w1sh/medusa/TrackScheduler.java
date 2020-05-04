@@ -51,6 +51,10 @@ public final class TrackScheduler implements AudioLoadResultHandler {
         queue.addAll(list);
     }
 
+    public void forward(long miliseconds) {
+        playingTrack.setPosition(playingTrack.getPosition() + miliseconds);
+    }
+
     @Override
     public void trackLoaded(final AudioTrack track) {
         // LavaPlayer found an audio source for us to play
