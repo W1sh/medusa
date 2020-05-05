@@ -65,7 +65,10 @@ public final class EventFactory {
                 inlineEvents.add(inlineEvent);
             }
         }
-        if(inlineEvents.size() > 1){
+        if (inlineEvents.size() == 1) {
+            return inlineEvents.get(0);
+        }
+        if (inlineEvents.size() > 1) {
             final MultipleInlineEvent multipleInlineEvent = (MultipleInlineEvent) createInstance("multiple", event);
             if (multipleInlineEvent != null) {
                 inlineEvents.forEach(e -> e.setFragment(true));
@@ -73,8 +76,7 @@ public final class EventFactory {
                 return multipleInlineEvent;
             }
         }
-
-        return inlineEvents.get(0);
+        return null;
     }
 
     private Event extractArguments(final Event event){
