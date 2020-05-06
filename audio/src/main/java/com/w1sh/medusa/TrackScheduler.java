@@ -51,8 +51,12 @@ public final class TrackScheduler implements AudioLoadResultHandler {
         queue.addAll(list);
     }
 
-    public void forward(long miliseconds) {
-        playingTrack.setPosition(playingTrack.getPosition() + miliseconds);
+    public void forward(long milliseconds) {
+        if((playingTrack.getPosition() + milliseconds) >= playingTrack.getDuration()){
+            playingTrack.setPosition(0);
+        } else {
+            playingTrack.setPosition(playingTrack.getPosition() + milliseconds);
+        }
     }
 
     @Override
