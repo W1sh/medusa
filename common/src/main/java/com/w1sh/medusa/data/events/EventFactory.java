@@ -102,6 +102,10 @@ public final class EventFactory {
     }
 
     public void registerEvent(final String keyword, final Class<? extends Event> clazz){
+        if(events.containsKey(keyword)){
+            logger.error("Failed to register event! Event with keyword <{}> is already registered!", keyword);
+            return;
+        }
         events.put(keyword, clazz);
     }
 

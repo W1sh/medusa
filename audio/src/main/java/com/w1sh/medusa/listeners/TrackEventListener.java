@@ -40,7 +40,7 @@ public final class TrackEventListener extends AudioEventAdapter {
     public void onPlayerPause(AudioPlayer player) {
         Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
                 .map(c -> new TextMessage(c, ":pause_button: The audio player was paused. Use `!resume` to unpause", false))
-                .doOnSuccess(msg -> logger.info("Paused audio player in guild with id <{}>", guildChannel.getGuildId().asLong()))
+                .doOnSuccess(msg -> logger.info("Paused audio player in guild with id <{}>", guildId))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .subscribeOn(Schedulers.elastic())
@@ -133,7 +133,7 @@ public final class TrackEventListener extends AudioEventAdapter {
                                 .setColor(Color.GREEN)
                                 .setDescription(String.format("Stopped queue%n%nCleared all tracks from queue. Queue is now empty."))
                                 .setFooter("The bot will automatically leave after 2 min unless new tracks are added.", null))))
-                .doOnSuccess(msg -> logger.info("Stopped audio player in guild with id <{}>", guildChannel.getGuildId().asLong()))
+                .doOnSuccess(msg -> logger.info("Stopped audio player in guild with id <{}>", guildId))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .subscribeOn(Schedulers.elastic())
