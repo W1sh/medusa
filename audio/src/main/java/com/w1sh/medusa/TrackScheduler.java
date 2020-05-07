@@ -51,6 +51,10 @@ public final class TrackScheduler implements AudioLoadResultHandler {
         queue.addAll(list);
     }
 
+    public void replay(){
+        playingTrack.setPosition(Math.negateExact(playingTrack.getPosition()));
+    }
+
     public void rewind(long milliseconds) {
         if((playingTrack.getPosition() - milliseconds) < 0){
             playingTrack.setPosition(0);
