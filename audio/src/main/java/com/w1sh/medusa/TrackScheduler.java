@@ -123,6 +123,10 @@ public final class TrackScheduler implements AudioLoadResultHandler {
         queue.clear();
     }
 
+    public void clearQueue(){
+        queue.clear();
+    }
+
     public void updateResponseChannel(GuildChannel guildChannel) {
         trackEventListener.setGuildChannel(guildChannel);
     }
