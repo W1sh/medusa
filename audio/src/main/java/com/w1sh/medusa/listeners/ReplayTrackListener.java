@@ -2,7 +2,6 @@ package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.events.ReplayTrackEvent;
-import discord4j.core.object.entity.channel.GuildChannel;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -24,11 +23,7 @@ public final class ReplayTrackListener implements EventListener<ReplayTrackEvent
     public Mono<Void> execute(ReplayTrackEvent event) {
         return Mono.justOrEmpty(event.getGuildId())
                 .flatMap(audioConnectionManager::getAudioConnection)
-                .flatMap(audioConnection -> event.getMessage().getChannel()
-                        .doOnNext(messageChannel -> {
-                            audioConnection.getTrackScheduler().updateResponseChannel((GuildChannel) messageChannel);
-                            audioConnection.getTrackScheduler().replay();
-                        }))
+                .doOnNext(audioConnection -> audioConnection.getTrackScheduler().replay())
                 .then();
     }
 }

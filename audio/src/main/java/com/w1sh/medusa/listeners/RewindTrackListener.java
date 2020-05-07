@@ -2,7 +2,6 @@ package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.events.RewindTrackEvent;
-import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.rest.util.Snowflake;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -35,11 +34,7 @@ public final class RewindTrackListener implements EventListener<RewindTrackEvent
         return Mono.justOrEmpty(event.getArguments().get(0))
                 .handle(this::parseTime)
                 .zipWith(audioConnectionManager.getAudioConnection(guildId))
-                .flatMap(tuple -> event.getMessage().getChannel()
-                        .doOnNext(messageChannel -> {
-                            tuple.getT2().getTrackScheduler().updateResponseChannel((GuildChannel) messageChannel);
-                            tuple.getT2().getTrackScheduler().rewind(tuple.getT1());
-                        }))
+                .doOnNext(tuple -> tuple.getT2().getTrackScheduler().rewind(tuple.getT1()))
                 .then();
     }
 

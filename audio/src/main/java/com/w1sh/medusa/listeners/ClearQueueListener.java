@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class ClearQueueListener implements EventListener<ClearQueueEvent> {
+public final class ClearQueueListener implements EventListener<ClearQueueEvent> {
 
     private final AudioConnectionManager audioConnectionManager;
 
