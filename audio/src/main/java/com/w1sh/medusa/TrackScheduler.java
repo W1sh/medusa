@@ -124,6 +124,7 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     }
 
     public void clearQueue(){
+        trackEventListener.onPlaylistClear(queue.size());
         queue.clear();
     }
 

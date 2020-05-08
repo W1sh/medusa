@@ -154,6 +154,16 @@ public final class TrackEventListener extends AudioEventAdapter {
                 .subscribe();
     }
 
+    public void onPlaylistClear(Integer queueSize){
+        Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
+                .map(channel -> new TextMessage(channel, String.format("Cleared %d tracks from the queue", queueSize), false))
+                .doOnSuccess(e -> logger.info("Cleared all tracks from queue in guild with id <{}>", guildId))
+                .doOnNext(responseDispatcher::queue)
+                .doAfterTerminate(responseDispatcher::flush)
+                .subscribeOn(Schedulers.elastic())
+                .subscribe();
+    }
+
     public String getArtwork(final AudioTrack audioTrack) {
         if (audioTrack.getInfo().uri.contains("youtube")) {
             return String.format("https://img.youtube.com/vi/%s/hqdefault.jpg", audioTrack.getIdentifier());
