@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import static com.w1sh.medusa.utils.Reactive.flatZipWith;
+import static com.w1sh.medusa.utils.Reactive.isEmpty;
 
 @Component
 public final class PermissionsValidator implements Validator {
@@ -39,9 +39,7 @@ public final class PermissionsValidator implements Validator {
 
     private Mono<TextMessage> createErrorMessage(Event event){
         return event.getMessage().getChannel()
-                .map(channel -> new TextMessage(channel,
-                        ":x: I do not have permission to do that",
-                        false))
+                .map(channel -> new TextMessage(channel, ":x: I do not have permission to do that", false))
                 .doOnNext(textMessage -> {
                     logger.error("Permissions validation failed, event discarded");
                     responseDispatcher.queue(textMessage);
@@ -51,13 +49,5 @@ public final class PermissionsValidator implements Validator {
 
     private Mono<PermissionSet> hasPermissions(GuildChannel channel, Snowflake snowflake) {
         return channel.getEffectivePermissions(snowflake);
-    }
-
-    public <A, B, C> Function<Mono<A>, Mono<C>> flatZipWith(Mono<? extends B> b, BiFunction<A, B, Mono<C>> combinator) {
-        return pipeline -> pipeline.zipWith(b, combinator).flatMap(Function.identity());
-    }
-
-    public <A> Function<Mono<A>, Mono<Boolean>> isEmpty() {
-        return pipeline -> pipeline.hasElement().map(bool -> !bool);
     }
 }
