@@ -142,11 +142,7 @@ public final class TrackEventListener extends AudioEventAdapter {
 
     public void onTrackSkip(AudioTrack audioTrack){
         Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
-                .map(channel -> new Embed(channel, embedCreateSpec -> embedCreateSpec.setTitle(":track_next:\tSkipped track")
-                        .setDescription(String.format("[%s](%s)",
-                                audioTrack.getInfo().title,
-                                audioTrack.getInfo().uri))
-                        .setColor(Color.GREEN)))
+                .map(channel -> new TextMessage(channel, String.format(":track_next: Skipped track %s", audioTrack.getInfo().title), false))
                 .doOnSuccess(e -> logger.info("Skipped track <{}> in guild with id <{}>", audioTrack.getInfo().title, guildId))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
