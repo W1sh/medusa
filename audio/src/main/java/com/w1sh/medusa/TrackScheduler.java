@@ -6,7 +6,6 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.w1sh.medusa.listeners.TrackEventListener;
-import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,9 +42,9 @@ public final class TrackScheduler implements AudioLoadResultHandler {
             }
         }
     }
-    
+
     public Queue<AudioTrack> shuffle(MessageChannel channel){
-        updateResponseChannel((GuildChannel) channel);
+        trackEventListener.setMessageChannel(channel);
         final var list = new ArrayList<>(queue);
         Collections.shuffle(list);
         queue.clear();
@@ -111,7 +110,7 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     }
 
     public AudioTrack skip(MessageChannel channel) {
-        updateResponseChannel((GuildChannel) channel);
+        trackEventListener.setMessageChannel(channel);
         next(true);
         return player.getPlayingTrack();
     }
@@ -124,37 +123,30 @@ public final class TrackScheduler implements AudioLoadResultHandler {
         return duration;
     }
 
-    public void stopQueue(){
+    public void stopQueue(MessageChannel channel){
+        trackEventListener.setMessageChannel(channel);
         trackEventListener.onTrackStop(player, queue.size());
         player.stopTrack();
         queue.clear();
     }
 
     public boolean clearQueue(MessageChannel channel){
-        updateResponseChannel((GuildChannel) channel);
+        trackEventListener.setMessageChannel(channel);
         trackEventListener.onPlaylistClear(queue.size());
         queue.clear();
         return true;
     }
 
-    public void updateResponseChannel(GuildChannel guildChannel) {
-        trackEventListener.setGuildChannel(guildChannel);
-    }
-
     public boolean pause(MessageChannel channel){
-        updateResponseChannel((GuildChannel) channel);
+        trackEventListener.setMessageChannel(channel);
         if(!player.isPaused()) player.setPaused(true);
         return player.isPaused();
     }
 
     public boolean resume(MessageChannel channel){
-        updateResponseChannel((GuildChannel) channel);
+        trackEventListener.setMessageChannel(channel);
         if(player.isPaused()) player.setPaused(false);
         return !player.isPaused();
-    }
-
-    public BlockingDeque<AudioTrack> getQueue() {
-        return queue;
     }
 
     public BlockingDeque<AudioTrack> getFullQueue(){
@@ -162,6 +154,14 @@ public final class TrackScheduler implements AudioLoadResultHandler {
         getPlayingTrack().ifPresent(fullQueue::add);
         fullQueue.addAll(queue);
         return fullQueue;
+    }
+
+    public BlockingDeque<AudioTrack> getQueue() {
+        return queue;
+    }
+
+    public void updateResponseChannel(MessageChannel messageChannel) {
+        trackEventListener.setMessageChannel(messageChannel);
     }
 
     public Optional<AudioTrack> getPlayingTrack() {

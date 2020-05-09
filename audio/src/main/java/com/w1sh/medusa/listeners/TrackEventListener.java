@@ -13,6 +13,7 @@ import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
+import discord4j.rest.util.Snowflake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -27,18 +28,18 @@ public final class TrackEventListener extends AudioEventAdapter {
     private final AudioConnectionManager audioConnectionManager;
     private final Long guildId;
     private final ResponseDispatcher responseDispatcher;
-    private GuildChannel guildChannel;
+    private MessageChannel messageChannel;
 
-    public TrackEventListener(AudioConnectionManager audioConnectionManager, GuildChannel guildChannel, ResponseDispatcher responseDispatcher) {
+    public TrackEventListener(AudioConnectionManager audioConnectionManager, MessageChannel messageChannel, ResponseDispatcher responseDispatcher) {
         this.audioConnectionManager = audioConnectionManager;
-        this.guildChannel = guildChannel;
+        this.messageChannel = messageChannel;
         this.responseDispatcher = responseDispatcher;
-        this.guildId = guildChannel.getGuildId().asLong();
+        this.guildId = ((GuildChannel) messageChannel).getGuildId().asLong();
     }
 
     @Override
     public void onPlayerPause(AudioPlayer player) {
-        Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
+        Mono.justOrEmpty(messageChannel)
                 .map(c -> new TextMessage(c, ":pause_button: The audio player was paused. Use `!resume` to unpause", false))
                 .doOnSuccess(msg -> logger.info("Paused audio player in guild with id <{}>", guildId))
                 .doOnNext(responseDispatcher::queue)
@@ -49,7 +50,7 @@ public final class TrackEventListener extends AudioEventAdapter {
 
     @Override
     public void onPlayerResume(AudioPlayer player) {
-        Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
+        Mono.justOrEmpty(messageChannel)
                 .map(c -> new TextMessage(c, ":arrow_forward: The audio player was resumed", false))
                 .doOnSuccess(msg -> logger.info("Resumed audio player in guild with id <{}>", guildId))
                 .doOnNext(responseDispatcher::queue)
@@ -60,7 +61,7 @@ public final class TrackEventListener extends AudioEventAdapter {
 
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
-        Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
+        Mono.justOrEmpty(messageChannel)
                 .map(c -> new Embed(c, embedCreateSpec ->
                         embedCreateSpec.setTitle(":musical_note:\tCurrently playing")
                                 .setColor(Color.GREEN)
@@ -79,7 +80,7 @@ public final class TrackEventListener extends AudioEventAdapter {
 
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
-        audioConnectionManager.getAudioConnection(guildChannel.getGuildId())
+        audioConnectionManager.getAudioConnection(Snowflake.of(guildId))
                 .map(AudioConnection::getTrackScheduler)
                 .doOnNext(trackScheduler -> {
                     if(endReason.mayStartNext){
@@ -103,7 +104,7 @@ public final class TrackEventListener extends AudioEventAdapter {
 
 
     public void onTrackLoad(AudioTrack track){
-        Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
+        Mono.justOrEmpty(messageChannel)
                 .map(chan -> new Embed(chan, embedCreateSpec -> embedCreateSpec.setTitle(":ballot_box_with_check:\tAdded to queue")
                         .setColor(Color.GREEN)
                         .addField(ResponseUtils.ZERO_WIDTH_SPACE, String.format("**%s**%n[%s](%s) | %s",
@@ -119,7 +120,7 @@ public final class TrackEventListener extends AudioEventAdapter {
     }
 
     public void onTrackStop(AudioPlayer player, int queueSize) {
-        Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
+        Mono.justOrEmpty(messageChannel)
                 .filter(c -> player.getPlayingTrack() != null)
                 .map(channel -> new Embed(channel, embedCreateSpec -> embedCreateSpec.setTitle(":stop_button:\tStopped queue")
                         .setColor(Color.GREEN)
@@ -128,7 +129,7 @@ public final class TrackEventListener extends AudioEventAdapter {
                                 player.getPlayingTrack() != null ? player.getPlayingTrack().getInfo().title : "",
                                 queueSize))
                         .setFooter("The bot will automatically leave after 2 min unless new tracks are added.", null)))
-                .switchIfEmpty(Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
+                .switchIfEmpty(Mono.justOrEmpty(messageChannel).ofType(MessageChannel.class)
                         .map(channel -> new Embed(channel, embedCreateSpec -> embedCreateSpec.setTitle(":stop_button:\tStopped queue")
                                 .setColor(Color.GREEN)
                                 .setDescription(String.format("Stopped queue%n%nCleared all tracks from queue. Queue is now empty."))
@@ -141,7 +142,7 @@ public final class TrackEventListener extends AudioEventAdapter {
     }
 
     public void onTrackSkip(AudioTrack audioTrack){
-        Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
+        Mono.justOrEmpty(messageChannel)
                 .map(channel -> new TextMessage(channel, String.format(":track_next: Skipped track %s", audioTrack.getInfo().title), false))
                 .doOnSuccess(e -> logger.info("Skipped track <{}> in guild with id <{}>", audioTrack.getInfo().title, guildId))
                 .doOnNext(responseDispatcher::queue)
@@ -151,7 +152,7 @@ public final class TrackEventListener extends AudioEventAdapter {
     }
 
     public void onPlaylistClear(Integer queueSize){
-        Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
+        Mono.justOrEmpty(messageChannel)
                 .map(channel -> new TextMessage(channel, String.format("Cleared %d tracks from the queue", queueSize), false))
                 .doOnSuccess(e -> logger.info("Cleared all tracks from queue in guild with id <{}>", guildId))
                 .doOnNext(responseDispatcher::queue)
@@ -161,7 +162,7 @@ public final class TrackEventListener extends AudioEventAdapter {
     }
 
     public void onPlaylistShuffle(){
-        Mono.justOrEmpty(guildChannel).ofType(MessageChannel.class)
+        Mono.justOrEmpty(messageChannel)
                 .map(channel -> new TextMessage(channel, "The queue has been shuffled!", false))
                 .doOnSuccess(e -> logger.info("Shuffled queue in guild with id <{}>", guildId))
                 .doOnNext(responseDispatcher::queue)
@@ -177,11 +178,7 @@ public final class TrackEventListener extends AudioEventAdapter {
         return null;
     }
 
-    public GuildChannel getGuildChannel() {
-        return guildChannel;
-    }
-
-    public void setGuildChannel(GuildChannel guildChannel) {
-        this.guildChannel = guildChannel;
+    public void setMessageChannel(MessageChannel messageChannel) {
+        this.messageChannel = messageChannel;
     }
 }
