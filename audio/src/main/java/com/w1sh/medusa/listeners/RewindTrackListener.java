@@ -3,6 +3,8 @@ package com.w1sh.medusa.listeners;
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.events.RewindTrackEvent;
 import discord4j.rest.util.Snowflake;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;
@@ -13,6 +15,8 @@ import java.util.TimeZone;
 
 @Component
 public final class RewindTrackListener implements EventListener<RewindTrackEvent> {
+
+    private static final Logger logger = LoggerFactory.getLogger(RewindTrackListener.class);
 
     private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
     private final AudioConnectionManager audioConnectionManager;
@@ -35,6 +39,8 @@ public final class RewindTrackListener implements EventListener<RewindTrackEvent
                 .handle(this::parseTime)
                 .zipWith(audioConnectionManager.getAudioConnection(guildId))
                 .doOnNext(tuple -> tuple.getT2().getTrackScheduler().rewind(tuple.getT1()))
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to rewind track to requested time <{}>",
+                        event.getArguments().get(0), throwable)))
                 .then();
     }
 
