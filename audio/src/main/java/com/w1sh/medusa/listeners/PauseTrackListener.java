@@ -2,7 +2,6 @@ package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.events.PauseTrackEvent;
-import discord4j.core.object.entity.channel.GuildChannel;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -24,11 +23,7 @@ public final class PauseTrackListener implements EventListener<PauseTrackEvent> 
     public Mono<Void> execute(PauseTrackEvent event) {
         return Mono.justOrEmpty(event.getGuildId())
                 .flatMap(audioConnectionManager::getAudioConnection)
-                .flatMap(audioConnection -> event.getMessage().getChannel()
-                        .doOnNext(messageChannel -> {
-                            audioConnection.getTrackScheduler().updateResponseChannel((GuildChannel) messageChannel);
-                            audioConnection.getTrackScheduler().pause();
-                        }))
+                .zipWith(event.getMessage().getChannel(), (con, mc) -> con.getTrackScheduler().pause(mc))
                 .then();
     }
 }

@@ -7,12 +7,14 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.w1sh.medusa.listeners.TrackEventListener;
 import discord4j.core.object.entity.channel.GuildChannel;
+import discord4j.core.object.entity.channel.MessageChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -24,8 +26,6 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     private final AudioPlayer player;
     private final TrackEventListener trackEventListener;
     private final BlockingDeque<AudioTrack> queue;
-
-    private AudioTrack playingTrack;
 
     TrackScheduler(final AudioPlayer player, final TrackEventListener trackEventListener) {
         this.player = player;
@@ -44,30 +44,33 @@ public final class TrackScheduler implements AudioLoadResultHandler {
         }
     }
     
-    public void shuffle(){
+    public Queue<AudioTrack> shuffle(MessageChannel channel){
+        updateResponseChannel((GuildChannel) channel);
         final var list = new ArrayList<>(queue);
         Collections.shuffle(list);
         queue.clear();
         queue.addAll(list);
+        trackEventListener.onPlaylistShuffle();
+        return queue;
     }
 
     public void replay(){
-        playingTrack.setPosition(Math.negateExact(playingTrack.getPosition()));
+        player.getPlayingTrack().setPosition(Math.negateExact(player.getPlayingTrack().getPosition()));
     }
 
     public void rewind(long milliseconds) {
-        if((playingTrack.getPosition() - milliseconds) < 0){
-            playingTrack.setPosition(0);
+        if((player.getPlayingTrack().getPosition() - milliseconds) < 0){
+            player.getPlayingTrack().setPosition(0);
         } else {
-            playingTrack.setPosition(playingTrack.getPosition() - milliseconds);
+            player.getPlayingTrack().setPosition(player.getPlayingTrack().getPosition() - milliseconds);
         }
     }
 
     public void forward(long milliseconds) {
-        if((playingTrack.getPosition() + milliseconds) >= playingTrack.getDuration()){
-            playingTrack.setPosition(0);
+        if((player.getPlayingTrack().getPosition() + milliseconds) >= player.getPlayingTrack().getDuration()){
+            player.getPlayingTrack().setPosition(0);
         } else {
-            playingTrack.setPosition(playingTrack.getPosition() + milliseconds);
+            player.getPlayingTrack().setPosition(player.getPlayingTrack().getPosition() + milliseconds);
         }
     }
 
@@ -96,18 +99,22 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     }
 
     private void next(boolean skip) {
-        Optional.ofNullable(this.queue.poll()).ifPresent(t -> {
-            playingTrack = t;
-            if(skip) skip();
-            player.playTrack(playingTrack);
-        });
+        AudioTrack nextTrack = this.queue.poll();
+
+        if (nextTrack != null) {
+            if (skip) {
+                trackEventListener.onTrackSkip(this.player.getPlayingTrack());
+                player.stopTrack();
+            }
+            player.playTrack(nextTrack);
+        }
     }
 
-    private void skip() {
-        trackEventListener.onTrackSkip(this.playingTrack);
-        player.stopTrack();
+    public AudioTrack skip(MessageChannel channel) {
+        updateResponseChannel((GuildChannel) channel);
+        next(true);
+        return player.getPlayingTrack();
     }
-
 
     public long getQueueDuration(){
         long duration = player.getPlayingTrack().getInfo().length;
@@ -123,21 +130,27 @@ public final class TrackScheduler implements AudioLoadResultHandler {
         queue.clear();
     }
 
-    public void clearQueue(){
+    public boolean clearQueue(MessageChannel channel){
+        updateResponseChannel((GuildChannel) channel);
         trackEventListener.onPlaylistClear(queue.size());
         queue.clear();
+        return true;
     }
 
     public void updateResponseChannel(GuildChannel guildChannel) {
         trackEventListener.setGuildChannel(guildChannel);
     }
 
-    public void pause(){
+    public boolean pause(MessageChannel channel){
+        updateResponseChannel((GuildChannel) channel);
         if(!player.isPaused()) player.setPaused(true);
+        return player.isPaused();
     }
 
-    public void resume(){
+    public boolean resume(MessageChannel channel){
+        updateResponseChannel((GuildChannel) channel);
         if(player.isPaused()) player.setPaused(false);
+        return !player.isPaused();
     }
 
     public BlockingDeque<AudioTrack> getQueue() {
@@ -152,17 +165,12 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     }
 
     public Optional<AudioTrack> getPlayingTrack() {
-        return Optional.ofNullable(playingTrack);
+        return Optional.ofNullable(player.getPlayingTrack());
     }
 
     public void destroy(){
-        playingTrack = null;
         player.stopTrack();
         queue.clear();
         player.destroy();
-    }
-
-    public AudioPlayer getPlayer() {
-        return player;
     }
 }
