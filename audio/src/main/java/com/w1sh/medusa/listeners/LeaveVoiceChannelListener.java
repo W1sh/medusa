@@ -4,11 +4,12 @@ import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.LeaveVoiceChannelEvent;
-import com.w1sh.medusa.utils.Reactive;
 import discord4j.core.object.entity.Member;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+
+import static com.w1sh.medusa.utils.Reactive.ifElse;
 
 @Component
 public final class LeaveVoiceChannelListener implements EventListener<LeaveVoiceChannelEvent> {
@@ -33,7 +34,7 @@ public final class LeaveVoiceChannelListener implements EventListener<LeaveVoice
     public Mono<Void> execute(LeaveVoiceChannelEvent event) {
         return Mono.justOrEmpty(event.getGuildId())
                 .flatMap(audioConnectionManager::leaveVoiceChannel)
-                .transform(Reactive.ifElse(b -> createLeaveSuccessMessage(event), b-> createNoVoiceStateErrorMessage(event)))
+                .transform(ifElse(b -> createLeaveSuccessMessage(event), b-> createNoVoiceStateErrorMessage(event)))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();

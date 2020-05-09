@@ -37,8 +37,7 @@ public final class ForwardTrackListener implements EventListener<ForwardTrackEve
 
         return Mono.justOrEmpty(event.getArguments().get(0))
                 .handle(this::parseTime)
-                .zipWith(audioConnectionManager.getAudioConnection(guildId))
-                .doOnNext(tuple -> tuple.getT2().getTrackScheduler().forward(tuple.getT1()))
+                .zipWith(audioConnectionManager.getAudioConnection(guildId), (time, ac) -> ac.getTrackScheduler().forward(time))
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to forward track to requested time <{}>",
                         event.getArguments().get(0), throwable)))
                 .then();

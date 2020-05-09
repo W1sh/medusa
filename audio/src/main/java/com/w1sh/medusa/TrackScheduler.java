@@ -57,20 +57,22 @@ public final class TrackScheduler implements AudioLoadResultHandler {
         player.getPlayingTrack().setPosition(Math.negateExact(player.getPlayingTrack().getPosition()));
     }
 
-    public void rewind(long milliseconds) {
+    public AudioTrack rewind(long milliseconds) {
         if((player.getPlayingTrack().getPosition() - milliseconds) < 0){
             player.getPlayingTrack().setPosition(0);
         } else {
             player.getPlayingTrack().setPosition(player.getPlayingTrack().getPosition() - milliseconds);
         }
+        return player.getPlayingTrack();
     }
 
-    public void forward(long milliseconds) {
+    public AudioTrack forward(long milliseconds) {
         if((player.getPlayingTrack().getPosition() + milliseconds) >= player.getPlayingTrack().getDuration()){
             player.getPlayingTrack().setPosition(0);
         } else {
             player.getPlayingTrack().setPosition(player.getPlayingTrack().getPosition() + milliseconds);
         }
+        return player.getPlayingTrack();
     }
 
     @Override

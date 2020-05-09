@@ -21,13 +21,7 @@ public class ResponseDispatcher {
         this.responseFlux = responseProcessor.publish().autoConnect();
     }
 
-    public void queue(TextMessage textMessage){
-        Mono.just(textMessage).subscribe(responseProcessor::onNext);
-    }
-
-    public void queue(Embed embed){
-        Mono.just(embed).subscribe(responseProcessor::onNext);
-    }
+    public void queue(Response response) { Mono.just(response).subscribe(responseProcessor::onNext); }
 
     public void flush(){
         responseFlux.filter(response -> !response.isFragment())

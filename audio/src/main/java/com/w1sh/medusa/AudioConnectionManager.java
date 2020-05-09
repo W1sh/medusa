@@ -28,6 +28,7 @@ import java.util.function.Predicate;
 @Component
 public final class AudioConnectionManager {
 
+    private static final Duration TIMEOUT = Duration.ofSeconds(120);
     private static final Logger logger = LoggerFactory.getLogger(AudioConnectionManager.class);
 
     private final AudioPlayerManager playerManager;
@@ -48,6 +49,7 @@ public final class AudioConnectionManager {
 
     public Mono<MessageChannel> requestTrack(Event event){
         Long guildId = event.getGuildId().map(Snowflake::asLong).orElse(0L);
+
         return Mono.justOrEmpty(event)
                 .map(ev -> ev.getArguments().get(0))
                 .zipWith(Mono.justOrEmpty(audioConnections.get(guildId))
@@ -74,7 +76,7 @@ public final class AudioConnectionManager {
                             .flatMap(tuple -> createAudioConnection(audioPlayer, tuple.getT1(), tuple.getT2()));
                 })
                 .doOnSuccess(audioConnection -> logger.info("Client joined voice channel in guild <{}>", event.getGuildId().map(Snowflake::asLong).orElse(0L)))
-                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to leave join channel", throwable)));
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to join voice channel", throwable)));
     }
 
     public Mono<Boolean> leaveVoiceChannel(Snowflake guildIdSnowflake) {
@@ -87,19 +89,19 @@ public final class AudioConnectionManager {
     }
 
     public Mono<AudioConnection> scheduleLeave(Event event) {
-        final Duration timeout = Duration.ofSeconds(120);
         return Mono.justOrEmpty(event.getGuildId())
                 .flatMap(this::getAudioConnection)
                 .filter(Predicate.not(AudioConnection::isLeaving))
-                .zipWhen(connection -> event.getMessage().getChannel())
-                .doOnNext(tuple -> {
-                    tuple.getT1().getTrackScheduler().stopQueue(tuple.getT2());
-                    tuple.getT1().setLeaving(true);
-                    logger.info("Scheduling client to leave voice channel in guild <{}> after <{}> seconds",
-                            ((GuildChannel) tuple.getT2()).getGuildId().asLong(), timeout.getSeconds());
-                    Schedulers.elastic().schedule(() -> leaveVoiceChannel(((GuildChannel) tuple.getT2()).getGuildId()).subscribe(), 120, TimeUnit.SECONDS);
-                })
-                .map(Tuple2::getT1);
+                .zipWhen(connection -> event.getMessage().getChannel(), this::scheduleLeave);
+    }
+
+    private AudioConnection scheduleLeave(AudioConnection audioConnection, MessageChannel messageChannel){
+        audioConnection.getTrackScheduler().stopQueue(messageChannel);
+        audioConnection.setLeaving(true);
+        logger.info("Scheduling client to leave voice channel in guild <{}> after <{}> seconds",
+                ((GuildChannel) messageChannel).getGuildId().asLong(), TIMEOUT.getSeconds());
+        Schedulers.elastic().schedule(() -> leaveVoiceChannel(((GuildChannel) messageChannel).getGuildId()).subscribe(), 120, TimeUnit.SECONDS);
+        return audioConnection;
     }
 
     public void shutdown(){
@@ -114,7 +116,6 @@ public final class AudioConnectionManager {
     }
 
     private Mono<AudioConnection> createAudioConnection(AudioPlayer player, VoiceConnection voiceConnection, MessageChannel channel){
-
         final Long guildId = ((GuildChannel) channel).getGuildId().asLong();
         final TrackEventListener trackEventListener = new TrackEventListener(this, channel, responseDispatcher);
 

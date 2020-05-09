@@ -5,9 +5,9 @@ import com.w1sh.medusa.data.events.Registered;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 
 @Registered(prefix = "stop")
-public final class StopTrackEvent extends Event {
+public final class StopQueueEvent extends Event {
 
-    public StopTrackEvent(MessageCreateEvent event) {
+    public StopQueueEvent(MessageCreateEvent event) {
         super(event);
     }
 
