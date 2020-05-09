@@ -96,11 +96,11 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     }
 
     private void next(boolean skip) {
-        Optional.ofNullable(this.queue.poll()).ifPresentOrElse(t -> {
+        Optional.ofNullable(this.queue.poll()).ifPresent(t -> {
             playingTrack = t;
             if(skip) skip();
             player.playTrack(playingTrack);
-        }, this::skip);
+        });
     }
 
     private void skip() {
