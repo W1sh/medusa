@@ -158,6 +158,12 @@ public final class TrackScheduler implements AudioLoadResultHandler {
         return fullQueue;
     }
 
+    public BlockingDeque<AudioTrack> printQueue(MessageChannel channel){
+        trackEventListener.setMessageChannel(channel);
+        trackEventListener.onPlaylistPrint(player.getPlayingTrack(), queue, getQueueDuration());
+        return queue;
+    }
+
     public BlockingDeque<AudioTrack> getQueue() {
         return queue;
     }
