@@ -1,52 +1,34 @@
 package com.w1sh.medusa;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.TrackEventListener;
-import discord4j.core.object.entity.channel.GuildChannel;
-import discord4j.core.object.entity.channel.MessageChannel;
-import discord4j.voice.VoiceConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
 
 public class AudioConnection {
 
-    private static final Logger logger = LoggerFactory.getLogger(AudioConnection.class);
-
-    private final SimpleAudioProvider audioProvider;
     private final TrackScheduler trackScheduler;
-    private final VoiceConnection voiceConnection;
-    private final MessageChannel messageChannel;
+    private final Mono<Void> disconnect;
+    private boolean leaving;
 
-    public AudioConnection(SimpleAudioProvider audioProvider, AudioPlayer player, VoiceConnection voiceConnection,
-                           GuildChannel messageChannel, ResponseDispatcher responseDispatcher) {
-        final TrackEventListener trackEventListener = new TrackEventListener(messageChannel.getGuildId().asLong(), responseDispatcher);
-        this.messageChannel = (MessageChannel) messageChannel;
-        this.voiceConnection = voiceConnection;
-        this.audioProvider = audioProvider;
-        this.trackScheduler = new TrackScheduler(player);
-        this.trackScheduler.getPlayer().addListener(trackEventListener);
+    public AudioConnection(AudioPlayer player, Mono<Void> disconnect, TrackEventListener trackEventListener) {
+        this.disconnect = disconnect;
+        this.trackScheduler = new TrackScheduler(player, trackEventListener);
     }
 
     public void destroy(){
-        logger.info("Destroying audio connection in guild <{}>", ((GuildChannel) messageChannel).getGuildId().asLong());
         this.trackScheduler.destroy();
-        this.voiceConnection.disconnect();
-    }
-
-    public MessageChannel getMessageChannel() {
-        return messageChannel;
+        this.disconnect.block();
     }
 
     public TrackScheduler getTrackScheduler() {
         return trackScheduler;
     }
 
-    public VoiceConnection getVoiceConnection() {
-        return voiceConnection;
+    public boolean isLeaving() {
+        return leaving;
     }
 
-    public SimpleAudioProvider getAudioProvider() {
-        return audioProvider;
+    public void setLeaving(boolean leaving) {
+        this.leaving = leaving;
     }
 }

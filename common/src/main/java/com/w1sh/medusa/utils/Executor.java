@@ -43,6 +43,7 @@ public final class Executor {
         logger.info("Sending points to all active members");
         gateway.getGuilds()
                 .flatMap(Guild::getMembers)
+                .distinct()
                 .filterWhen(this::isEligibleForRewards)
                 .flatMap(userService::distributePoints)
                 .subscribe();

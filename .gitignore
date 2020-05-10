@@ -32,3 +32,4 @@ logs/
 application.properties
 config.properties
 persistence.xml
+sql/

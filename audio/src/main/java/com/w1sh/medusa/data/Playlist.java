@@ -13,11 +13,13 @@ public final class Playlist {
     private String name;
     private Long user;
     private List<Track> tracks;
+    private Audit audit;
 
     public Playlist(Long user, String name, List<Track> tracks) {
         this.name = name;
         this.user = user;
         this.tracks = tracks;
+        this.audit = new Audit();
     }
 
     public String getId() {
@@ -52,10 +54,17 @@ public final class Playlist {
         this.tracks = tracks;
     }
 
+    public Audit getAudit() {
+        return audit;
+    }
+
+    public void setAudit(Audit audit) {
+        this.audit = audit;
+    }
+
     public Long getFullDuration(){
         return tracks.stream()
                 .map(Track::getDuration)
                 .reduce(Long::sum).orElse(0L);
     }
-
 }

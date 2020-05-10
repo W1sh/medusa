@@ -39,13 +39,17 @@ public class UserService {
 
     public Mono<User> save(User user){
         return userRepository.save(user)
+                .onErrorResume(throwable -> {
+                    logger.error("Failed to save user with id \"{}\"", user.getId(), throwable);
+                    return Mono.empty();
+                })
                 .doOnNext(u -> usersCache.put(u.getUserId(), u));
     }
 
     public Mono<User> findByUserId(Long userId) {
         return CacheMono.lookup(key -> Mono.justOrEmpty(usersCache.getIfPresent(key))
                 .map(Signal::next), userId)
-                .onCacheMissResume(() -> userRepository.findByUserId(String.valueOf(userId))
+                .onCacheMissResume(() -> userRepository.findByUserId(userId)
                         .defaultIfEmpty(new User(userId))
                         .subscribeOn(Schedulers.elastic()))
                 .andWriteWith((key, signal) -> Mono.fromRunnable(

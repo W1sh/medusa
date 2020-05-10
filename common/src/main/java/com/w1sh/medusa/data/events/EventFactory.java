@@ -35,7 +35,7 @@ public final class EventFactory {
     }
 
     public Mono<Event> extractEvents(final MessageCreateEvent event){
-        final String message = event.getMessage().getContent().orElse("");
+        final String message = event.getMessage().getContent();
 
         if (message.startsWith(prefix)){
             final String eventKeyword = message.split(ARGUMENT_DELIMITER)[0].substring(1);
@@ -65,7 +65,10 @@ public final class EventFactory {
                 inlineEvents.add(inlineEvent);
             }
         }
-        if(inlineEvents.size() > 1){
+        if (inlineEvents.size() == 1) {
+            return inlineEvents.get(0);
+        }
+        if (inlineEvents.size() > 1) {
             final MultipleInlineEvent multipleInlineEvent = (MultipleInlineEvent) createInstance("multiple", event);
             if (multipleInlineEvent != null) {
                 inlineEvents.forEach(e -> e.setFragment(true));
@@ -73,12 +76,11 @@ public final class EventFactory {
                 return multipleInlineEvent;
             }
         }
-
-        return inlineEvents.get(0);
+        return null;
     }
 
     private Event extractArguments(final Event event){
-        final String[] content = event.getMessage().getContent().orElse("").split(ARGUMENT_DELIMITER);
+        final String[] content = event.getMessage().getContent().split(ARGUMENT_DELIMITER);
         final List<String> argumentsList = Arrays.asList(content).subList(1, content.length);
         Map<Integer, String> arguments = IntStream.range(0, argumentsList.size())
                 .boxed()
@@ -100,6 +102,10 @@ public final class EventFactory {
     }
 
     public void registerEvent(final String keyword, final Class<? extends Event> clazz){
+        if(events.containsKey(keyword)){
+            logger.error("Failed to register event! Event with keyword <{}> is already registered!", keyword);
+            return;
+        }
         events.put(keyword, clazz);
     }
 

@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import static com.w1sh.medusa.utils.Reactive.ifElse;
+import static com.w1sh.medusa.utils.Reactive.isEmpty;
 
 @Component
 public final class ArgumentValidator implements Validator {
@@ -34,21 +34,11 @@ public final class ArgumentValidator implements Validator {
     private Mono<TextMessage> createErrorMessage(Event event){
         return event.getMessage().getChannel()
                 .map(channel -> new TextMessage(channel,
-                        ":x: Invalid number of arguments, expected " + event.getMinArguments() + " arguments",
-                        false))
+                        ":x: Invalid number of arguments, expected " + event.getMinArguments() + " arguments", false))
                 .doOnNext(textMessage -> {
                     logger.error("Invalid number of arguments received, event discarded");
                     responseDispatcher.queue(textMessage);
                 })
                 .doAfterTerminate(responseDispatcher::flush);
-    }
-
-    public <A> Function<Mono<Boolean>, Mono<A>> ifElse(Function<Boolean, Mono<A>> ifTransformer,
-                                                       Function<Boolean, Mono<A>> elseTransformer) {
-        return pipeline -> pipeline.flatMap(bool -> Boolean.TRUE.equals(bool) ? ifTransformer.apply(true) : elseTransformer.apply(false));
-    }
-
-    public <A> Function<Mono<A>, Mono<Boolean>> isEmpty() {
-        return pipeline -> pipeline.hasElement().map(bool -> !bool);
     }
 }

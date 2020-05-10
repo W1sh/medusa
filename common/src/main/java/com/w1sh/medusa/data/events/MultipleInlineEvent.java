@@ -7,8 +7,6 @@ import java.util.List;
 @Registered(prefix = "multiple")
 public final class MultipleInlineEvent extends Event {
 
-    public static final String KEYWORD = "multiple";
-
     private List<InlineEvent> events;
 
     public MultipleInlineEvent(MessageCreateEvent event) {

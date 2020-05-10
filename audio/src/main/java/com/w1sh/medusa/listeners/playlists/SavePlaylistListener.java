@@ -25,10 +25,12 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
 
     private final PlaylistService playlistService;
     private final ResponseDispatcher responseDispatcher;
+    private final AudioConnectionManager audioConnectionManager;
 
-    public SavePlaylistListener(ResponseDispatcher responseDispatcher, PlaylistService playlistService) {
+    public SavePlaylistListener(ResponseDispatcher responseDispatcher, PlaylistService playlistService, AudioConnectionManager audioConnectionManager) {
         this.responseDispatcher = responseDispatcher;
         this.playlistService = playlistService;
+        this.audioConnectionManager = audioConnectionManager;
     }
 
     @Override
@@ -38,9 +40,8 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
 
     @Override
     public Mono<Void> execute(SavePlaylistEvent event) {
-
         return Mono.justOrEmpty(event.getGuildId())
-                .flatMap(AudioConnectionManager.getInstance()::getAudioConnection)
+                .flatMap(audioConnectionManager::getAudioConnection)
                 .map(AudioConnection::getTrackScheduler)
                 .flatMapIterable(TrackScheduler::getFullQueue)
                 .map(at -> new Track(at.getInfo().author, at.getInfo().title, at.getInfo().uri, at.getInfo().length))
@@ -58,7 +59,6 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
     private Playlist createPlaylist(SavePlaylistEvent event, List<Track> tracks){
         Long userId = event.getMember().map(member -> member.getId().asLong()).orElseThrow();
         String name = event.getArguments().getOrDefault(0, "Playlist");
-
         return new Playlist(userId, name, tracks);
     }
 

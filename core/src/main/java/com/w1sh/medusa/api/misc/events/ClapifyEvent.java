@@ -7,8 +7,6 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 @Registered(prefix = "clapify")
 public final class ClapifyEvent extends Event {
 
-    public static final String KEYWORD = "clapify";
-
     public ClapifyEvent(MessageCreateEvent event) {
         super(event, 1);
     }

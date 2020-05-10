@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.awt.*;
+import java.util.Optional;
 
 @Component
 public final class LoadPlaylistListener implements EventListener<LoadPlaylistEvent> {
@@ -23,10 +24,12 @@ public final class LoadPlaylistListener implements EventListener<LoadPlaylistEve
 
     private final PlaylistService playlistService;
     private final ResponseDispatcher responseDispatcher;
+    private final AudioConnectionManager audioConnectionManager;
 
-    public LoadPlaylistListener(PlaylistService playlistService, ResponseDispatcher responseDispatcher) {
+    public LoadPlaylistListener(PlaylistService playlistService, ResponseDispatcher responseDispatcher, AudioConnectionManager audioConnectionManager) {
         this.playlistService = playlistService;
         this.responseDispatcher = responseDispatcher;
+        this.audioConnectionManager = audioConnectionManager;
     }
 
     @Override
@@ -36,15 +39,16 @@ public final class LoadPlaylistListener implements EventListener<LoadPlaylistEve
 
     @Override
     public Mono<Void> execute(LoadPlaylistEvent event) {
+        Integer playlistId = Optional.of(event.getMessage().getContent()).map(c -> Integer.parseInt(c.split(" ")[1])).orElse(1);
         return Mono.justOrEmpty(event.getMember())
                 .map(member -> member.getId().asLong())
                 .flatMapMany(playlistService::findAllByUserId)
-                .take(event.getMessage().getContent().map(c -> Integer.parseInt(c.split(" ")[1])).orElse(1))
+                .take(playlistId)
                 .last()
                 .flatMapIterable(Playlist::getTracks)
                 .flatMap(track -> event.getGuild()
                         .map(guild -> guild.getId().asLong())
-                        .flatMap(id -> AudioConnectionManager.getInstance().requestTrack(id, track.getUri())))
+                        .flatMap(id -> audioConnectionManager.requestTrack(id, track.getUri())))
                 .last()
                 .flatMap(trackScheduler -> createEmbed(trackScheduler, event))
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to load playlist", throwable)))

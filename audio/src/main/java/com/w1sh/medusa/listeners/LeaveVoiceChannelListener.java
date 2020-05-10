@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import static com.w1sh.medusa.utils.Reactive.ifElse;
+
 @Component
 public final class LeaveVoiceChannelListener implements EventListener<LeaveVoiceChannelEvent> {
 
@@ -16,9 +18,11 @@ public final class LeaveVoiceChannelListener implements EventListener<LeaveVoice
     private String voiceLeave;
 
     private final ResponseDispatcher responseDispatcher;
+    private final AudioConnectionManager audioConnectionManager;
 
-    public LeaveVoiceChannelListener(ResponseDispatcher responseDispatcher) {
+    public LeaveVoiceChannelListener(ResponseDispatcher responseDispatcher, AudioConnectionManager audioConnectionManager) {
         this.responseDispatcher = responseDispatcher;
+        this.audioConnectionManager = audioConnectionManager;
     }
 
     @Override
@@ -29,12 +33,8 @@ public final class LeaveVoiceChannelListener implements EventListener<LeaveVoice
     @Override
     public Mono<Void> execute(LeaveVoiceChannelEvent event) {
         return Mono.justOrEmpty(event.getGuildId())
-                .flatMap(AudioConnectionManager.getInstance()::leaveVoiceChannel)
-                .flatMap(bool -> {
-                    if (Boolean.TRUE.equals(bool)) {
-                        return createLeaveSuccessMessage(event);
-                    } else return createNoVoiceStateErrorMessage(event);
-                })
+                .flatMap(audioConnectionManager::leaveVoiceChannel)
+                .transform(ifElse(b -> createLeaveSuccessMessage(event), b-> createNoVoiceStateErrorMessage(event)))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
@@ -42,9 +42,8 @@ public final class LeaveVoiceChannelListener implements EventListener<LeaveVoice
 
     private Mono<TextMessage> createNoVoiceStateErrorMessage(LeaveVoiceChannelEvent event){
         return event.getMessage().getChannel()
-                .zipWith(Mono.justOrEmpty(event.getMember().flatMap(Member::getNickname)))
-                .map(tuple -> new TextMessage(tuple.getT1(), String.format("**%s**, I'm not in a voice channel",
-                        tuple.getT2()), false));
+                .map(chan -> new TextMessage(chan, String.format("**%s**, I'm not in a voice channel",
+                        event.getMember().flatMap(Member::getNickname).orElse("You")), false));
     }
 
     private Mono<TextMessage> createLeaveSuccessMessage(LeaveVoiceChannelEvent event){

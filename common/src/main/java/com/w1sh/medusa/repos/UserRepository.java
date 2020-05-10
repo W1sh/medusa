@@ -8,5 +8,5 @@ import reactor.core.publisher.Mono;
 public interface UserRepository extends ReactiveCrudRepository<User, Long> {
 
     @Query(value = "SELECT * FROM core.users WHERE user_id = :userId")
-    Mono<User> findByUserId(String userId);
+    Mono<User> findByUserId(Long userId);
 }

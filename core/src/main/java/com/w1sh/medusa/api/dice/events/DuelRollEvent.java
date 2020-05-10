@@ -7,7 +7,6 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 @Registered(prefix = "duelroll")
 public final class DuelRollEvent extends Event {
 
-    public static final String KEYWORD = "duelroll";
     private static final Integer NUM_ALLOWED_ARGS = 2;
 
     public DuelRollEvent(MessageCreateEvent event) {
