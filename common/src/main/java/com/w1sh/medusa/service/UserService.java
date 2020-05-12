@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.cache.CacheMono;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Signal;
 import reactor.core.scheduler.Schedulers;
@@ -66,6 +67,11 @@ public class UserService {
                 .doOnNext(user -> user.setPoints(user.getPoints() + Integer.parseInt(rewardAmount)))
                 .flatMap(this::save)
                 .then();
+    }
+
+    public Flux<User> findTop5Points(){
+        return userRepository.findAllOrderByPoints().
+                take(5);
     }
 
 }
