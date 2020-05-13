@@ -1,6 +1,6 @@
 package com.w1sh.medusa.configurations;
 
-import converters.UserConverter;
+import com.w1sh.medusa.converters.UserConverter;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;

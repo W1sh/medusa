@@ -5,7 +5,7 @@ import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
-import com.w1sh.medusa.service.UserService;
+import com.w1sh.medusa.services.UserService;
 import discord4j.core.object.entity.Member;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;

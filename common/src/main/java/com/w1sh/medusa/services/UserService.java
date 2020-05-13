@@ -1,4 +1,4 @@
-package com.w1sh.medusa.service;
+package com.w1sh.medusa.services;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;

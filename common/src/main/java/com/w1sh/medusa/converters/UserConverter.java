@@ -1,4 +1,4 @@
-package converters;
+package com.w1sh.medusa.converters;
 
 import com.w1sh.medusa.data.Audit;
 import com.w1sh.medusa.data.User;

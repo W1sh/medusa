@@ -5,9 +5,12 @@ import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
-import com.w1sh.medusa.service.UserService;
+import com.w1sh.medusa.services.UserService;
+import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.channel.MessageChannel;
+import discord4j.rest.util.Snowflake;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -32,20 +35,27 @@ public final class PointsBoardEventListener implements EventListener<PointsBoard
     public Mono<Void> execute(PointsBoardEvent event) {
         return userService.findTop5Points()
                 .collectList()
+                .zipWith(event.getGuild(), this::buildBoard)
+                .flatMap(Flux::collectList)
                 .zipWith(event.getMessage().getChannel(), this::listUsers)
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
     }
 
-    private TextMessage listUsers(List<User> users, MessageChannel channel){
+    private TextMessage listUsers(List<String> usersList, MessageChannel channel){
         StringBuilder stringBuilder = new StringBuilder();
-        for(User u : users){
-            stringBuilder.append(u.getId());
-            stringBuilder.append(" - ");
-            stringBuilder.append(u.getPoints());
+        for(String u : usersList){
+            stringBuilder.append(u);
             stringBuilder.append(System.lineSeparator());
         }
         return new TextMessage(channel, stringBuilder.toString(), false);
+    }
+
+    private Flux<String> buildBoard(List<User> users, Guild guild){
+        return Flux.fromIterable(users)
+                .flatMap(user -> guild.getMemberById(Snowflake.of(user.getUserId()))
+                        .map(member -> String.format("%s - %d", member.getDisplayName(), user.getPoints()))
+                        .onErrorResume(throwable -> Mono.empty()));
     }
 }

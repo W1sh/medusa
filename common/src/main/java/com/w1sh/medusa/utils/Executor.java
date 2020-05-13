@@ -1,6 +1,6 @@
 package com.w1sh.medusa.utils;
 
-import com.w1sh.medusa.service.UserService;
+import com.w1sh.medusa.services.UserService;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
