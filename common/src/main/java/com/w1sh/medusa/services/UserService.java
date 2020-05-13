@@ -4,7 +4,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.repos.UserRepository;
-import discord4j.core.object.entity.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,9 +61,9 @@ public class UserService {
                 });
     }
 
-    public Mono<Void> distributePoints(Member member) {
-        return findByUserId(member.getId().asLong())
-                .doOnNext(user -> user.setPoints(user.getPoints() + Integer.parseInt(rewardAmount)))
+    public Mono<Void> distributePoints(User user) {
+        return findByUserId(user.getUserId())
+                .doOnNext(u -> u.setPoints(u.getPoints() + Integer.parseInt(rewardAmount)))
                 .flatMap(this::save)
                 .then();
     }

@@ -1,5 +1,7 @@
 package com.w1sh.medusa.utils;
 
+import com.w1sh.medusa.data.User;
+import com.w1sh.medusa.mappers.Member2UserMapper;
 import com.w1sh.medusa.services.UserService;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.Guild;
@@ -21,6 +23,7 @@ public final class Executor {
     private static final Logger logger = LoggerFactory.getLogger(Executor.class);
 
     private final UserService userService;
+    private final Member2UserMapper member2UserMapper;
 
     @Value("${points.reward.delay}")
     private String rewardDelay;
@@ -28,8 +31,9 @@ public final class Executor {
     @Value("${points.reward.period}")
     private String rewardPeriod;
 
-    public Executor(UserService userService) {
+    public Executor(UserService userService, Member2UserMapper member2UserMapper) {
         this.userService = userService;
+        this.member2UserMapper = member2UserMapper;
     }
 
     public void startPointDistribution(GatewayDiscordClient gateway) {
@@ -45,6 +49,7 @@ public final class Executor {
                 .flatMap(Guild::getMembers)
                 .distinct()
                 .filterWhen(this::isEligibleForRewards)
+                .map(member -> member2UserMapper.map(member, new User()))
                 .flatMap(userService::distributePoints)
                 .subscribe();
     }
