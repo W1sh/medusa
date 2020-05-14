@@ -9,6 +9,7 @@ import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.playlists.SavePlaylistEvent;
 import com.w1sh.medusa.listeners.EventListener;
+import com.w1sh.medusa.mappers.AudioTrack2TrackMapper;
 import com.w1sh.medusa.services.PlaylistService;
 import discord4j.core.object.entity.Member;
 import org.slf4j.Logger;
@@ -26,11 +27,14 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
     private final PlaylistService playlistService;
     private final ResponseDispatcher responseDispatcher;
     private final AudioConnectionManager audioConnectionManager;
+    private final AudioTrack2TrackMapper audioTrack2TrackMapper;
 
-    public SavePlaylistListener(ResponseDispatcher responseDispatcher, PlaylistService playlistService, AudioConnectionManager audioConnectionManager) {
+    public SavePlaylistListener(ResponseDispatcher responseDispatcher, PlaylistService playlistService,
+                                AudioConnectionManager audioConnectionManager, AudioTrack2TrackMapper audioTrack2TrackMapper) {
         this.responseDispatcher = responseDispatcher;
         this.playlistService = playlistService;
         this.audioConnectionManager = audioConnectionManager;
+        this.audioTrack2TrackMapper = audioTrack2TrackMapper;
     }
 
     @Override
@@ -44,7 +48,7 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
                 .flatMap(audioConnectionManager::getAudioConnection)
                 .map(AudioConnection::getTrackScheduler)
                 .flatMapIterable(TrackScheduler::getFullQueue)
-                .map(at -> new Track(at.getInfo().author, at.getInfo().title, at.getInfo().uri, at.getInfo().length))
+                .map(audioTrack2TrackMapper::map)
                 .collectList()
                 .map(tracks -> createPlaylist(event, tracks))
                 .flatMap(playlistService::save)

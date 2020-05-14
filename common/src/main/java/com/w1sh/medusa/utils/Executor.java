@@ -49,7 +49,7 @@ public final class Executor {
                 .flatMap(Guild::getMembers)
                 .distinct()
                 .filterWhen(this::isEligibleForRewards)
-                .map(member -> member2UserMapper.map(member, new User()))
+                .map(member2UserMapper::map)
                 .flatMap(userService::distributePoints)
                 .subscribe();
     }

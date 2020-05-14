@@ -8,6 +8,11 @@ import org.springframework.stereotype.Component;
 public class Member2UserMapper implements Mapper<Member, User> {
 
     @Override
+    public User map(Member source) {
+        return map(source, new User());
+    }
+
+    @Override
     public User map(Member source, User destination) {
         destination.setUserId(source.getGuildId().asLong());
         return destination;

@@ -13,13 +13,6 @@ public final class Track {
     private String uri;
     private Long duration;
 
-    public Track(String author, String title, String uri, Long duration) {
-        this.author = author;
-        this.title = title;
-        this.uri = uri;
-        this.duration = duration;
-    }
-
     public String getId() {
         return id;
     }
