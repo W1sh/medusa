@@ -13,7 +13,7 @@ public class Audit {
     private LocalDateTime updatedOn;
 
     public LocalDateTime getCreatedOn() {
-        return createdOn;
+        return createdOn != null ? createdOn : LocalDateTime.now();
     }
 
     public void setCreatedOn(LocalDateTime createdOn) {

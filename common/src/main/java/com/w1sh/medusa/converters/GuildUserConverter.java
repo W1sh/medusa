@@ -26,7 +26,7 @@ public class GuildUserConverter {
         public GuildUser convert(Row source) {
             GuildUser user = new GuildUser();
             user.setId(source.get("id", Integer.class));
-            user.setUser(source.get("user", User.class));
+            user.setUser(source.get("fk_user", User.class));
             user.setPoints(source.get("points", Long.class));
 
             Audit audit = new Audit();
@@ -50,11 +50,11 @@ public class GuildUserConverter {
         public OutboundRow convert(GuildUser source) {
             OutboundRow row = new OutboundRow();
             row.put("id", SettableValue.fromOrEmpty(source.getId(), Integer.class));
-            row.put("user", SettableValue.from(source.getUser().getId()));
+            row.put("fk_user", SettableValue.from(source.getUser().getId()));
             row.put("guild_id", SettableValue.from(source.getGuildId()));
             row.put("points", SettableValue.from(source.getPoints()));
-            row.put("created_on", SettableValue.fromOrEmpty(source.getAudit().getCreatedOn(), LocalDateTime.class));
-            row.put("updated_on", SettableValue.fromOrEmpty(source.getAudit().getUpdatedOn(), LocalDateTime.class));
+            row.put("created_on", SettableValue.from(source.getAudit().getCreatedOn()));
+            row.put("updated_on", SettableValue.from(LocalDateTime.now()));
             return row;
         }
     }

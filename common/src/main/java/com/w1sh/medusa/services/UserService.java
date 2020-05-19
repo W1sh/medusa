@@ -6,7 +6,6 @@ import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.repos.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.cache.CacheMono;
 import reactor.core.publisher.Mono;
@@ -28,7 +27,7 @@ public class UserService {
         this.userRepository = userRepository;
         this.usersCache = Caffeine.newBuilder()
                 .maximumSize(10000)
-                .expireAfterAccess(Duration.ofHours(1))
+                .expireAfterAccess(Duration.ofHours(12))
                 .recordStats()
                 .build();
     }

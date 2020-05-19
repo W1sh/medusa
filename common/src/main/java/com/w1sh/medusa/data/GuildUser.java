@@ -11,6 +11,7 @@ public class GuildUser {
     @Id
     private Integer id;
 
+    @Column(value = "fk_user")
     private User user;
 
     @Column(value = "guild_id")
@@ -21,11 +22,7 @@ public class GuildUser {
     @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY)
     private Audit audit;
 
-    public GuildUser() { }
-
-    public GuildUser(User user, String guildId) {
-        this.user = user;
-        this.guildId = guildId;
+    public GuildUser() {
         this.audit = new Audit();
     }
 
@@ -54,7 +51,7 @@ public class GuildUser {
     }
 
     public Long getPoints() {
-        return points;
+        return points != null ? points : 0;
     }
 
     public void setPoints(Long points) {

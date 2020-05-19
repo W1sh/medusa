@@ -3,7 +3,6 @@ package com.w1sh.medusa.services;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.w1sh.medusa.data.GuildUser;
-import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.repos.GuildUserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,35 +34,39 @@ public class GuildUserService {
         this.userService = userService;
         this.guildUsersCache = Caffeine.newBuilder()
                 .maximumSize(10000)
-                .expireAfterAccess(Duration.ofHours(1))
+                .expireAfterAccess(Duration.ofHours(12))
                 .recordStats()
                 .build();
     }
 
-    public Mono<GuildUser> save(GuildUser user){
-        return repository.save(user)
+    public Mono<GuildUser> save(GuildUser guildUser){
+        return  Mono.just(guildUser)
+                .filter(gu -> gu.getUser().getId() != null)
+                .switchIfEmpty(replaceUser(guildUser))
+                .flatMap(repository::save)
                 .onErrorResume(throwable -> {
-                    logger.error("Failed to save user with id \"{}\"", user.getId(), throwable);
+                    logger.error("Failed to save guild user with id \"{}\"", guildUser.getId(), throwable);
                     return Mono.empty();
                 })
                 .doOnNext(this::saveInCache);
     }
 
     public Mono<GuildUser> findByUserIdAndGuildId(String userId, String guildId) {
-        Mono<User> user = userService.findByUserId(userId);
-
         return CacheFlux.lookup(guildUsersCache.asMap(), guildId, GuildUser.class)
                 .onCacheMissResume(() -> repository.findByGuildId(guildId))
                 .collectList()
                 .doOnNext(list -> guildUsersCache.put(guildId, list))
                 .flatMapIterable(Function.identity())
-                .filterWhen(guildUser -> Mono.just(guildId)
-                        .zipWith(user, ((s, u) -> guildUser.getGuildId().equals(s) && guildUser.getUser().getId().equals(u.getId()))))
+                .filterWhen(guildUser -> userService.findByUserId(userId)
+                        .filter(user -> guildUser.getUser().getUserId().equals(user.getUserId()))
+                        .doOnNext(guildUser::setUser)
+                        .hasElement())
                 .next();
     }
 
     public Mono<Void> distributePoints(GuildUser user) {
         return findByUserIdAndGuildId(user.getUser().getUserId(), user.getGuildId())
+                .defaultIfEmpty(user)
                 .doOnNext(u -> u.setPoints(u.getPoints() + Integer.parseInt(rewardAmount)))
                 .flatMap(this::save)
                 .then();
@@ -85,5 +88,11 @@ public class GuildUserService {
             guildUsers.add(user);
             guildUsersCache.put(user.getGuildId(), guildUsers);
         }
+    }
+
+    private Mono<GuildUser> replaceUser(GuildUser guildUser) {
+        return userService.findByUserId(guildUser.getUser().getUserId())
+                .doOnNext(guildUser::setUser)
+                .then(Mono.just(guildUser));
     }
 }
