@@ -11,7 +11,6 @@ import org.springframework.data.r2dbc.mapping.OutboundRow;
 import org.springframework.data.r2dbc.mapping.SettableValue;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 public class GuildUserConverter {
 
@@ -20,27 +19,24 @@ public class GuildUserConverter {
     @ReadingConverter
     public static class GuildUserReadConverter implements Converter<Row, GuildUser> {
 
-        private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
         @Override
         public GuildUser convert(Row source) {
-            GuildUser user = new GuildUser();
-            user.setId(source.get("id", Integer.class));
-            user.setUser(source.get("fk_user", User.class));
-            user.setPoints(source.get("points", Long.class));
+            GuildUser guildUser = new GuildUser();
+            guildUser.setId(source.get("id", Integer.class));
+
+            User user = new User();
+            user.setId(source.get("fk_user", Integer.class));
+            guildUser.setUser(user);
+
+            guildUser.setGuildId(source.get("guild_id", String.class));
+            guildUser.setPoints(source.get("points", Long.class));
 
             Audit audit = new Audit();
+            audit.setCreatedOn(source.get("created_on", LocalDateTime.class));
+            audit.setUpdatedOn(source.get("updated_on", LocalDateTime.class));
+            guildUser.setAudit(audit);
 
-            String inboundCreatedOn = source.get("created_on", String.class);
-            LocalDateTime createdOn = inboundCreatedOn != null ? LocalDateTime.parse(inboundCreatedOn, FORMATTER) : null;
-            audit.setCreatedOn(createdOn);
-
-            String inboundUpdatedOn = source.get("updated_on", String.class);
-            LocalDateTime updatedOn = inboundUpdatedOn != null ? LocalDateTime.parse(inboundUpdatedOn, FORMATTER) : null;
-            audit.setUpdatedOn(updatedOn);
-
-            user.setAudit(audit);
-            return user;
+            return guildUser;
         }
     }
 
