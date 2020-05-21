@@ -33,7 +33,9 @@ public final class PointsBoardEventListener implements EventListener<PointsBoard
 
     @Override
     public Mono<Void> execute(PointsBoardEvent event) {
-        return guildUserService.findTop5Points()
+        String guildId = event.getGuildId().map(Snowflake::asString).orElse("");
+
+        return guildUserService.findTop5PointsInGuild(guildId)
                 .collectList()
                 .zipWith(event.getGuild(), this::buildBoard)
                 .flatMap(Flux::collectList)

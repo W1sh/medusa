@@ -41,6 +41,11 @@ public class UserService {
                 .doOnNext(u -> usersCache.put(u.getUserId(), u));
     }
 
+    public Mono<User> findById(Integer id) {
+        return userRepository.findById(id)
+                .doOnNext(user -> usersCache.put(user.getUserId(), user));
+    }
+
     public Mono<User> findByUserId(String userId) {
         return CacheMono.lookup(key -> Mono.justOrEmpty(usersCache.getIfPresent(key))
                 .map(Signal::next), userId)

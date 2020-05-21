@@ -86,9 +86,20 @@ public class GuildUserService {
                 .then();
     }
 
-    public Flux<GuildUser> findTop5Points(){
-        return repository.findAllOrderByPoints().
-                take(5);
+    public Flux<GuildUser> findTop5PointsInGuild(String guildId){
+        return repository.findAllByGuildIdOrderByPoints(guildId)
+                .flatMap(guildUser -> {
+                    if(guildUser.getUser().getUserId() == null){
+                        return userService.findById(guildUser.getUser().getId())
+                                .doOnNext(guildUser::setUser)
+                                .then(Mono.just(guildUser));
+                    }
+                    return Mono.just(guildUser);
+                })
+                .collectList()
+                .doOnNext(list -> guildUsersCache.put(guildId, list))
+                .flatMapIterable(Function.identity())
+                .take(5);
     }
 
     private void saveInCache(GuildUser user) {
