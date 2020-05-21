@@ -48,9 +48,7 @@ public class GuildUserService {
     }
 
     public Mono<GuildUser> save(GuildUser guildUser){
-        return  Mono.just(guildUser)
-                .filter(gu -> gu.getUser().getId() != null)
-                .switchIfEmpty(replaceUser(guildUser))
+        return fetchUserByUserId(guildUser)
                 .flatMap(repository::save)
                 .onErrorResume(throwable -> {
                     logger.error("Failed to save guild user with id \"{}\"", guildUser.getId(), throwable);
@@ -88,14 +86,7 @@ public class GuildUserService {
 
     public Flux<GuildUser> findTop5PointsInGuild(String guildId){
         return repository.findAllByGuildIdOrderByPoints(guildId)
-                .flatMap(guildUser -> {
-                    if(guildUser.getUser().getUserId() == null){
-                        return userService.findById(guildUser.getUser().getId())
-                                .doOnNext(guildUser::setUser)
-                                .then(Mono.just(guildUser));
-                    }
-                    return Mono.just(guildUser);
-                })
+                .flatMap(this::fetchUserById)
                 .collectList()
                 .doOnNext(list -> guildUsersCache.put(guildId, list))
                 .flatMapIterable(Function.identity())
@@ -115,7 +106,15 @@ public class GuildUserService {
         }
     }
 
-    private Mono<GuildUser> replaceUser(GuildUser guildUser) {
+    private Mono<GuildUser> fetchUserById(GuildUser guildUser){
+        if(guildUser.getUser().getUserId() != null) return Mono.just(guildUser);
+        return userService.findById(guildUser.getUser().getId())
+                .doOnNext(guildUser::setUser)
+                .then(Mono.just(guildUser));
+    }
+
+    private Mono<GuildUser> fetchUserByUserId(GuildUser guildUser) {
+        if(guildUser.getUser().getId() != null) return Mono.just(guildUser);
         return userService.findByUserId(guildUser.getUser().getUserId())
                 .doOnNext(guildUser::setUser)
                 .then(Mono.just(guildUser));
