@@ -1,6 +1,6 @@
 package com.w1sh.medusa.utils;
 
-import com.w1sh.medusa.services.GuildUserService;
+import com.w1sh.medusa.services.PointDistributionService;
 import discord4j.core.GatewayDiscordClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +15,7 @@ public final class Executor {
 
     private static final Logger logger = LoggerFactory.getLogger(Executor.class);
 
-    private final GuildUserService guildUserService;
+    private final PointDistributionService pointDistributionService;
 
     @Value("${points.reward.delay}")
     private String rewardDelay;
@@ -23,8 +23,8 @@ public final class Executor {
     @Value("${points.reward.period}")
     private String rewardPeriod;
 
-    public Executor(GuildUserService guildUserService) {
-        this.guildUserService = guildUserService;
+    public Executor(PointDistributionService pointDistributionService) {
+        this.pointDistributionService = pointDistributionService;
     }
 
     public void startPointDistribution(GatewayDiscordClient gateway) {
@@ -38,7 +38,8 @@ public final class Executor {
         logger.info("Sending points to all active members");
 
         gateway.getGuilds()
-                .flatMap(guildUserService::distributePointsInGuild)
+                .collectList()
+                .flatMap(pointDistributionService::distribute)
                 .doAfterTerminate(() -> logger.info("Finished point distribution"))
                 .subscribeOn(Schedulers.elastic())
                 .subscribe();

@@ -23,7 +23,6 @@ public class PointDistributionConverter {
             pointDistribution.setId(source.get("id", Integer.class));
             pointDistribution.setTotalGuilds(source.get("total_guilds", Integer.class));
             pointDistribution.setPointsDistributed(source.get("points_distributed", Long.class));
-            pointDistribution.setTimeElapsed(source.get("time_elapsed", Long.class));
             pointDistribution.setCreatedOn(source.get("created_on", LocalDateTime.class));
             return pointDistribution;
         }
@@ -37,7 +36,6 @@ public class PointDistributionConverter {
             row.put("id", SettableValue.fromOrEmpty(source.getId(), Integer.class));
             row.put("total_guilds", SettableValue.from(source.getTotalGuilds()));
             row.put("points_distributed", SettableValue.from(source.getPointsDistributed()));
-            row.put("time_elapsed", SettableValue.from(source.getTimeElapsed()));
             row.put("created_on", SettableValue.from(LocalDateTime.now()));
             return row;
         }

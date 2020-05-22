@@ -71,14 +71,14 @@ public class GuildUserService {
                         .map(user -> new GuildUser(user, guildId)));
     }
 
-    public Mono<Void> distributePointsInGuild(Guild guild) {
+    public Mono<Long> distributePointsInGuild(Guild guild) {
         return guild.getMembers()
                 .filterWhen(this::isEligible)
                 .map(member2GuildUserMapper::map)
                 .flatMap(guildUser -> findByUserIdAndGuildId(guildUser.getUser().getUserId(), guildUser.getGuildId()))
                 .doOnNext(u -> u.setPoints(u.getPoints() + Integer.parseInt(rewardAmount)))
                 .concatMap(this::save)
-                .then();
+                .count();
     }
 
     public Flux<GuildUser> findTop5PointsInGuild(String guildId){

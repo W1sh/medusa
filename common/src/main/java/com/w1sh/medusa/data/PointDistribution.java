@@ -18,9 +18,6 @@ public class PointDistribution {
     @Column(value = "points_distributed")
     private Long pointsDistributed;
 
-    @Column(value = "time_elapsed")
-    private Long timeElapsed;
-
     @Column(value = "created_on")
     private LocalDateTime createdOn;
 
@@ -46,14 +43,6 @@ public class PointDistribution {
 
     public void setPointsDistributed(Long pointsDistributed) {
         this.pointsDistributed = pointsDistributed;
-    }
-
-    public Long getTimeElapsed() {
-        return timeElapsed;
-    }
-
-    public void setTimeElapsed(Long timeElapsed) {
-        this.timeElapsed = timeElapsed;
     }
 
     public LocalDateTime getCreatedOn() {
