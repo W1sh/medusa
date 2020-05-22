@@ -13,13 +13,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import reactor.cache.CacheFlux;
+import reactor.cache.CacheMono;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Signal;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Service
@@ -29,7 +31,7 @@ public class GuildUserService {
 
     private final GuildUserRepository repository;
     private final UserService userService;
-    private final Cache<String, Object> guildUsersCache;
+    private final Cache<String, List<GuildUser>> guildUsersCache;
     private final Member2GuildUserMapper member2GuildUserMapper;
 
     @Value("${points.reward.amount}")
@@ -58,27 +60,21 @@ public class GuildUserService {
     }
 
     public Mono<GuildUser> findByUserIdAndGuildId(String userId, String guildId) {
-        return CacheFlux.lookup(guildUsersCache.asMap(), guildId, GuildUser.class)
-                .onCacheMissResume(() -> repository.findByGuildId(guildId))
-                .collectList()
-                .doOnNext(list -> guildUsersCache.put(guildId, list))
-                .flatMapIterable(Function.identity())
+        return fetchAllGuildUsersInGuild(guildId)
                 .filterWhen(guildUser -> userService.findByUserId(userId)
                         .filter(user -> user.getId().equals(guildUser.getUser().getId()))
                         .doOnNext(guildUser::setUser)
                         .hasElement())
-                .next();
-    }
-
-    public Mono<GuildUser> findByUserIdAndGuildId(GuildUser guildUser) {
-        return findByUserIdAndGuildId(guildUser.getUser().getUserId(), guildUser.getGuildId());
+                .next()
+                .switchIfEmpty(userService.findByUserId(userId)
+                        .map(user -> new GuildUser(user, guildId)));
     }
 
     public Mono<Void> distributePointsInGuild(Guild guild) {
         return guild.getMembers()
                 .filterWhen(this::isEligible)
                 .map(member2GuildUserMapper::map)
-                .flatMap(this::findByUserIdAndGuildId)
+                .flatMap(guildUser -> findByUserIdAndGuildId(guildUser.getUser().getUserId(), guildUser.getGuildId()))
                 .doOnNext(u -> u.setPoints(u.getPoints() + Integer.parseInt(rewardAmount)))
                 .concatMap(this::save)
                 .then();
@@ -94,7 +90,7 @@ public class GuildUserService {
     }
 
     private void saveInCache(GuildUser user) {
-        List<GuildUser> guildUsers = (List<GuildUser>) guildUsersCache.getIfPresent(user.getGuildId());
+        List<GuildUser> guildUsers = guildUsersCache.getIfPresent(user.getGuildId());
 
         if (guildUsers != null) {
             guildUsers.remove(user);
@@ -118,6 +114,22 @@ public class GuildUserService {
         return userService.findByUserId(guildUser.getUser().getUserId())
                 .doOnNext(guildUser::setUser)
                 .then(Mono.just(guildUser));
+    }
+
+    private Flux<GuildUser> fetchAllGuildUsersInGuild(String guildId) {
+        return CacheMono.lookup(key -> Mono.justOrEmpty(guildUsersCache.getIfPresent(key))
+                .map(Signal::next), guildId)
+                .onCacheMissResume(() -> repository.findByGuildId(guildId)
+                        .collectList()
+                        .filter(List::isEmpty))
+                .andWriteWith((key, signal) ->
+                        Mono.fromRunnable(() -> Optional.ofNullable(signal.get())
+                                .ifPresent(value -> guildUsersCache.put(key, value))))
+                .onErrorResume(throwable -> {
+                    logger.error("Failed to retrieve all guild users in guild with guild id \"{}\"", guildId, throwable);
+                    return Mono.empty();
+                })
+                .flatMapIterable(Function.identity());
     }
 
     private Mono<Boolean> isEligible(Member member) {

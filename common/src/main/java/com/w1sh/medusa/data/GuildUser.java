@@ -1,5 +1,6 @@
 package com.w1sh.medusa.data;
 
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Embedded;
@@ -23,6 +24,12 @@ public class GuildUser {
     private Audit audit;
 
     public GuildUser() {
+        this.audit = new Audit();
+    }
+
+    public GuildUser(User user, String guildId) {
+        this.user = user;
+        this.guildId = guildId;
         this.audit = new Audit();
     }
 

@@ -39,6 +39,7 @@ public final class Executor {
 
         gateway.getGuilds()
                 .flatMap(guildUserService::distributePointsInGuild)
+                .doAfterTerminate(() -> logger.info("Finished point distribution"))
                 .subscribeOn(Schedulers.elastic())
                 .subscribe();
     }
