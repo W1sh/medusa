@@ -1,6 +1,7 @@
 package com.w1sh.medusa.configurations;
 
 import com.w1sh.medusa.converters.GuildUserConverter;
+import com.w1sh.medusa.converters.PointDistributionConverter;
 import com.w1sh.medusa.converters.UserConverter;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
@@ -60,6 +61,8 @@ public class R2DBCConfiguration extends AbstractR2dbcConfiguration{
         converterList.add(new UserConverter.UserWriteConverter());
         converterList.add(new GuildUserConverter.GuildUserReadConverter());
         converterList.add(new GuildUserConverter.GuildUserWriteConverter());
+        converterList.add(new PointDistributionConverter.PointDistributionReadConverter());
+        converterList.add(new PointDistributionConverter.PointDistributionWriteConverter());
         return new R2dbcCustomConversions(getStoreConversions(), converterList);
     }
 }

@@ -1,6 +1,5 @@
 package com.w1sh.medusa.data;
 
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Embedded;
