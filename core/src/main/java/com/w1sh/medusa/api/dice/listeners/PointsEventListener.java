@@ -34,8 +34,8 @@ public final class PointsEventListener implements EventListener<PointsEvent> {
         String guildId = event.getGuildId().map(Snowflake::asString).orElse("");
         String userId = event.getMember().map(member -> member.getId().asString()).orElse("");
 
-        return Mono.just(guildId)
-                .transform(flatZipWith(Mono.just(userId), guildUserService::findByUserIdAndGuildId))
+        return Mono.just(userId)
+                .transform(flatZipWith(Mono.just(guildId), guildUserService::findByUserIdAndGuildId))
                 .flatMap(user -> createUserPointsMessage(user, event))
                 .switchIfEmpty(createNoPointsMessage(event))
                 .doOnNext(responseDispatcher::queue)

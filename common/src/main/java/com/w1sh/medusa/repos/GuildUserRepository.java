@@ -12,7 +12,7 @@ public interface GuildUserRepository extends ReactiveCrudRepository<GuildUser, I
     Mono<GuildUser> findByUserIdAndGuildId(Integer userId, String guildId);
 
     @Query(value = "SELECT * FROM core.guilds_users WHERE guild_id = :guildId")
-    Flux<GuildUser> findByGuildId(String guildId);
+    Flux<GuildUser> findAllByGuildId(String guildId);
 
     @Query(value = "SELECT * FROM core.guilds_users WHERE guild_id = :guildId ORDER BY points DESC")
     Flux<GuildUser> findAllByGuildIdOrderByPoints(String guildId);

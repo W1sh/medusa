@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 @Service
 public class GuildUserService {
@@ -119,9 +120,9 @@ public class GuildUserService {
     private Flux<GuildUser> fetchAllGuildUsersInGuild(String guildId) {
         return CacheMono.lookup(key -> Mono.justOrEmpty(guildUsersCache.getIfPresent(key))
                 .map(Signal::next), guildId)
-                .onCacheMissResume(() -> repository.findByGuildId(guildId)
+                .onCacheMissResume(() -> repository.findAllByGuildId(guildId)
                         .collectList()
-                        .filter(List::isEmpty))
+                        .filter(Predicate.not(List::isEmpty)))
                 .andWriteWith((key, signal) ->
                         Mono.fromRunnable(() -> Optional.ofNullable(signal.get())
                                 .ifPresent(value -> guildUsersCache.put(key, value))))
