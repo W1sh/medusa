@@ -9,6 +9,7 @@ import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.r2dbc.mapping.OutboundRow;
 import org.springframework.data.r2dbc.mapping.SettableValue;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
@@ -16,6 +17,7 @@ public class GuildUserConverter {
 
     private GuildUserConverter(){}
 
+    @Component
     @ReadingConverter
     public static class GuildUserReadConverter implements Converter<Row, GuildUser> {
 
@@ -40,9 +42,11 @@ public class GuildUserConverter {
         }
     }
 
+    @Component
     @WritingConverter
     public static class GuildUserWriteConverter implements Converter<GuildUser, OutboundRow> {
 
+        @Override
         public OutboundRow convert(GuildUser source) {
             OutboundRow row = new OutboundRow();
             row.put("id", SettableValue.fromOrEmpty(source.getId(), Integer.class));

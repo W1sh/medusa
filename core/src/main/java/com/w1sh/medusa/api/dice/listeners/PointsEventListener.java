@@ -37,18 +37,10 @@ public final class PointsEventListener implements EventListener<PointsEvent> {
         return Mono.just(userId)
                 .transform(flatZipWith(Mono.just(guildId), guildUserService::findByUserIdAndGuildId))
                 .flatMap(user -> createUserPointsMessage(user, event))
-                .switchIfEmpty(createNoPointsMessage(event))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
     }
-
-    private Mono<TextMessage> createNoPointsMessage(PointsEvent event) {
-        return event.getMessage().getChannel()
-                .map(chan -> new TextMessage(chan, String.format("**%s** has no points!",
-                        event.getMember().flatMap(Member::getNickname).orElse("You")), false));
-    }
-
     private Mono<TextMessage> createUserPointsMessage(GuildUser user, PointsEvent event) {
         return event.getMessage().getChannel()
                 .map(chan -> new TextMessage(chan, String.format("**%s** has %d points!",

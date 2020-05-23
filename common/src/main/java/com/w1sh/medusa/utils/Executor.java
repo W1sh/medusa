@@ -35,12 +35,13 @@ public final class Executor {
     }
 
     public void schedulePointDistribution(GatewayDiscordClient gateway) {
+        long start = System.currentTimeMillis();
         logger.info("Sending points to all active members");
 
         gateway.getGuilds()
                 .collectList()
                 .flatMap(pointDistributionService::distribute)
-                .doAfterTerminate(() -> logger.info("Finished point distribution"))
+                .doAfterTerminate(() -> logger.info("Finished point distribution - {} ms elapsed", (System.currentTimeMillis() - start)))
                 .subscribeOn(Schedulers.elastic())
                 .subscribe();
     }

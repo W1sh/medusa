@@ -7,11 +7,13 @@ import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.r2dbc.mapping.OutboundRow;
 import org.springframework.data.r2dbc.mapping.SettableValue;
+import org.springframework.stereotype.Component;
 
 public class UserConverter {
 
     private UserConverter(){}
 
+    @Component
     @ReadingConverter
     public static class UserReadConverter implements Converter<Row, User> {
 
@@ -23,9 +25,11 @@ public class UserConverter {
         }
     }
 
+    @Component
     @WritingConverter
     public static class UserWriteConverter implements Converter<User, OutboundRow> {
 
+        @Override
         public OutboundRow convert(User source) {
             OutboundRow row = new OutboundRow();
             row.put("id", SettableValue.fromOrEmpty(source.getId(), Integer.class));
