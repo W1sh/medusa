@@ -1,9 +1,9 @@
 package com.w1sh.medusa.data.events;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 
 import discord4j.rest.util.Permission;
-import discord4j.rest.util.Snowflake;
 
 import java.util.ArrayList;
 import java.util.HashMap;

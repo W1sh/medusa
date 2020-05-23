@@ -4,8 +4,7 @@ import com.w1sh.medusa.data.events.InlineEvent;
 import com.w1sh.medusa.data.responses.Embed;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.channel.MessageChannel;
-
-import java.awt.*;
+import discord4j.rest.util.Color;
 
 public class CardUtils {
 
