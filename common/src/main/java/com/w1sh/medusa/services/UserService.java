@@ -7,6 +7,7 @@ import com.w1sh.medusa.repos.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.cache.CacheMono;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Signal;
@@ -32,6 +33,7 @@ public class UserService {
                 .build();
     }
 
+    @Transactional
     public Mono<User> save(User user){
         return userRepository.save(user)
                 .onErrorResume(throwable -> {

@@ -21,6 +21,13 @@ public class PointDistribution {
     @Column(value = "created_on")
     private LocalDateTime createdOn;
 
+    public PointDistribution() { }
+
+    public PointDistribution(Long pointsDistributed, Integer totalGuilds) {
+        this.totalGuilds = totalGuilds;
+        this.pointsDistributed = pointsDistributed * 100;
+    }
+
     public Integer getId() {
         return id;
     }

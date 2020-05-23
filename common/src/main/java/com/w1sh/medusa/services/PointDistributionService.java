@@ -6,6 +6,7 @@ import discord4j.core.object.entity.Guild;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -24,6 +25,7 @@ public class PointDistributionService {
         this.guildUserService = guildUserService;
     }
 
+    @Transactional
     public Mono<PointDistribution> save(PointDistribution pointDistribution){
         return repository.save(pointDistribution)
                 .onErrorResume(throwable -> {
@@ -36,15 +38,8 @@ public class PointDistributionService {
         return Flux.fromIterable(guilds)
                 .flatMap(guildUserService::distributePointsInGuild)
                 .reduce(Long::sum)
-                .zipWith(Mono.just(guilds.size()), this::createPointDistribution)
+                .zipWith(Mono.just(guilds.size()), PointDistribution::new)
                 .flatMap(this::save)
                 .then();
-    }
-
-    private PointDistribution createPointDistribution(Long updatesCounts, Integer guildsCount) {
-        PointDistribution pointDistribution = new PointDistribution();
-        pointDistribution.setTotalGuilds(guildsCount);
-        pointDistribution.setPointsDistributed(100 * updatesCounts);
-        return pointDistribution;
     }
 }

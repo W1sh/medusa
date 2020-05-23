@@ -11,9 +11,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration;
+import org.springframework.data.r2dbc.connectionfactory.R2dbcTransactionManager;
 import org.springframework.data.r2dbc.convert.R2dbcCustomConversions;
 import org.springframework.data.r2dbc.core.DatabaseClient;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
+import org.springframework.transaction.ReactiveTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import reactor.util.annotation.NonNull;
 
 import java.util.ArrayList;
@@ -23,6 +26,7 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.*;
 
 @Configuration
 @EnableR2dbcRepositories(value = "com.w1sh.medusa")
+@EnableTransactionManagement
 public class R2DBCConfiguration extends AbstractR2dbcConfiguration{
 
     @Value("${postgres.driver}")
@@ -51,6 +55,11 @@ public class R2DBCConfiguration extends AbstractR2dbcConfiguration{
     @Bean
     public DatabaseClient databaseClient(){
         return DatabaseClient.create(connectionFactory());
+    }
+
+    @Bean
+    public ReactiveTransactionManager transactionManager() {
+        return new R2dbcTransactionManager(connectionFactory());
     }
 
     @Bean
