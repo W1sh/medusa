@@ -42,8 +42,8 @@ public final class RouletteEventListener implements EventListener<RouletteEvent>
                 .map(Integer::parseInt)
                 .filter(value -> value > 0);
 
-        Mono<GuildUser> guildUserMono = Mono.just(guildId)
-                .transform(flatZipWith(Mono.just(userId), guildUserService::findByUserIdAndGuildId));
+        Mono<GuildUser> guildUserMono = Mono.just(userId)
+                .transform(flatZipWith(Mono.just(guildId), guildUserService::findByUserIdAndGuildId));
 
         return Mono.zip(valueMono, guildUserMono)
                 .filter(tuple -> tuple.getT1() <= tuple.getT2().getPoints())

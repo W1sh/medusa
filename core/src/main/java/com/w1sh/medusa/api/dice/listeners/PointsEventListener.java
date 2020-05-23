@@ -41,6 +41,7 @@ public final class PointsEventListener implements EventListener<PointsEvent> {
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
     }
+
     private Mono<TextMessage> createUserPointsMessage(GuildUser user, PointsEvent event) {
         return event.getMessage().getChannel()
                 .map(chan -> new TextMessage(chan, String.format("**%s** has %d points!",

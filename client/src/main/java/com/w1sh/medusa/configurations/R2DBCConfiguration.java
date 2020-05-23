@@ -4,7 +4,6 @@ import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -16,10 +15,7 @@ import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 import org.springframework.transaction.ReactiveTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import reactor.util.annotation.NonNull;
-import reactor.util.annotation.NonNullApi;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static io.r2dbc.spi.ConnectionFactoryOptions.*;
