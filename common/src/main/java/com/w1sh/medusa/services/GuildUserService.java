@@ -59,7 +59,7 @@ public class GuildUserService {
                     logger.error("Failed to save guild user with id \"{}\"", guildUser.getId(), throwable);
                     return Mono.empty();
                 })
-                .doOnNext(this::saveInCache);
+                .doOnNext(this::cache);
     }
 
     public Mono<GuildUser> findByUserIdAndGuildId(String userId, String guildId) {
@@ -92,7 +92,7 @@ public class GuildUserService {
                 .take(5);
     }
 
-    private void saveInCache(GuildUser user) {
+    private void cache(GuildUser user) {
         List<GuildUser> guildUsers = guildUsersCache.getIfPresent(user.getGuildId());
 
         if (guildUsers != null) {

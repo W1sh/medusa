@@ -1,32 +1,50 @@
 package com.w1sh.medusa.data;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Embedded;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.List;
 
-@Table(value = "playlists")
+@Table(value = "core.playlists")
 public final class Playlist {
 
     @Id
-    private String id;
+    private Integer id;
+
+    @Column(value = "fk_user")
+    private User user;
+
     private String name;
-    private Long user;
+
     private List<Track> tracks;
+
+    @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY)
     private Audit audit;
 
-    public Playlist(Long user, String name, List<Track> tracks) {
+    public Playlist() { }
+
+    public Playlist(User user, String name, List<Track> tracks) {
         this.name = name;
         this.user = user;
         this.tracks = tracks;
         this.audit = new Audit();
     }
 
-    public String getId() {
+    public Playlist(Long user, String name, List<Track> tracks) {
+        this.name = name;
+        this.user = new User();
+        this.user.setUserId(String.valueOf(user));
+        this.tracks = tracks;
+        this.audit = new Audit();
+    }
+
+    public Integer getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -38,11 +56,11 @@ public final class Playlist {
         this.name = name;
     }
 
-    public Long getUser() {
+    public User getUser() {
         return user;
     }
 
-    public void setUser(Long user) {
+    public void setUser(User user) {
         this.user = user;
     }
 
