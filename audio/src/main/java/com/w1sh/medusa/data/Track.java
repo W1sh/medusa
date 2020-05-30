@@ -3,21 +3,25 @@ package com.w1sh.medusa.data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Table(value = "tracks")
+@Table(value = "core.tracks")
 public final class Track {
 
     @Id
-    private String id;
+    private Integer id;
+
     private String author;
+
     private String title;
+
     private String uri;
+
     private Long duration;
 
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
