@@ -22,11 +22,13 @@ public class PlaylistService {
     private static final Logger logger = LoggerFactory.getLogger(PlaylistService.class);
 
     private final UserService userService;
+    private final TrackService trackService;
     private final PlaylistRepository repository;
     private final Cache<String, List<Playlist>> playlistsCache;
 
-    public PlaylistService(UserService userService, PlaylistRepository repository) {
+    public PlaylistService(UserService userService, TrackService trackService, PlaylistRepository repository) {
         this.userService = userService;
+        this.trackService = trackService;
         this.repository = repository;
         this.playlistsCache = Caffeine.newBuilder()
                 .maximumSize(10000)
@@ -38,6 +40,7 @@ public class PlaylistService {
     public Mono<Playlist> save(Playlist playlist){
         return userService.findByUserId(playlist.getUser().getUserId())
                 .doOnNext(playlist::setUser)
+                .flatMap(u -> trackService.saveAll(playlist.getTracks()))
                 .flatMap(u -> repository.save(playlist))
                 .onErrorResume(throwable -> {
                     logger.error("Failed to save playlist", throwable);
