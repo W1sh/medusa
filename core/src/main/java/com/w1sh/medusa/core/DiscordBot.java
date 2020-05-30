@@ -6,7 +6,6 @@ import com.w1sh.medusa.utils.Executor;
 import discord4j.core.DiscordClient;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
-import discord4j.core.shard.LocalShardCoordinator;
 import discord4j.core.shard.ShardingStrategy;
 import discord4j.store.jdk.JdkStoreService;
 import org.slf4j.Logger;
@@ -42,12 +41,11 @@ public class DiscordBot {
         final var client = DiscordClient.create(token);
         final var gateway = client.gateway()
                 .setSharding(ShardingStrategy.recommended())
-                .setShardCoordinator(new LocalShardCoordinator())
                 .setAwaitConnections(true)
                 .setStoreService(new JdkStoreService())
                 .setEventDispatcher(medusaEventDispatcher)
-                .setInitialPresence(shardInfo -> Presence.online(Activity.watching("you turn to stone")))
-                .connect()
+                .setInitialStatus(shardInfo -> Presence.online(Activity.watching("you turn to stone")))
+                .login()
                 .block();
 
         assert gateway != null;

@@ -30,7 +30,7 @@ public final class PermissionsValidator implements Validator {
     public Mono<Boolean> validate(Event event) {
         return event.getMessage().getChannel()
                 .ofType(GuildChannel.class)
-                .transform(flatZipWith(event.getClient().getSelfId(), this::hasPermissions))
+                .transform(flatZipWith(Mono.just(event.getClient().getSelfId()), this::hasPermissions))
                 .flatMap(effPermissions -> Flux.fromIterable(event.getPermissions())
                         .all(effPermissions::contains)
                         .flatMap(bool -> Boolean.FALSE.equals(bool) ? createErrorMessage(event) : Mono.empty()))

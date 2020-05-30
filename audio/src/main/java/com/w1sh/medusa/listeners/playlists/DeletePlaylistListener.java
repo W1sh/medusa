@@ -34,8 +34,9 @@ public final class DeletePlaylistListener implements EventListener<DeletePlaylis
 
     @Override
     public Mono<Void> execute(DeletePlaylistEvent event) {
-        return Mono.justOrEmpty(event.getMember())
-                .map(member -> member.getId().asLong())
+        return Mono.empty();
+        /*return Mono.justOrEmpty(event.getMember())
+                .map(member -> member.getId().asString())
                 .flatMapMany(playlistService::findAllByUserId)
                 .collectList()
                 .zipWith(Mono.justOrEmpty(event.getMessage().getContent())
@@ -45,7 +46,7 @@ public final class DeletePlaylistListener implements EventListener<DeletePlaylis
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to delete playlist", throwable)))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
-                .then();
+                .then();*/
     }
 
     private Mono<TextMessage> createSuccessTextMessage(List<Playlist> playlists, DeletePlaylistEvent event){

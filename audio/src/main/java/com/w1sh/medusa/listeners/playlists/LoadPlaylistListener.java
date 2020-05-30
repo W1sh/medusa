@@ -41,7 +41,7 @@ public final class LoadPlaylistListener implements EventListener<LoadPlaylistEve
     public Mono<Void> execute(LoadPlaylistEvent event) {
         Integer playlistId = Optional.of(event.getMessage().getContent()).map(c -> Integer.parseInt(c.split(" ")[1])).orElse(1);
         return Mono.justOrEmpty(event.getMember())
-                .map(member -> member.getId().asLong())
+                .map(member -> member.getId().asString())
                 .flatMapMany(playlistService::findAllByUserId)
                 .take(playlistId)
                 .last()

@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -45,6 +46,15 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
     @Override
     public Mono<Void> execute(SavePlaylistEvent event) {
         return Mono.justOrEmpty(event.getGuildId())
+                .map(tracks -> createPlaylist(event, new ArrayList<>()))
+                .flatMap(playlistService::save)
+                .flatMap(playlist -> createSavePlaylistSuccessMessage(event, playlist))
+                .switchIfEmpty(createFailedSaveErrorMessage(event))
+                .doOnNext(responseDispatcher::queue)
+                .doAfterTerminate(responseDispatcher::flush)
+                .then();
+        /*return Mono.justOrEmpty(event.getGuildId())
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to save playlist", throwable)))
                 .flatMap(audioConnectionManager::getAudioConnection)
                 .map(AudioConnection::getTrackScheduler)
                 .flatMapIterable(TrackScheduler::getFullQueue)
@@ -52,16 +62,15 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
                 .collectList()
                 .map(tracks -> createPlaylist(event, tracks))
                 .flatMap(playlistService::save)
-                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to save playlist", throwable)))
                 .flatMap(playlist -> createSavePlaylistSuccessMessage(event, playlist))
                 .switchIfEmpty(createFailedSaveErrorMessage(event))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
-                .then();
+                .then();*/
     }
 
     private Playlist createPlaylist(SavePlaylistEvent event, List<Track> tracks){
-        Long userId = event.getMember().map(member -> member.getId().asLong()).orElseThrow();
+        String userId = event.getMember().map(member -> member.getId().asString()).orElseThrow();
         String name = event.getArguments().getOrDefault(0, "Playlist");
         return new Playlist(userId, name, tracks);
     }

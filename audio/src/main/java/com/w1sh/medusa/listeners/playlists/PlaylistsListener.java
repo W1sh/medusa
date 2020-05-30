@@ -37,7 +37,7 @@ public final class PlaylistsListener implements EventListener<PlaylistsEvent> {
     @Override
     public Mono<Void> execute(PlaylistsEvent event) {
         return Mono.justOrEmpty(event.getMember())
-                .map(member -> member.getId().asLong())
+                .map(member -> member.getId().asString())
                 .flatMapMany(playlistService::findAllByUserId)
                 .collectList()
                 .flatMap(playlists -> createEmbed(playlists, event))
