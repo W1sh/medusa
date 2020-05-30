@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.cache.CacheMono;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Signal;
 
@@ -36,21 +35,6 @@ public class PlaylistService {
                 .build();
     }
 
-    public Flux<Playlist> findAllByUserId(String userId){
-        return CacheMono.lookup(key -> Mono.justOrEmpty(playlistsCache.getIfPresent(key))
-                .map(Signal::next), userId)
-                .onCacheMissResume(() -> userService.findByUserId(userId)
-                        .flatMapMany(user -> repository.findAllByUserId(user.getId()))
-                        .collectList())
-                .andWriteWith((key, signal) -> Mono.fromRunnable(
-                        () -> Optional.ofNullable(signal.get()).ifPresent(value -> playlistsCache.put(key, value))))
-                .onErrorResume(throwable -> {
-                    logger.error("Failed to fetch playlists of user with id \"{}\"", userId, throwable);
-                    return Mono.empty();
-                })
-                .flatMapMany(Flux::fromIterable);
-    }
-
     public Mono<Playlist> save(Playlist playlist){
         return userService.findByUserId(playlist.getUser().getUserId())
                 .doOnNext(playlist::setUser)
@@ -59,19 +43,29 @@ public class PlaylistService {
                     logger.error("Failed to save playlist", throwable);
                     return Mono.empty();
                 })
-                .doOnNext(this::cache);
+                .flatMap(this::cache);
     }
 
-    private void cache(Playlist playlist) {
-        List<Playlist> playlists = playlistsCache.getIfPresent(playlist.getUser().getUserId());
+    public Mono<List<Playlist>> findAllByUserId(String userId){
+        return CacheMono.lookup(key -> Mono.justOrEmpty(playlistsCache.getIfPresent(key))
+                .map(Signal::next), userId)
+                .onCacheMissResume(() -> repository.findAllByUserId(userId).collectList())
+                .andWriteWith((key, signal) -> Mono.fromRunnable(
+                        () -> Optional.ofNullable(signal.get()).ifPresent(value -> playlistsCache.put(key, value))))
+                .onErrorResume(throwable -> {
+                    logger.error("Failed to fetch playlists of user with id \"{}\"", userId, throwable);
+                    return Mono.empty();
+                });
+    }
 
-        if (playlists != null) {
-            playlists.remove(playlist);
-            playlists.add(playlist);
-        } else {
-            playlists = new ArrayList<>();
-            playlists.add(playlist);
-            playlistsCache.put(playlist.getUser().getUserId(), playlists);
-        }
+    private Mono<Playlist> cache(Playlist playlist) {
+        return findAllByUserId(playlist.getUser().getUserId())
+                .defaultIfEmpty(new ArrayList<>())
+                .doOnNext(playlists -> {
+                    playlists.remove(playlist);
+                    playlists.add(playlist);
+                    playlistsCache.put(playlist.getUser().getUserId(), playlists);
+                })
+                .then(Mono.just(playlist));
     }
 }

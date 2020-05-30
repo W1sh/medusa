@@ -2,7 +2,6 @@ package com.w1sh.medusa.listeners.playlists;
 
 import com.w1sh.medusa.AudioConnection;
 import com.w1sh.medusa.AudioConnectionManager;
-import com.w1sh.medusa.TrackScheduler;
 import com.w1sh.medusa.data.Playlist;
 import com.w1sh.medusa.data.Track;
 import com.w1sh.medusa.data.responses.TextMessage;
@@ -15,9 +14,9 @@ import discord4j.core.object.entity.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -45,28 +44,18 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
 
     @Override
     public Mono<Void> execute(SavePlaylistEvent event) {
-        return Mono.justOrEmpty(event.getGuildId())
-                .map(tracks -> createPlaylist(event, new ArrayList<>()))
+        Mono<List<Track>> tracks = Mono.justOrEmpty(event.getGuildId())
+                .flatMap(audioConnectionManager::getAudioConnection)
+                .flatMap(this::getAllTracks);
+
+        return tracks.map(t -> createPlaylist(event, t))
                 .flatMap(playlistService::save)
                 .flatMap(playlist -> createSavePlaylistSuccessMessage(event, playlist))
                 .switchIfEmpty(createFailedSaveErrorMessage(event))
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to save playlist", throwable)))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
-        /*return Mono.justOrEmpty(event.getGuildId())
-                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to save playlist", throwable)))
-                .flatMap(audioConnectionManager::getAudioConnection)
-                .map(AudioConnection::getTrackScheduler)
-                .flatMapIterable(TrackScheduler::getFullQueue)
-                .map(audioTrack2TrackMapper::map)
-                .collectList()
-                .map(tracks -> createPlaylist(event, tracks))
-                .flatMap(playlistService::save)
-                .flatMap(playlist -> createSavePlaylistSuccessMessage(event, playlist))
-                .switchIfEmpty(createFailedSaveErrorMessage(event))
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
-                .then();*/
     }
 
     private Playlist createPlaylist(SavePlaylistEvent event, List<Track> tracks){
@@ -86,5 +75,11 @@ public final class SavePlaylistListener implements EventListener<SavePlaylistEve
                 .map(channel -> new TextMessage(channel, String.format("**%s**, saved your playlist with %d tracks!",
                         event.getMember().flatMap(Member::getNickname).orElse(""),
                         playlist.getTracks().size()), false));
+    }
+
+    private Mono<List<Track>> getAllTracks(AudioConnection audioConnection){
+        return Flux.fromIterable(audioConnection.getTrackScheduler().getFullQueue())
+                .map(audioTrack2TrackMapper::map)
+                .collectList();
     }
 }

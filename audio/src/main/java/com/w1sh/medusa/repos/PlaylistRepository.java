@@ -7,6 +7,6 @@ import reactor.core.publisher.Flux;
 
 public interface PlaylistRepository extends ReactiveCrudRepository<Playlist, String> {
 
-    @Query(value = "SELECT * FROM core.playlists WHERE fk_user = :userId")
-    Flux<Playlist> findAllByUserId(Integer userId);
+    @Query(value = "SELECT * FROM core.playlists WHERE fk_user = (SELECT id FROM core.users WHERE user_id = :userId)")
+    Flux<Playlist> findAllByUserId(String userId);
 }

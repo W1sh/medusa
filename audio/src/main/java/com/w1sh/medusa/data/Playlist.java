@@ -7,6 +7,7 @@ import org.springframework.data.relational.core.mapping.Embedded;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.List;
+import java.util.Objects;
 
 @Table(value = "core.playlists")
 public final class Playlist {
@@ -26,13 +27,6 @@ public final class Playlist {
     private Audit audit;
 
     public Playlist() { }
-
-    public Playlist(User user, String name, List<Track> tracks) {
-        this.name = name;
-        this.user = user;
-        this.tracks = tracks;
-        this.audit = new Audit();
-    }
 
     public Playlist(String user, String name, List<Track> tracks) {
         this.name = name;
@@ -83,8 +77,22 @@ public final class Playlist {
     }
 
     public Long getFullDuration(){
+        if(tracks == null) return 0L;
         return tracks.stream()
                 .map(Track::getDuration)
                 .reduce(Long::sum).orElse(0L);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Playlist playlist = (Playlist) o;
+        return Objects.equals(id, playlist.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
