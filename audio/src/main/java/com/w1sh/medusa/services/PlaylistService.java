@@ -3,7 +3,7 @@ package com.w1sh.medusa.services;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.w1sh.medusa.data.Playlist;
-import com.w1sh.medusa.repos.PlaylistRepo;
+import com.w1sh.medusa.repos.PlaylistRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -18,15 +18,17 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public final class PlaylistService {
+public class PlaylistService {
 
     private static final Logger logger = LoggerFactory.getLogger(PlaylistService.class);
 
-    private final PlaylistRepo playlistRepo;
-    private final Cache<Long, List<Playlist>> playlistsCache;
+    private final UserService userService;
+    private final PlaylistRepository repository;
+    private final Cache<String, List<Playlist>> playlistsCache;
 
-    public PlaylistService(PlaylistRepo playlistRepo) {
-        this.playlistRepo = playlistRepo;
+    public PlaylistService(UserService userService, PlaylistRepository repository) {
+        this.userService = userService;
+        this.repository = repository;
         this.playlistsCache = Caffeine.newBuilder()
                 .maximumSize(10000)
                 .expireAfterAccess(Duration.ofHours(6))
@@ -34,13 +36,14 @@ public final class PlaylistService {
                 .build();
     }
 
-    public Flux<Playlist> findAllByUserId(Long userId){
+    public Flux<Playlist> findAllByUserId(String userId){
         return CacheMono.lookup(key -> Mono.justOrEmpty(playlistsCache.getIfPresent(key))
                 .map(Signal::next), userId)
-                .onCacheMissResume(() -> Mono.just(new ArrayList<>()))
+                .onCacheMissResume(() -> userService.findByUserId(userId)
+                        .flatMapMany(user -> repository.findAllByUserId(user.getId()))
+                        .collectList())
                 .andWriteWith((key, signal) -> Mono.fromRunnable(
-                        () -> Optional.ofNullable(signal.get())
-                                .ifPresent(value -> playlistsCache.put(key, value))))
+                        () -> Optional.ofNullable(signal.get()).ifPresent(value -> playlistsCache.put(key, value))))
                 .onErrorResume(throwable -> {
                     logger.error("Failed to fetch playlists of user with id \"{}\"", userId, throwable);
                     return Mono.empty();
@@ -48,33 +51,27 @@ public final class PlaylistService {
                 .flatMapMany(Flux::fromIterable);
     }
 
-    public Mono<Playlist> save(Playlist playlistMono){
-        return findAllByUserId(playlistMono.getUser())
-                .collectList()
-                .map(playlists -> findAndReplace(playlists, playlistMono))
-                .flatMapMany(Flux::fromIterable)
-                .filter(playlist -> playlist.getId().equalsIgnoreCase(playlistMono.getId()))
-                .next();
+    public Mono<Playlist> save(Playlist playlist){
+        return userService.findByUserId(playlist.getUser().getUserId())
+                .doOnNext(playlist::setUser)
+                .flatMap(u -> repository.save(playlist))
+                .onErrorResume(throwable -> {
+                    logger.error("Failed to save playlist", throwable);
+                    return Mono.empty();
+                })
+                .doOnNext(this::cache);
     }
 
-    private List<Playlist> findAndReplace(List<Playlist> playlists, Playlist playlist){
-        int index = -1;
-        for(int i=0; i<playlists.size(); i++){
-            if(playlist.getId().equalsIgnoreCase(playlists.get(i).getId())) index = i;
-        }
-        if(index >= 0) {
-            playlists.set(index, playlist);
-        } else {
+    private void cache(Playlist playlist) {
+        List<Playlist> playlists = playlistsCache.getIfPresent(playlist.getUser().getUserId());
+
+        if (playlists != null) {
+            playlists.remove(playlist);
             playlists.add(playlist);
+        } else {
+            playlists = new ArrayList<>();
+            playlists.add(playlist);
+            playlistsCache.put(playlist.getUser().getUserId(), playlists);
         }
-        playlistsCache.put(playlist.getUser(), playlists);
-        return playlists;
-    }
-
-    public List<Playlist> removeIndex(List<Playlist> playlists, Integer index){
-        Playlist playlist = playlists.get(index - 1);
-        playlists.remove(playlist);
-        playlistsCache.put(playlist.getUser(), playlists);
-        return playlists;
     }
 }

@@ -48,7 +48,7 @@ public class PlaylistConverter {
             OutboundRow row = new OutboundRow();
             row.put("id", SettableValue.fromOrEmpty(source.getId(), Integer.class));
             row.put("name", SettableValue.from(source.getName()));
-            row.put("user", SettableValue.from(source.getUser().getId()));
+            row.put("fk_user", SettableValue.from(source.getUser().getId()));
             row.put("created_on", SettableValue.from(source.getAudit().getCreatedOn()));
             row.put("updated_on", SettableValue.from(LocalDateTime.now()));
             return row;

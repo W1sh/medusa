@@ -1,6 +1,7 @@
 package com.w1sh.medusa.data;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Embedded;
 import org.springframework.data.relational.core.mapping.Table;
@@ -18,6 +19,7 @@ public final class Playlist {
 
     private String name;
 
+    @Transient
     private List<Track> tracks;
 
     @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY)
@@ -32,10 +34,10 @@ public final class Playlist {
         this.audit = new Audit();
     }
 
-    public Playlist(Long user, String name, List<Track> tracks) {
+    public Playlist(String user, String name, List<Track> tracks) {
         this.name = name;
         this.user = new User();
-        this.user.setUserId(String.valueOf(user));
+        this.user.setUserId(user);
         this.tracks = tracks;
         this.audit = new Audit();
     }
