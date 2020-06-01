@@ -41,10 +41,7 @@ public final class CardService {
                 .andWriteWith((key, signal) -> Mono.fromRunnable(
                         () -> Optional.ofNullable(signal.get())
                                 .ifPresent(value -> cardCache.put(key, value))))
-                .onErrorResume(throwable -> {
-                    logger.error("Failed to fetch cards with name \"{}\"", name, throwable);
-                    return Mono.just(new Card());
-                });
+                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to fetch cards with name \"{}\"", name, t)));
     }
 
     public Flux<Card> getCardsByName(String name) {

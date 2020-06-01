@@ -36,20 +36,14 @@ public class UserService {
     @Transactional
     public Mono<User> save(User user){
         return userRepository.save(user)
-                .onErrorResume(throwable -> {
-                    logger.error("Failed to save user with id \"{}\"", user.getId(), throwable);
-                    return Mono.empty();
-                })
+                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to save user with id \"{}\"", user.getId(), t)))
                 .doOnNext(u -> usersCache.put(u.getUserId(), u));
     }
 
     public Mono<User> findById(Integer id) {
         return userRepository.findById(id)
                 .doOnNext(user -> usersCache.put(user.getUserId(), user))
-                .onErrorResume(throwable -> {
-                    logger.error("Failed to retrieve user with id \"{}\"", id, throwable);
-                    return Mono.empty();
-                });
+                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to retrieve user with id \"{}\"", id, t)));
     }
 
     public Mono<User> findByUserId(String userId) {
@@ -61,9 +55,6 @@ public class UserService {
                 .andWriteWith((key, signal) -> Mono.fromRunnable(
                         () -> Optional.ofNullable(signal.get())
                                 .ifPresent(value -> usersCache.put(key, value))))
-                .onErrorResume(throwable -> {
-                    logger.error("Failed to retrieve user with user id \"{}\"", userId, throwable);
-                    return Mono.empty();
-                });
+                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to retrieve user with user id \"{}\"", userId, t)));
     }
 }

@@ -28,10 +28,7 @@ public class PointDistributionService {
     @Transactional
     public Mono<PointDistribution> save(PointDistribution pointDistribution){
         return repository.save(pointDistribution)
-                .onErrorResume(throwable -> {
-                    logger.error("Failed to save point distribution", throwable);
-                    return Mono.empty();
-                });
+                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to save point distribution", t)));
     }
 
     public Mono<Void> distribute(List<Guild> guilds) {

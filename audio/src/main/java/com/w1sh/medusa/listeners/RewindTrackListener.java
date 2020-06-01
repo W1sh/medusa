@@ -44,10 +44,7 @@ public final class RewindTrackListener implements EventListener<RewindTrackEvent
         return Mono.justOrEmpty(event.getArguments().get(0))
                 .handle(this::parseTime)
                 .zipWith(audioConnectionManager.getAudioConnection(guildId), (time, ac) -> ac.getTrackScheduler().rewind(time))
-                .onErrorResume(throwable -> {
-                    logger.error("Failed to rewind track to requested time <{}>", event.getArguments().get(0), throwable);
-                    return Mono.empty();
-                })
+                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to rewind track to requested time <{}>", event.getArguments().get(0), t)))
                 .transform(isEmpty())
                 .flatMap(b -> createErrorMessage(event))
                 .then();

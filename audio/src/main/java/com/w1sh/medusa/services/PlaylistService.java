@@ -42,10 +42,7 @@ public class PlaylistService {
                 .doOnNext(playlist::setUser)
                 .flatMap(u -> trackService.saveAll(playlist.getTracks()))
                 .flatMap(u -> repository.save(playlist))
-                .onErrorResume(throwable -> {
-                    logger.error("Failed to save playlist", throwable);
-                    return Mono.empty();
-                })
+                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to save playlist", t)))
                 .flatMap(this::cache);
     }
 
@@ -55,10 +52,7 @@ public class PlaylistService {
                 .onCacheMissResume(() -> repository.findAllByUserId(userId).collectList())
                 .andWriteWith((key, signal) -> Mono.fromRunnable(
                         () -> Optional.ofNullable(signal.get()).ifPresent(value -> playlistsCache.put(key, value))))
-                .onErrorResume(throwable -> {
-                    logger.error("Failed to fetch playlists of user with id \"{}\"", userId, throwable);
-                    return Mono.empty();
-                });
+                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to fetch playlists of user with id \"{}\"", userId, t)));
     }
 
     private Mono<Playlist> cache(Playlist playlist) {

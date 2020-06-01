@@ -55,10 +55,7 @@ public class GuildUserService {
     public Mono<GuildUser> save(GuildUser guildUser){
         return fetchUserByUserId(guildUser)
                 .flatMap(repository::save)
-                .onErrorResume(throwable -> {
-                    logger.error("Failed to save guild user with id \"{}\"", guildUser.getId(), throwable);
-                    return Mono.empty();
-                })
+                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to save guild user with id \"{}\"", guildUser.getId(), t)))
                 .doOnNext(this::cache);
     }
 
@@ -128,10 +125,7 @@ public class GuildUserService {
                 .andWriteWith((key, signal) ->
                         Mono.fromRunnable(() -> Optional.ofNullable(signal.get())
                                 .ifPresent(value -> guildUsersCache.put(key, value))))
-                .onErrorResume(throwable -> {
-                    logger.error("Failed to retrieve all guild users in guild with guild id \"{}\"", guildId, throwable);
-                    return Mono.empty();
-                })
+                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to retrieve all guild users in guild with guild id \"{}\"", guildId, t)))
                 .flatMapIterable(Function.identity());
     }
 

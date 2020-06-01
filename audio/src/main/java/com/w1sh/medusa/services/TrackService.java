@@ -31,10 +31,7 @@ public class TrackService {
 
     public Mono<List<Track>> saveAll(List<Track> tracks){
         return trackRepository.saveAll(tracks)
-                .onErrorResume(throwable -> {
-                    logger.error("Failed to save tracks", throwable);
-                    return Mono.empty();
-                })
+                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to save tracks", t)))
                 .doOnNext(u -> trackCache.put(u.getId(), u))
                 .collectList();
     }
