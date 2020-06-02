@@ -1,21 +1,16 @@
 package com.w1sh.medusa.services;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.resources.ListResponse;
 import com.w1sh.medusa.rest.CardClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import reactor.cache.CacheMono;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.Signal;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
-import java.util.Optional;
 
 @Component
 public final class CardService {
@@ -23,24 +18,20 @@ public final class CardService {
     private static final Logger logger = LoggerFactory.getLogger(CardService.class);
 
     private final CardClient cardClient;
-    private final Cache<String, Card> cardCache;
+    private final MemoryCache<String, Card> cache;
 
     public CardService(CardClient cardClient) {
         this.cardClient = cardClient;
-        this.cardCache = Caffeine.newBuilder()
+        this.cache = new MemoryCacheBuilder<String, Card>()
+                .maximumSize(10000)
                 .expireAfterAccess(Duration.ofHours(6))
-                .recordStats()
+                .defaultFetch(key -> cardClient.getCardByName(key)
+                        .subscribeOn(Schedulers.elastic()))
                 .build();
     }
 
     public Mono<Card> getCardByName(String name) {
-        return CacheMono.lookup(key -> Mono.justOrEmpty(cardCache.getIfPresent(key))
-                .map(Signal::next), name)
-                .onCacheMissResume(() -> cardClient.getCardByName(name)
-                        .subscribeOn(Schedulers.elastic()))
-                .andWriteWith((key, signal) -> Mono.fromRunnable(
-                        () -> Optional.ofNullable(signal.get())
-                                .ifPresent(value -> cardCache.put(key, value))))
+        return cache.get(name)
                 .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to fetch cards with name \"{}\"", name, t)));
     }
 

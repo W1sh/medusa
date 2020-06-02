@@ -1,7 +1,5 @@
 package com.w1sh.medusa.services;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.w1sh.medusa.data.GuildUser;
 import com.w1sh.medusa.mappers.Member2GuildUserMapper;
 import com.w1sh.medusa.repos.GuildUserRepository;
@@ -14,15 +12,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.cache.CacheMono;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.Signal;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -33,7 +28,7 @@ public class GuildUserService {
 
     private final GuildUserRepository repository;
     private final UserService userService;
-    private final Cache<String, List<GuildUser>> guildUsersCache;
+    private final MemoryCache<String, List<GuildUser>> cache;
     private final Member2GuildUserMapper member2GuildUserMapper;
 
     @Value("${points.reward.amount}")
@@ -44,10 +39,12 @@ public class GuildUserService {
         this.repository = repository;
         this.userService = userService;
         this.member2GuildUserMapper = member2GuildUserMapper;
-        this.guildUsersCache = Caffeine.newBuilder()
+        this.cache = new MemoryCacheBuilder<String, List<GuildUser>>()
                 .maximumSize(10000)
-                .expireAfterAccess(Duration.ofHours(12))
-                .recordStats()
+                .expireAfterAccess(Duration.ofHours(6))
+                .defaultFetch(key -> repository.findAllByGuildId(key)
+                        .collectList()
+                        .filter(Predicate.not(List::isEmpty)))
                 .build();
     }
 
@@ -84,22 +81,20 @@ public class GuildUserService {
         return repository.findAllByGuildIdOrderByPoints(guildId)
                 .flatMap(this::fetchUserById)
                 .collectList()
-                .doOnNext(list -> guildUsersCache.put(guildId, list))
+                .doOnNext(list -> cache.put(guildId, list))
                 .flatMapIterable(Function.identity())
                 .take(5);
     }
 
-    private void cache(GuildUser user) {
-        List<GuildUser> guildUsers = guildUsersCache.getIfPresent(user.getGuildId());
-
-        if (guildUsers != null) {
-            guildUsers.remove(user);
-            guildUsers.add(user);
-        } else {
-            guildUsers = new ArrayList<>();
-            guildUsers.add(user);
-            guildUsersCache.put(user.getGuildId(), guildUsers);
-        }
+    private Mono<GuildUser> cache(GuildUser user) {
+        return cache.get(user.getGuildId())
+                .defaultIfEmpty(new ArrayList<>())
+                .doOnNext(users -> {
+                    users.remove(user);
+                    users.add(user);
+                    cache.put(user.getGuildId(), users);
+                })
+                .then(Mono.just(user));
     }
 
     private Mono<GuildUser> fetchUserById(GuildUser guildUser){
@@ -117,14 +112,7 @@ public class GuildUserService {
     }
 
     private Flux<GuildUser> fetchAllGuildUsersInGuild(String guildId) {
-        return CacheMono.lookup(key -> Mono.justOrEmpty(guildUsersCache.getIfPresent(key))
-                .map(Signal::next), guildId)
-                .onCacheMissResume(() -> repository.findAllByGuildId(guildId)
-                        .collectList()
-                        .filter(Predicate.not(List::isEmpty)))
-                .andWriteWith((key, signal) ->
-                        Mono.fromRunnable(() -> Optional.ofNullable(signal.get())
-                                .ifPresent(value -> guildUsersCache.put(key, value))))
+        return cache.get(guildId)
                 .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to retrieve all guild users in guild with guild id \"{}\"", guildId, t)))
                 .flatMapIterable(Function.identity());
     }
