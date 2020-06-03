@@ -18,12 +18,15 @@ public class PlaylistService {
 
     private final UserService userService;
     private final TrackService trackService;
+    private final PlaylistTrackService playlistTrackService;
     private final PlaylistRepository repository;
     private final MemoryCache<String, List<Playlist>> cache;
 
-    public PlaylistService(UserService userService, TrackService trackService, PlaylistRepository repository) {
+    public PlaylistService(UserService userService, TrackService trackService, PlaylistTrackService playlistTrackService,
+                           PlaylistRepository repository) {
         this.userService = userService;
         this.trackService = trackService;
+        this.playlistTrackService = playlistTrackService;
         this.repository = repository;
         this.cache = new MemoryCacheBuilder<String, List<Playlist>>()
                 .maximumSize(10000)
@@ -35,10 +38,13 @@ public class PlaylistService {
     public Mono<Playlist> save(Playlist playlist){
         return userService.findByUserId(playlist.getUser().getUserId())
                 .doOnNext(playlist::setUser)
-                .flatMap(u -> trackService.saveAll(playlist.getTracks()))
-                .flatMap(u -> repository.save(playlist))
+                .flatMap(ignored -> trackService.saveAll(playlist.getTracks()))
+                .doOnNext(playlist::setTracks)
+                .flatMap(ignored -> repository.save(playlist))
                 .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to save playlist", t)))
-                .flatMap(this::cache);
+                .flatMap(this::cache)
+                .flatMapMany(playlistTrackService::save)
+                .then(Mono.just(playlist));
     }
 
     public Mono<List<Playlist>> findAllByUserId(String userId){
