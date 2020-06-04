@@ -10,6 +10,7 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 @Service
 public class PlaylistService {
@@ -49,7 +50,27 @@ public class PlaylistService {
 
     public Mono<List<Playlist>> findAllByUserId(String userId){
         return cache.get(userId)
+                .flatMapIterable(Function.identity())
+                .flatMap(playlist -> trackService.findAllByPlaylistId(playlist)
+                        .doOnNext(playlist::setTracks)
+                        .then(Mono.just(playlist)))
+                .collectList()
                 .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to fetch playlists of user with id \"{}\"", userId, t)));
+    }
+
+    public Mono<Boolean> deleteIndex(String userId, Integer index) {
+        return cache.get(userId)
+                .map(playlists -> {
+                    Playlist removedPlaylist = playlists.remove(index - 1);
+                    cache.put(userId, playlists);
+                    return removedPlaylist;
+                })
+                .flatMap(playlist -> {
+                    Mono<Integer> deleteTracks = playlistTrackService.delete(playlist);
+                    Mono<Void> deletePlaylist = repository.delete(playlist);
+                    return deleteTracks.then(deletePlaylist).then(Mono.just(true));
+                })
+                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to delete playlist and associated tracks", t)));
     }
 
     private Mono<Playlist> cache(Playlist playlist) {

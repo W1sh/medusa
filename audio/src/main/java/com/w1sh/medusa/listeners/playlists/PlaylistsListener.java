@@ -40,7 +40,7 @@ public final class PlaylistsListener implements EventListener<PlaylistsEvent> {
 
         return playlistService.findAllByUserId(userId)
                 .flatMap(playlists -> createEmbed(playlists, event))
-                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to list all user's playlists", throwable)))
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to list all playlists of user", throwable)))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();

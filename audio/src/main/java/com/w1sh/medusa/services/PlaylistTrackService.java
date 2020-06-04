@@ -30,4 +30,9 @@ public class PlaylistTrackService {
         return repository.save(playlistTrack)
                 .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to save playlist track", t)));
     }
+
+    public Mono<Integer> delete(Playlist playlist){
+        return repository.deleteAllByPlaylistId(playlist.getId())
+                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to delete playlist track", t)));
+    }
 }

@@ -2,7 +2,7 @@ package com.w1sh.medusa.listeners.playlists;
 
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.data.Track;
-import com.w1sh.medusa.data.responses.Embed;
+import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.playlists.LoadPlaylistEvent;
 import com.w1sh.medusa.listeners.EventListener;
@@ -10,7 +10,6 @@ import com.w1sh.medusa.services.PlaylistService;
 import com.w1sh.medusa.services.TrackService;
 import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.common.util.Snowflake;
-import discord4j.rest.util.Color;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -65,15 +64,11 @@ public final class LoadPlaylistListener implements EventListener<LoadPlaylistEve
                 .then();
     }
 
-    private Mono<Embed> createEmbed(List<Track> tracks, LoadPlaylistEvent event){
+    private Mono<TextMessage> createEmbed(List<Track> tracks, LoadPlaylistEvent event){
         Long duration = tracks.stream().map(Track::getDuration).reduce(Long::sum).orElse(0L);
 
         return event.getMessage().getChannel()
-                .map(channel -> new Embed(channel, embedCreateSpec -> {
-                    embedCreateSpec.setColor(Color.GREEN);
-                    embedCreateSpec.setTitle("Loaded playlist");
-                    embedCreateSpec.setDescription(String.format("**%d** tracks loaded | %s",
-                            tracks.size(), ResponseUtils.formatDuration(duration)));
-                }));
+                .map(channel -> new TextMessage(channel, String.format("Loaded playlist with **%d** tracks loaded and a total duration of **%s**",
+                        tracks.size(), ResponseUtils.formatDuration(duration)), false));
     }
 }
