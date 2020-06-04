@@ -1,5 +1,6 @@
 package com.w1sh.medusa.services;
 
+import com.w1sh.medusa.data.Playlist;
 import com.w1sh.medusa.data.Track;
 import com.w1sh.medusa.repos.TrackRepository;
 import org.slf4j.Logger;
@@ -30,6 +31,13 @@ public class TrackService {
     public Mono<List<Track>> saveAll(List<Track> tracks){
         return trackRepository.saveAll(tracks)
                 .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to save tracks", t)))
+                .doOnNext(u -> cache.put(u.getId(), u))
+                .collectList();
+    }
+
+    public Mono<List<Track>> findAllByPlaylistId(Playlist playlist){
+        return trackRepository.findAllByPlaylistId(playlist.getId())
+                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to retrieve all tracks from playlist {}", playlist.getId(), t)))
                 .doOnNext(u -> cache.put(u.getId(), u))
                 .collectList();
     }

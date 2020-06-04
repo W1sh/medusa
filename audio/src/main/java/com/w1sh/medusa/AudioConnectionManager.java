@@ -24,6 +24,7 @@ import reactor.core.scheduler.Schedulers;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
@@ -43,10 +44,11 @@ public final class AudioConnectionManager {
         this.audioConnections = new HashMap<>();
     }
 
-    public Mono<TrackScheduler> requestTrack(Long guildId, String trackLink){
-        return Mono.justOrEmpty(audioConnections.get(guildId))
-                .map(AudioConnection::getTrackScheduler)
-                .doOnNext(trackScheduler -> playerManager.loadItem(trackLink, trackScheduler));
+    public void requestTrack(Long guildId, String trackLink){
+        AudioConnection audioConnection = audioConnections.get(guildId);
+        if(audioConnection != null) {
+            playerManager.loadItem(trackLink, audioConnection.getTrackScheduler());
+        }
     }
 
     public Mono<MessageChannel> requestTrack(Event event){
