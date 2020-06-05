@@ -11,8 +11,7 @@ import discord4j.core.object.entity.channel.MessageChannel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-
-import java.awt.*;
+import discord4j.rest.util.Color;
 
 @Component
 public final class StatusEventListener implements EventListener<StatusEvent> {

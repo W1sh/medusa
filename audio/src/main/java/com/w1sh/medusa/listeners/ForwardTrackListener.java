@@ -4,7 +4,7 @@ import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.ForwardTrackEvent;
-import discord4j.rest.util.Snowflake;
+import discord4j.common.util.Snowflake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -44,10 +44,7 @@ public final class ForwardTrackListener implements EventListener<ForwardTrackEve
         return Mono.justOrEmpty(event.getArguments().get(0))
                 .handle(this::parseTime)
                 .zipWith(audioConnectionManager.getAudioConnection(guildId), (time, ac) -> ac.getTrackScheduler().forward(time))
-                .onErrorResume(throwable -> {
-                    logger.error("Failed to forward track to requested time <{}>", event.getArguments().get(0), throwable);
-                    return Mono.empty();
-                })
+                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to forward track to requested time <{}>", event.getArguments().get(0), t)))
                 .transform(isEmpty())
                 .flatMap(b -> createErrorMessage(event))
                 .then();

@@ -8,12 +8,12 @@ import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.services.PlaylistService;
 import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.core.object.entity.Member;
+import discord4j.rest.util.Color;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-import java.awt.*;
 import java.util.List;
 
 @Component
@@ -36,13 +36,11 @@ public final class PlaylistsListener implements EventListener<PlaylistsEvent> {
 
     @Override
     public Mono<Void> execute(PlaylistsEvent event) {
-        return Mono.justOrEmpty(event.getMember())
-                .map(member -> member.getId().asLong())
-                .flatMapMany(playlistService::findAllByUserId)
-                .collectList()
+        String userId = event.getMember().map(member -> member.getId().asString()).orElse("");
+
+        return playlistService.findAllByUserId(userId)
                 .flatMap(playlists -> createEmbed(playlists, event))
-                .onErrorResume(throwable -> Mono.fromRunnable(
-                        () -> logger.error("Failed to list all user's playlists", throwable)))
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to list all playlists of user", throwable)))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
@@ -57,7 +55,7 @@ public final class PlaylistsListener implements EventListener<PlaylistsEvent> {
                     for (Playlist playlist : playlists) {
                         embedCreateSpec.addField(String.format("**%s**", playlist.getName()), String.format("** %s %d track(s)** | %s",
                                 ResponseUtils.BULLET,
-                                playlist.getTracks().size(),
+                                playlist.getTracks() != null ? playlist.getTracks().size() : 0,
                                 ResponseUtils.formatDuration(playlist.getFullDuration())), false);
                     }
                 }));

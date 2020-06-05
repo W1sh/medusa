@@ -9,8 +9,7 @@ import com.w1sh.medusa.utils.CardUtils;
 import com.w1sh.medusa.utils.ResponseUtils;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-
-import java.awt.*;
+import discord4j.rest.util.Color;
 
 @Component
 public final class CardDetailListener implements EventListener<CardDetailEvent> {

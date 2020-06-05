@@ -5,19 +5,21 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.w1sh.medusa.data.events.Event;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.TrackEventListener;
+import discord4j.common.util.Snowflake;
+import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
-import discord4j.rest.util.Snowflake;
+import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.voice.VoiceConnection;
+import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import reactor.util.function.Tuple2;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -41,24 +43,24 @@ public final class AudioConnectionManager {
         this.audioConnections = new HashMap<>();
     }
 
-    public Mono<TrackScheduler> requestTrack(Long guildId, String trackLink){
-        return Mono.justOrEmpty(audioConnections.get(guildId))
-                .map(AudioConnection::getTrackScheduler)
-                .doOnNext(trackScheduler -> playerManager.loadItem(trackLink, trackScheduler));
+    public void requestTrack(Long guildId, String trackLink){
+        AudioConnection audioConnection = audioConnections.get(guildId);
+        if(audioConnection != null) {
+            playerManager.loadItem(trackLink, audioConnection.getTrackScheduler());
+        }
     }
 
     public Mono<MessageChannel> requestTrack(Event event){
         Long guildId = event.getGuildId().map(Snowflake::asLong).orElse(0L);
 
-        return Mono.justOrEmpty(event)
-                .map(ev -> ev.getArguments().get(0))
-                .zipWith(Mono.justOrEmpty(audioConnections.get(guildId))
-                        .switchIfEmpty(joinVoiceChannel(event))
-                        .map(AudioConnection::getTrackScheduler))
+        return Mono.justOrEmpty(audioConnections.get(guildId))
+                .switchIfEmpty(joinVoiceChannel(event))
+                .map(AudioConnection::getTrackScheduler)
+                .zipWith(Mono.justOrEmpty(event.getArguments().get(0)))
                 .flatMap(tuple -> event.getMessage().getChannel()
                         .doOnNext(messageChannel -> {
-                            tuple.getT2().updateResponseChannel(messageChannel);
-                            playerManager.loadItem(tuple.getT1(), tuple.getT2());
+                            tuple.getT1().updateResponseChannel(messageChannel);
+                            playerManager.loadItem(tuple.getT2(), tuple.getT1());
                         }))
                 .doOnSuccess(tuple -> logger.info("Loaded song request to voice channel in guild <{}>", guildId))
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to load requested track", throwable)));
@@ -68,12 +70,13 @@ public final class AudioConnectionManager {
         return Mono.justOrEmpty(event.getMember())
                 .flatMap(Member::getVoiceState)
                 .flatMap(VoiceState::getChannel)
-                .flatMap(chan -> {
+                .flatMap(channel -> {
                     final AudioPlayer audioPlayer = playerManager.createPlayer();
                     final SimpleAudioProvider audioProvider = new SimpleAudioProvider(audioPlayer);
-                    return chan.join(spec1 -> spec1.setProvider(audioProvider))
+                    return channel.join(spec1 -> spec1.setProvider(audioProvider))
                             .zipWith(event.getMessage().getChannel())
-                            .flatMap(tuple -> createAudioConnection(audioPlayer, tuple.getT1(), tuple.getT2()));
+                            .flatMap(tuple -> createAudioConnection(audioPlayer, tuple.getT1(), tuple.getT2()))
+                            .doOnNext(conn -> onDisconnect(conn, channel));
                 })
                 .doOnSuccess(audioConnection -> logger.info("Client joined voice channel in guild <{}>", event.getGuildId().map(Snowflake::asLong).orElse(0L)))
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to join voice channel", throwable)));
@@ -86,6 +89,19 @@ public final class AudioConnectionManager {
                 .doOnNext(connection -> destroyAudioConnection(guildIdSnowflake.asLong(), connection))
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to leave voice channel", throwable)))
                 .hasElement();
+    }
+
+    public void onDisconnect(AudioConnection connection, VoiceChannel voiceChannel){
+        final Publisher<Boolean> isAlone = voiceChannel.getVoiceStates()
+                .count()
+                .map(count -> 1L == count);
+
+        voiceChannel.getClient().getEventDispatcher().on(VoiceStateUpdateEvent.class)
+                .filter(event -> event.getOld().flatMap(VoiceState::getChannelId).map(voiceChannel.getId()::equals).orElse(false))
+                .filterWhen(ignored -> isAlone)
+                .next()
+                .doOnNext(ignored -> connection.destroy())
+                .subscribe();
     }
 
     public Mono<AudioConnection> scheduleLeave(Event event) {
@@ -127,7 +143,7 @@ public final class AudioConnectionManager {
 
         logger.info("Creating new audio connection in guild <{}>", guildId);
         audioConnections.put(guildId, audioConnection);
-        return Mono.just(audioConnections.get(guildId));
+        return Mono.just(audioConnection);
     }
 
     private void destroyAudioConnection(Long guildId, AudioConnection connection){

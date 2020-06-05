@@ -12,15 +12,15 @@ import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.utils.ResponseUtils;
+import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
-import discord4j.rest.util.Snowflake;
+import discord4j.rest.util.Color;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import java.awt.*;
 import java.util.Queue;
 import java.util.function.Function;
 

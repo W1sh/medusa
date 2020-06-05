@@ -8,8 +8,7 @@ import com.w1sh.medusa.services.CardService;
 import com.w1sh.medusa.utils.CardUtils;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-
-import java.awt.*;
+import discord4j.rest.util.Color;
 
 @Component
 public final class CardImageListener implements EventListener<CardImageEvent> {

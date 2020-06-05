@@ -3,9 +3,9 @@ package com.w1sh.medusa.validators;
 import com.w1sh.medusa.data.events.Event;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.rest.util.PermissionSet;
-import discord4j.rest.util.Snowflake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -30,7 +30,7 @@ public final class PermissionsValidator implements Validator {
     public Mono<Boolean> validate(Event event) {
         return event.getMessage().getChannel()
                 .ofType(GuildChannel.class)
-                .transform(flatZipWith(event.getClient().getSelfId(), this::hasPermissions))
+                .transform(flatZipWith(Mono.just(event.getClient().getSelfId()), this::hasPermissions))
                 .flatMap(effPermissions -> Flux.fromIterable(event.getPermissions())
                         .all(effPermissions::contains)
                         .flatMap(bool -> Boolean.FALSE.equals(bool) ? createErrorMessage(event) : Mono.empty()))

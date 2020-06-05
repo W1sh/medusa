@@ -10,7 +10,7 @@ public final class Reactive {
     private Reactive() {}
 
     public static <A> Function<Mono<Boolean>, Mono<A>> ifElse(Function<Boolean, Mono<A>> ifTransformer,
-                                                       Function<Boolean, Mono<A>> elseTransformer) {
+                                                              Function<Boolean, Mono<A>> elseTransformer) {
         return pipeline -> pipeline.flatMap(bool -> Boolean.TRUE.equals(bool) ? ifTransformer.apply(true) : elseTransformer.apply(false));
     }
 
