@@ -20,7 +20,8 @@ public class TrackService {
     public TrackService(TrackRepository trackRepository) {
         this.trackRepository = trackRepository;
         this.cache = new MemoryCacheBuilder<Integer, Track>()
-                .maximumSize(10000)
+                .initialCapacity(100)
+                .maximumSize(5000)
                 .expireAfterAccess(Duration.ofHours(6))
                 .defaultFetch(key -> Mono.empty())
                 .build();

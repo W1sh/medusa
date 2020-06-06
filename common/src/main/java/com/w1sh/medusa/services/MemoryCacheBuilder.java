@@ -11,6 +11,7 @@ import java.util.function.Function;
 public class MemoryCacheBuilder<K, V> {
 
     private long maximumSize;
+    private int initialCapacity;
     private Duration expireAfterAccess;
     private Function<K, Mono<V>> defaultFetch;
 
@@ -24,6 +25,11 @@ public class MemoryCacheBuilder<K, V> {
         return this;
     }
 
+    protected MemoryCacheBuilder<K, V> initialCapacity(int initialCapacity){
+        this.initialCapacity = initialCapacity;
+        return this;
+    }
+
     protected MemoryCacheBuilder<K, V> defaultFetch(@NonNull Function<K, Mono<V>> defaultFetch){
         this.defaultFetch = defaultFetch;
         return this;
@@ -31,6 +37,7 @@ public class MemoryCacheBuilder<K, V> {
 
     protected MemoryCache<K, V> build(){
         final Cache<K, V> cache = Caffeine.newBuilder()
+                .initialCapacity(initialCapacity)
                 .maximumSize(maximumSize)
                 .expireAfterAccess(expireAfterAccess)
                 .recordStats()

@@ -17,7 +17,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 
 @Component
@@ -37,13 +36,13 @@ public final class LoadPlaylistListener implements EventListener<LoadPlaylistEve
 
     @Override
     public Mono<Void> execute(LoadPlaylistEvent event) {
-        Integer playlistId = Optional.of(event.getMessage().getContent()).map(c -> Integer.parseInt(c.split(" ")[1])).orElse(1);
+        int index = Integer.parseInt(event.getArguments().get(0));
         String userId = event.getMember().map(member -> member.getId().asString()).orElse("");
         Snowflake guildId = event.getGuildId().orElse(Snowflake.of(0L));
 
         return playlistService.findAllByUserId(userId)
                 .flatMapIterable(Function.identity())
-                .take(playlistId)
+                .take(index)
                 .last()
                 .flatMap(trackService::findAllByPlaylistId)
                 .flatMapMany(Flux::fromIterable)
