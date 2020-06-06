@@ -5,6 +5,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import com.w1sh.medusa.data.LoopAction;
 import com.w1sh.medusa.listeners.TrackEventListener;
 import discord4j.core.object.entity.channel.MessageChannel;
 import org.slf4j.Logger;
@@ -26,11 +27,14 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     private final TrackEventListener trackEventListener;
     private final BlockingDeque<AudioTrack> queue;
 
+    private LoopAction loopAction;
+
     TrackScheduler(final AudioPlayer player, final TrackEventListener trackEventListener) {
         this.player = player;
         this.trackEventListener = trackEventListener;
         this.player.addListener(trackEventListener);
         this.queue = new LinkedBlockingDeque<>(MAX_QUEUE_SIZE);
+        this.loopAction = LoopAction.OFF;
     }
 
     public void nextTrack(boolean skip) {
@@ -55,6 +59,12 @@ public final class TrackScheduler implements AudioLoadResultHandler {
 
     public void replay(){
         player.getPlayingTrack().setPosition(Math.negateExact(player.getPlayingTrack().getPosition()));
+    }
+
+    public LoopAction loop(MessageChannel channel, String possibleLoop) {
+        trackEventListener.setMessageChannel(channel);
+        loopAction = LoopAction.of(possibleLoop);
+        return loopAction;
     }
 
     public AudioTrack rewind(long milliseconds) {
@@ -106,6 +116,13 @@ public final class TrackScheduler implements AudioLoadResultHandler {
             if (skip) {
                 trackEventListener.onTrackSkip(this.player.getPlayingTrack());
                 player.stopTrack();
+            }
+            switch (loopAction) {
+                case TRACK: queue.offerFirst(this.player.getPlayingTrack().makeClone());
+                    break;
+                case QUEUE: queue.offerLast(this.player.getPlayingTrack().makeClone());
+                    break;
+                default: break;
             }
             player.playTrack(nextTrack);
         }
