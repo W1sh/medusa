@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
-public class GuildUserConverter {
+public final class GuildUserConverter {
 
     private GuildUserConverter(){}
 

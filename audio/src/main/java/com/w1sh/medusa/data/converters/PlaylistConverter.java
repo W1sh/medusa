@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
-public class PlaylistConverter {
+public final class PlaylistConverter {
 
     private PlaylistConverter() {}
 
