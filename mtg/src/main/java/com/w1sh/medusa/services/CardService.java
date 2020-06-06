@@ -23,7 +23,7 @@ public final class CardService {
         this.cache = new MemoryCacheBuilder<String, Card>()
                 .maximumSize(10000)
                 .expireAfterAccess(Duration.ofHours(6))
-                .defaultFetch(key -> cardClient.getCardByName(key)
+                .fetch(key -> cardClient.getCardByName(key)
                         .subscribeOn(Schedulers.elastic()))
                 .build();
     }

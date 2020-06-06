@@ -10,12 +10,6 @@ public abstract class Response implements Comparable<Response>{
     private final boolean fragment;
     private final Integer order;
 
-    public Response(MessageChannel channel, boolean fragment) {
-        this.channel = channel;
-        this.fragment = fragment;
-        this.order = 1;
-    }
-
     public Response(MessageChannel channel, boolean fragment, Integer order) {
         this.channel = channel;
         this.fragment = fragment;
@@ -28,10 +22,6 @@ public abstract class Response implements Comparable<Response>{
 
     public boolean isFragment() {
         return fragment;
-    }
-
-    public Integer getOrder() {
-        return order;
     }
 
     @Override

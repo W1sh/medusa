@@ -21,7 +21,7 @@ public class UserService {
         this.cache = new MemoryCacheBuilder<String, User>()
                 .maximumSize(10000)
                 .expireAfterAccess(Duration.ofHours(6))
-                .defaultFetch(key -> repository.findByUserId(key).switchIfEmpty(save(new User(key))))
+                .fetch(key -> repository.findByUserId(key).switchIfEmpty(save(new User(key))))
                 .build();
     }
 

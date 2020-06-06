@@ -11,7 +11,7 @@ public class Embed extends Response{
     private final Consumer<EmbedCreateSpec> embedCreateSpec;
 
     public Embed(MessageChannel channel, Consumer<EmbedCreateSpec> embedCreateSpec) {
-        super(channel, false);
+        super(channel, false, 1);
         this.embedCreateSpec = embedCreateSpec;
     }
 

@@ -13,7 +13,7 @@ public class MemoryCacheBuilder<K, V> {
     private long maximumSize;
     private int initialCapacity;
     private Duration expireAfterAccess;
-    private Function<K, Mono<V>> defaultFetch;
+    private Function<K, Mono<V>> fetch;
 
     protected MemoryCacheBuilder<K, V> expireAfterAccess(@NonNull Duration expireAfterAccess){
         this.expireAfterAccess = expireAfterAccess;
@@ -30,8 +30,8 @@ public class MemoryCacheBuilder<K, V> {
         return this;
     }
 
-    protected MemoryCacheBuilder<K, V> defaultFetch(@NonNull Function<K, Mono<V>> defaultFetch){
-        this.defaultFetch = defaultFetch;
+    protected MemoryCacheBuilder<K, V> fetch(@NonNull Function<K, Mono<V>> fetch){
+        this.fetch = fetch;
         return this;
     }
 
@@ -42,6 +42,6 @@ public class MemoryCacheBuilder<K, V> {
                 .expireAfterAccess(expireAfterAccess)
                 .recordStats()
                 .build();
-        return new MemoryCache<>(cache, defaultFetch);
+        return new MemoryCache<>(cache, fetch);
     }
 }

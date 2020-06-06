@@ -23,7 +23,7 @@ public class TrackService {
                 .initialCapacity(100)
                 .maximumSize(5000)
                 .expireAfterAccess(Duration.ofHours(6))
-                .defaultFetch(key -> Mono.empty())
+                .fetch(key -> Mono.empty())
                 .build();
     }
 

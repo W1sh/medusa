@@ -15,7 +15,7 @@ import java.util.function.Function;
 public class MemoryCache<K, V> {
 
     private final Cache<K, V> cache;
-    private final Function<K, Mono<V>> defaultFetch;
+    private final Function<K, Mono<V>> fetch;
 
     protected void put(K key, V value) {
         log.debug("Caching new value of type {}", value.getClass().getSimpleName());
@@ -25,7 +25,7 @@ public class MemoryCache<K, V> {
     protected Mono<V> get(K keyProvided){
         return CacheMono.lookup(key -> Mono.justOrEmpty(cache.getIfPresent(keyProvided))
                 .map(Signal::next), keyProvided)
-                .onCacheMissResume(() -> defaultFetch.apply(keyProvided))
+                .onCacheMissResume(() -> fetch.apply(keyProvided))
                 .andWriteWith(this::writeWith);
     }
 

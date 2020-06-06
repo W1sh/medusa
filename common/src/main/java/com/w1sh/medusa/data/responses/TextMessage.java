@@ -9,7 +9,7 @@ public class TextMessage extends Response {
     private final String content;
 
     public TextMessage(MessageChannel channel, String content, boolean fragment) {
-        super(channel, fragment);
+        super(channel, fragment, 1);
         this.content = content;
     }
 

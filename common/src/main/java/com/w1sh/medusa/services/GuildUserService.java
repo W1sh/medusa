@@ -40,7 +40,7 @@ public class GuildUserService {
         this.cache = new MemoryCacheBuilder<String, List<GuildUser>>()
                 .maximumSize(10000)
                 .expireAfterAccess(Duration.ofHours(6))
-                .defaultFetch(key -> repository.findAllByGuildId(key)
+                .fetch(key -> repository.findAllByGuildId(key)
                         .collectList()
                         .filter(Predicate.not(List::isEmpty)))
                 .build();

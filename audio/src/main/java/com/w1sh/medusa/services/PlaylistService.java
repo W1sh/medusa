@@ -28,9 +28,9 @@ public class PlaylistService {
         this.playlistTrackService = playlistTrackService;
         this.repository = repository;
         this.cache = new MemoryCacheBuilder<String, List<Playlist>>()
-                .maximumSize(10000)
+                .maximumSize(1000)
                 .expireAfterAccess(Duration.ofHours(6))
-                .defaultFetch(key -> repository.findAllByUserId(key).collectList())
+                .fetch(key -> repository.findAllByUserId(key).collectList())
                 .build();
     }
 
