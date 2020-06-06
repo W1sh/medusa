@@ -6,20 +6,17 @@ import com.w1sh.medusa.events.CardImageEvent;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.services.CardService;
 import com.w1sh.medusa.utils.CardUtils;
+import discord4j.rest.util.Color;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import discord4j.rest.util.Color;
 
 @Component
+@RequiredArgsConstructor
 public final class CardImageListener implements EventListener<CardImageEvent> {
 
     private final CardService cardService;
     private final ResponseDispatcher responseDispatcher;
-
-    public CardImageListener(CardService cardService, ResponseDispatcher responseDispatcher) {
-        this.cardService = cardService;
-        this.responseDispatcher = responseDispatcher;
-    }
 
     @Override
     public Class<CardImageEvent> getEventType() {

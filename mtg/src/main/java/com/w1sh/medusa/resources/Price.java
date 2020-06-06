@@ -1,7 +1,9 @@
 package com.w1sh.medusa.resources;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
 
+@Data
 @JsonIgnoreProperties(value = {"usd_foil", "tix"})
 public class Price {
 
@@ -9,19 +11,4 @@ public class Price {
 
     private String usd;
 
-    public String getEur() {
-        return eur;
-    }
-
-    public void setEur(String eur) {
-        this.eur = eur;
-    }
-
-    public String getUsd() {
-        return usd;
-    }
-
-    public void setUsd(String usd) {
-        this.usd = usd;
-    }
 }

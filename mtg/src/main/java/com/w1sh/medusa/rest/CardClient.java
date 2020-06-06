@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.resources.ListResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
@@ -16,15 +16,11 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public final class CardClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(CardClient.class);
-
     private final ObjectMapper objectMapper;
-
-    public CardClient(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     public Mono<ListResponse<Card>> getCardsByName(String name){
         return HttpClient.create()
@@ -35,7 +31,7 @@ public final class CardClient {
                         return byteBufMono.asString().map(this::parseMultiple);
                     }else return Mono.error(new Exception("Failed to retrieve cards from Scryfall API"));
                 }))
-                .doOnNext(s -> logger.info("Queried Scryfall API for all cards with name like \"{}\"", name));
+                .doOnNext(s -> log.info("Queried Scryfall API for all cards with name like \"{}\"", name));
     }
 
     public Mono<Card> getCardByName(String name){
@@ -47,14 +43,14 @@ public final class CardClient {
                         return byteBufMono.asString().map(this::parse);
                     }else return Mono.error(new Exception("Failed to retrieve cards from Scryfall API"));
                 }))
-                .doOnNext(s -> logger.info("Queried Scryfall API for card with name similar to \"{}\"", name));
+                .doOnNext(s -> log.info("Queried Scryfall API for card with name similar to \"{}\"", name));
     }
 
     private Card parse(String json){
         try {
             return objectMapper.readValue(json, Card.class);
         } catch (JsonProcessingException e) {
-            logger.error("Error while parsing JSON received from Scryfall", e);
+            log.error("Error while parsing JSON received from Scryfall", e);
         }
         return null;
     }
@@ -63,7 +59,7 @@ public final class CardClient {
         try {
             return objectMapper.readValue(json, new TypeReference<>() {});
         } catch (JsonProcessingException e) {
-            logger.error("Error while parsing JSON received from Scryfall", e);
+            log.error("Error while parsing JSON received from Scryfall", e);
         }
         return new ListResponse<>();
     }
