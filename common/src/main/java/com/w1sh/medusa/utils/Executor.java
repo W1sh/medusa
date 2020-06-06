@@ -2,8 +2,8 @@ package com.w1sh.medusa.utils;
 
 import com.w1sh.medusa.services.PointDistributionService;
 import discord4j.core.GatewayDiscordClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.scheduler.Schedulers;
@@ -11,9 +11,9 @@ import reactor.core.scheduler.Schedulers;
 import java.util.concurrent.TimeUnit;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public final class Executor {
-
-    private static final Logger logger = LoggerFactory.getLogger(Executor.class);
 
     private final PointDistributionService pointDistributionService;
 
@@ -22,10 +22,6 @@ public final class Executor {
 
     @Value("${points.reward.period}")
     private String rewardPeriod;
-
-    public Executor(PointDistributionService pointDistributionService) {
-        this.pointDistributionService = pointDistributionService;
-    }
 
     public void startPointDistribution(GatewayDiscordClient gateway) {
         Schedulers.boundedElastic().schedulePeriodically(() -> schedulePointDistribution(gateway),
@@ -36,12 +32,12 @@ public final class Executor {
 
     public void schedulePointDistribution(GatewayDiscordClient gateway) {
         long start = System.currentTimeMillis();
-        logger.info("Sending points to all active members");
+        log.info("Sending points to all active members");
 
         gateway.getGuilds()
                 .collectList()
                 .flatMap(pointDistributionService::distribute)
-                .doAfterTerminate(() -> logger.info("Finished point distribution - {} ms elapsed", (System.currentTimeMillis() - start)))
+                .doAfterTerminate(() -> log.info("Finished point distribution - {} ms elapsed", (System.currentTimeMillis() - start)))
                 .subscribeOn(Schedulers.elastic())
                 .subscribe();
     }

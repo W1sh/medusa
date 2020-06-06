@@ -1,10 +1,12 @@
 package com.w1sh.medusa.data;
 
+import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Embedded;
 import org.springframework.data.relational.core.mapping.Table;
 
+@Data
 @Table(value = "core.guilds_users")
 public class GuildUser {
 
@@ -32,43 +34,8 @@ public class GuildUser {
         this.audit = new Audit();
     }
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public String getGuildId() {
-        return guildId;
-    }
-
-    public void setGuildId(String guildId) {
-        this.guildId = guildId;
-    }
-
     public Long getPoints() {
         return points != null ? points : 0;
     }
 
-    public void setPoints(Long points) {
-        this.points = points;
-    }
-
-    public Audit getAudit() {
-        return audit;
-    }
-
-    public void setAudit(Audit audit) {
-        this.audit = audit;
-    }
 }

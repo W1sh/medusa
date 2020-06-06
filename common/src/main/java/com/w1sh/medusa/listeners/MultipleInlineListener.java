@@ -3,19 +3,16 @@ package com.w1sh.medusa.listeners;
 import com.w1sh.medusa.data.events.MultipleInlineEvent;
 import com.w1sh.medusa.dispatchers.MedusaEventDispatcher;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
+@RequiredArgsConstructor
 public final class MultipleInlineListener implements EventListener<MultipleInlineEvent> {
 
     private final MedusaEventDispatcher medusaEventDispatcher;
     private final ResponseDispatcher responseDispatcher;
-
-    public MultipleInlineListener(MedusaEventDispatcher medusaEventDispatcher, ResponseDispatcher responseDispatcher) {
-        this.medusaEventDispatcher = medusaEventDispatcher;
-        this.responseDispatcher = responseDispatcher;
-    }
 
     @Override
     public Class<MultipleInlineEvent> getEventType() {
