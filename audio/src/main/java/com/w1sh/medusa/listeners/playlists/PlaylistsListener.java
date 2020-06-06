@@ -9,25 +9,20 @@ import com.w1sh.medusa.services.PlaylistService;
 import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.core.object.entity.Member;
 import discord4j.rest.util.Color;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public final class PlaylistsListener implements EventListener<PlaylistsEvent> {
-
-    private static final Logger logger = LoggerFactory.getLogger(PlaylistsListener.class);
 
     private final PlaylistService playlistService;
     private final ResponseDispatcher responseDispatcher;
-
-    public PlaylistsListener(ResponseDispatcher responseDispatcher, PlaylistService playlistService) {
-        this.responseDispatcher = responseDispatcher;
-        this.playlistService = playlistService;
-    }
 
     @Override
     public Class<PlaylistsEvent> getEventType() {
@@ -40,7 +35,7 @@ public final class PlaylistsListener implements EventListener<PlaylistsEvent> {
 
         return playlistService.findAllByUserId(userId)
                 .flatMap(playlists -> createEmbed(playlists, event))
-                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to list all playlists of user", throwable)))
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> log.error("Failed to list all playlists of user", throwable)))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();

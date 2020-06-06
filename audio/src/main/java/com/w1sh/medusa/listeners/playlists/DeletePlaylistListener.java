@@ -5,23 +5,18 @@ import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.playlists.DeletePlaylistEvent;
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.services.PlaylistService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public final class DeletePlaylistListener implements EventListener<DeletePlaylistEvent> {
-
-    private static final Logger logger = LoggerFactory.getLogger(DeletePlaylistListener.class);
 
     private final PlaylistService playlistService;
     private final ResponseDispatcher responseDispatcher;
-
-    public DeletePlaylistListener(PlaylistService playlistService, ResponseDispatcher responseDispatcher) {
-        this.playlistService = playlistService;
-        this.responseDispatcher = responseDispatcher;
-    }
 
     @Override
     public Class<DeletePlaylistEvent> getEventType() {
@@ -35,7 +30,7 @@ public final class DeletePlaylistListener implements EventListener<DeletePlaylis
 
         return playlistService.deleteIndex(userId, index)
                 .flatMap(ignored -> createSuccessTextMessage(event))
-                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to delete playlist", throwable)))
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> log.error("Failed to delete playlist", throwable)))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();

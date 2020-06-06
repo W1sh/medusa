@@ -10,8 +10,8 @@ import com.w1sh.medusa.services.PlaylistService;
 import com.w1sh.medusa.services.TrackService;
 import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.common.util.Snowflake;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -21,22 +21,14 @@ import java.util.Optional;
 import java.util.function.Function;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public final class LoadPlaylistListener implements EventListener<LoadPlaylistEvent> {
-
-    private static final Logger logger = LoggerFactory.getLogger(LoadPlaylistListener.class);
 
     private final PlaylistService playlistService;
     private final TrackService trackService;
     private final ResponseDispatcher responseDispatcher;
     private final AudioConnectionManager audioConnectionManager;
-
-    public LoadPlaylistListener(PlaylistService playlistService, TrackService trackService,
-                                ResponseDispatcher responseDispatcher, AudioConnectionManager audioConnectionManager) {
-        this.playlistService = playlistService;
-        this.trackService = trackService;
-        this.responseDispatcher = responseDispatcher;
-        this.audioConnectionManager = audioConnectionManager;
-    }
 
     @Override
     public Class<LoadPlaylistEvent> getEventType() {
@@ -58,7 +50,7 @@ public final class LoadPlaylistListener implements EventListener<LoadPlaylistEve
                 .doOnNext(track -> audioConnectionManager.requestTrack(guildId.asLong(), track.getUri()))
                 .collectList()
                 .flatMap(tracks -> createEmbed(tracks, event))
-                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to load playlist", throwable)))
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> log.error("Failed to load playlist", throwable)))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();

@@ -3,22 +3,18 @@ package com.w1sh.medusa.services;
 import com.w1sh.medusa.data.Playlist;
 import com.w1sh.medusa.data.PlaylistTrack;
 import com.w1sh.medusa.repos.PlaylistTrackRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class PlaylistTrackService {
 
-    private static final Logger logger = LoggerFactory.getLogger(PlaylistTrackService.class);
-
     private final PlaylistTrackRepository repository;
-
-    public PlaylistTrackService(PlaylistTrackRepository repository) {
-        this.repository = repository;
-    }
 
     public Flux<PlaylistTrack> save(Playlist playlist){
         return Flux.fromIterable(playlist.getTracks())
@@ -28,11 +24,11 @@ public class PlaylistTrackService {
 
     public Mono<PlaylistTrack> save(PlaylistTrack playlistTrack){
         return repository.save(playlistTrack)
-                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to save playlist track", t)));
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to save playlist track", t)));
     }
 
     public Mono<Integer> delete(Playlist playlist){
         return repository.deleteAllByPlaylistId(playlist.getId())
-                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to delete playlist track", t)));
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete playlist track", t)));
     }
 }

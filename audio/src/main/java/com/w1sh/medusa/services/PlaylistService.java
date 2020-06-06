@@ -2,8 +2,7 @@ package com.w1sh.medusa.services;
 
 import com.w1sh.medusa.data.Playlist;
 import com.w1sh.medusa.repos.PlaylistRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -13,9 +12,8 @@ import java.util.List;
 import java.util.function.Function;
 
 @Service
+@Slf4j
 public class PlaylistService {
-
-    private static final Logger logger = LoggerFactory.getLogger(PlaylistService.class);
 
     private final UserService userService;
     private final TrackService trackService;
@@ -42,7 +40,7 @@ public class PlaylistService {
                 .flatMap(ignored -> trackService.saveAll(playlist.getTracks()))
                 .doOnNext(playlist::setTracks)
                 .flatMap(ignored -> repository.save(playlist))
-                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to save playlist", t)))
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to save playlist", t)))
                 .flatMap(this::cache)
                 .flatMapMany(playlistTrackService::save)
                 .then(Mono.just(playlist));
@@ -55,7 +53,7 @@ public class PlaylistService {
                         .doOnNext(playlist::setTracks)
                         .then(Mono.just(playlist)))
                 .collectList()
-                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to fetch playlists of user with id \"{}\"", userId, t)));
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to fetch playlists of user with id \"{}\"", userId, t)));
     }
 
     public Mono<Boolean> deleteIndex(String userId, Integer index) {
@@ -70,7 +68,7 @@ public class PlaylistService {
                     Mono<Void> deletePlaylist = repository.delete(playlist);
                     return deleteTracks.then(deletePlaylist).then(Mono.just(true));
                 })
-                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to delete playlist and associated tracks", t)));
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete playlist and associated tracks", t)));
     }
 
     private Mono<Playlist> cache(Playlist playlist) {

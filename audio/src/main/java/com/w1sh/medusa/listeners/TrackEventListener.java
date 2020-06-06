@@ -16,17 +16,15 @@ import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.rest.util.Color;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.Queue;
 import java.util.function.Function;
 
+@Slf4j
 public final class TrackEventListener extends AudioEventAdapter {
-
-    private static final Logger logger = LoggerFactory.getLogger(TrackEventListener.class);
 
     private final AudioConnectionManager audioConnectionManager;
     private final Long guildId;
@@ -44,7 +42,7 @@ public final class TrackEventListener extends AudioEventAdapter {
     public void onPlayerPause(AudioPlayer player) {
         Mono.justOrEmpty(messageChannel)
                 .map(c -> new TextMessage(c, ":pause_button: The audio player was paused. Use `!resume` to unpause", false))
-                .doOnSuccess(msg -> logger.info("Paused audio player in guild with id <{}>", guildId))
+                .doOnSuccess(msg -> log.info("Paused audio player in guild with id <{}>", guildId))
                 .transform(dispatchElastic())
                 .subscribe();
     }
@@ -53,7 +51,7 @@ public final class TrackEventListener extends AudioEventAdapter {
     public void onPlayerResume(AudioPlayer player) {
         Mono.justOrEmpty(messageChannel)
                 .map(c -> new TextMessage(c, ":arrow_forward: The audio player was resumed", false))
-                .doOnSuccess(msg -> logger.info("Resumed audio player in guild with id <{}>", guildId))
+                .doOnSuccess(msg -> log.info("Resumed audio player in guild with id <{}>", guildId))
                 .transform(dispatchElastic())
                 .subscribe();
     }
@@ -70,7 +68,7 @@ public final class TrackEventListener extends AudioEventAdapter {
                                                 track.getInfo().title,
                                                 track.getInfo().uri,
                                                 ResponseUtils.formatDuration(track.getInfo().length)), false)))
-                .doOnSuccess(e -> logger.info("Starting track <{}> in guild with id <{}>", track.getInfo().title, guildId))
+                .doOnSuccess(e -> log.info("Starting track <{}> in guild with id <{}>", track.getInfo().title, guildId))
                 .transform(dispatchElastic())
                 .subscribe();
     }
@@ -84,19 +82,19 @@ public final class TrackEventListener extends AudioEventAdapter {
                         trackScheduler.nextTrack(false);
                     }
                 })
-                .doOnSuccess(ts -> logger.info("Track <{}> on guild <{}> ended with reason <{}>", track.getInfo().title, guildId, endReason))
+                .doOnSuccess(ts -> log.info("Track <{}> on guild <{}> ended with reason <{}>", track.getInfo().title, guildId, endReason))
                 .subscribeOn(Schedulers.elastic())
                 .subscribe();
     }
 
     @Override
     public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
-        logger.error("Track <{}> on guild <{}> failed with exception", track.getInfo().title, guildId, exception);
+        log.error("Track <{}> on guild <{}> failed with exception", track.getInfo().title, guildId, exception);
     }
 
     @Override
     public void onTrackStuck(AudioPlayer player, AudioTrack track, long thresholdMs) {
-        logger.info("Track <{}> on guild <{}> was stuck for <{}>", track.getInfo().title, guildId, thresholdMs);
+        log.info("Track <{}> on guild <{}> was stuck for <{}>", track.getInfo().title, guildId, thresholdMs);
     }
 
 
@@ -109,7 +107,7 @@ public final class TrackEventListener extends AudioEventAdapter {
                                 track.getInfo().title,
                                 track.getInfo().uri,
                                 ResponseUtils.formatDuration(track.getInfo().length)), true)))
-                .doOnSuccess(e -> logger.info("Loaded track <{}> in guild with id <{}>", track.getInfo().title, guildId))
+                .doOnSuccess(e -> log.info("Loaded track <{}> in guild with id <{}>", track.getInfo().title, guildId))
                 .transform(dispatchElastic())
                 .subscribe();
     }
@@ -129,7 +127,7 @@ public final class TrackEventListener extends AudioEventAdapter {
                                 .setColor(Color.GREEN)
                                 .setDescription(String.format("Stopped queue%n%nCleared all tracks from queue. Queue is now empty."))
                                 .setFooter("The bot will automatically leave after 2 min unless new tracks are added.", null))))
-                .doOnSuccess(msg -> logger.info("Stopped audio player in guild with id <{}>", guildId))
+                .doOnSuccess(msg -> log.info("Stopped audio player in guild with id <{}>", guildId))
                 .transform(dispatchElastic())
                 .subscribe();
     }
@@ -137,7 +135,7 @@ public final class TrackEventListener extends AudioEventAdapter {
     public void onTrackSkip(AudioTrack audioTrack){
         Mono.justOrEmpty(messageChannel)
                 .map(channel -> new TextMessage(channel, String.format(":track_next: Skipped track %s", audioTrack.getInfo().title), false))
-                .doOnSuccess(e -> logger.info("Skipped track <{}> in guild with id <{}>", audioTrack.getInfo().title, guildId))
+                .doOnSuccess(e -> log.info("Skipped track <{}> in guild with id <{}>", audioTrack.getInfo().title, guildId))
                 .transform(dispatchElastic())
                 .subscribe();
     }
@@ -145,7 +143,7 @@ public final class TrackEventListener extends AudioEventAdapter {
     public void onPlaylistClear(Integer queueSize){
         Mono.justOrEmpty(messageChannel)
                 .map(channel -> new TextMessage(channel, String.format("Cleared %d tracks from the queue", queueSize), false))
-                .doOnSuccess(e -> logger.info("Cleared all tracks from queue in guild with id <{}>", guildId))
+                .doOnSuccess(e -> log.info("Cleared all tracks from queue in guild with id <{}>", guildId))
                 .transform(dispatchElastic())
                 .subscribe();
     }
@@ -153,7 +151,7 @@ public final class TrackEventListener extends AudioEventAdapter {
     public void onPlaylistShuffle(){
         Mono.justOrEmpty(messageChannel)
                 .map(channel -> new TextMessage(channel, "The queue has been shuffled!", false))
-                .doOnSuccess(e -> logger.info("Shuffled queue in guild with id <{}>", guildId))
+                .doOnSuccess(e -> log.info("Shuffled queue in guild with id <{}>", guildId))
                 .transform(dispatchElastic())
                 .subscribe();
     }

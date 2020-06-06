@@ -5,11 +5,13 @@ import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.JoinVoiceChannelEvent;
 import discord4j.core.object.entity.Member;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
+@RequiredArgsConstructor
 public final class JoinVoiceChannelListener implements EventListener<JoinVoiceChannelEvent> {
 
     @Value("${event.voice.join}")
@@ -17,11 +19,6 @@ public final class JoinVoiceChannelListener implements EventListener<JoinVoiceCh
 
     private final ResponseDispatcher responseDispatcher;
     private final AudioConnectionManager audioConnectionManager;
-
-    public JoinVoiceChannelListener(ResponseDispatcher responseDispatcher, AudioConnectionManager audioConnectionManager) {
-        this.responseDispatcher = responseDispatcher;
-        this.audioConnectionManager = audioConnectionManager;
-    }
 
     @Override
     public Class<JoinVoiceChannelEvent> getEventType() {
