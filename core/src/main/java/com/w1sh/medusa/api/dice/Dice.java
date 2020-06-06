@@ -3,26 +3,22 @@ package com.w1sh.medusa.api.dice;
 import com.w1sh.medusa.data.events.Event;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.util.Random;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class Dice {
 
-    private static final Logger logger = LoggerFactory.getLogger(Dice.class);
     public static final String ROLL_ARGUMENT_DELIMITER = "-";
 
     private final Random random;
     private final ResponseDispatcher responseDispatcher;
-
-    public Dice(Random random, ResponseDispatcher responseDispatcher){
-        this.random = random;
-        this.responseDispatcher = responseDispatcher;
-    }
 
     public Mono<Integer> roll(Integer min, Integer max){
         return Mono.just(random.nextInt(min + max + 1) + min);
@@ -34,8 +30,7 @@ public class Dice {
                 .filter(limits -> limits.length == 2)
                 .map(limits -> new int[]{Integer.parseInt(limits[0]), Integer.parseInt(limits[1])})
                 .filter(limits -> limits[1] > limits[0])
-                .onErrorResume(throwable -> Mono.fromRunnable(
-                        () -> logger.error("Failed to parse arguments", throwable)))
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> log.error("Failed to parse arguments", throwable)))
                 .hasElement()
                 .flatMap(bool -> {
                     if(Boolean.FALSE.equals(bool)){

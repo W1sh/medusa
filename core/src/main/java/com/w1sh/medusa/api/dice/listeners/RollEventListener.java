@@ -6,12 +6,14 @@ import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import discord4j.core.object.entity.Member;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
+@RequiredArgsConstructor
 public final class RollEventListener implements EventListener<RollEvent> {
 
     private final ResponseDispatcher responseDispatcher;
@@ -21,11 +23,6 @@ public final class RollEventListener implements EventListener<RollEvent> {
     private String rollStart;
     @Value("${event.roll.result}")
     private String rollResult;
-
-    public RollEventListener(ResponseDispatcher responseDispatcher, Dice dice) {
-        this.responseDispatcher = responseDispatcher;
-        this.dice = dice;
-    }
 
     @Override
     public Class<RollEvent> getEventType() {

@@ -8,19 +8,16 @@ import com.w1sh.medusa.listeners.EventListener;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.discordjson.json.ActivityUpdateRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
+@RequiredArgsConstructor
 public final class ChangePrefixEventListener implements EventListener<ChangePrefixEvent> {
 
     private final ResponseDispatcher responseDispatcher;
     private final EventFactory eventFactory;
-
-    public ChangePrefixEventListener(ResponseDispatcher responseDispatcher, EventFactory eventFactory) {
-        this.responseDispatcher = responseDispatcher;
-        this.eventFactory = eventFactory;
-    }
 
     @Override
     public Class<ChangePrefixEvent> getEventType() {

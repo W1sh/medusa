@@ -13,8 +13,8 @@ import discord4j.rest.request.RouteMatcher;
 import discord4j.rest.response.ResponseFunction;
 import discord4j.rest.route.Routes;
 import discord4j.store.jdk.JdkStoreService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.retry.Retry;
@@ -23,10 +23,9 @@ import javax.annotation.PostConstruct;
 import java.time.Duration;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class DiscordBot {
-
-    private static final Logger logger = LoggerFactory.getLogger(DiscordBot.class);
-
     private final EventDispatcherInitializer eventDispatcherInitializer;
     private final MedusaEventDispatcher medusaEventDispatcher;
     private final Executor executor;
@@ -34,16 +33,9 @@ public class DiscordBot {
     @Value("${discord.token}")
     private String token;
 
-    public DiscordBot(EventDispatcherInitializer eventDispatcherInitializer, MedusaEventDispatcher medusaEventDispatcher,
-                      Executor executor) {
-        this.eventDispatcherInitializer = eventDispatcherInitializer;
-        this.medusaEventDispatcher = medusaEventDispatcher;
-        this.executor = executor;
-    }
-
     @PostConstruct
     public void init(){
-        logger.info("Setting up client...");
+        log.info("Setting up client...");
 
         final var client = DiscordClient.builder(token)
                 .onClientResponse(ResponseFunction.emptyIfNotFound())

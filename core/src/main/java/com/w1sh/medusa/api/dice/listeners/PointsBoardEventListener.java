@@ -9,6 +9,7 @@ import com.w1sh.medusa.services.GuildUserService;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.channel.MessageChannel;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -16,15 +17,11 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public final class PointsBoardEventListener implements EventListener<PointsBoardEvent> {
 
     private final ResponseDispatcher responseDispatcher;
     private final GuildUserService guildUserService;
-
-    public PointsBoardEventListener(ResponseDispatcher responseDispatcher, GuildUserService guildUserService) {
-        this.responseDispatcher = responseDispatcher;
-        this.guildUserService = guildUserService;
-    }
 
     @Override
     public Class<PointsBoardEvent> getEventType() {

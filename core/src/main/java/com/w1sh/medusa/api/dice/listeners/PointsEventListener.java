@@ -8,21 +8,18 @@ import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.services.GuildUserService;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Member;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import static com.w1sh.medusa.utils.Reactive.flatZipWith;
 
 @Component
+@RequiredArgsConstructor
 public final class PointsEventListener implements EventListener<PointsEvent> {
 
     private final ResponseDispatcher responseDispatcher;
     private final GuildUserService guildUserService;
-
-    public PointsEventListener(ResponseDispatcher responseDispatcher, GuildUserService guildUserService) {
-        this.responseDispatcher = responseDispatcher;
-        this.guildUserService = guildUserService;
-    }
 
     @Override
     public Class<PointsEvent> getEventType() {
