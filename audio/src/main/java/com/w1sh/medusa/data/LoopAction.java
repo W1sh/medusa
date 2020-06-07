@@ -5,7 +5,7 @@ public enum LoopAction {
 
     public static LoopAction of(String string){
         for (LoopAction value : values()) {
-            if(string.equalsIgnoreCase(value.name())) return value;
+            if(value.name().equalsIgnoreCase(string)) return value;
         }
         return UNKNOWN;
     }

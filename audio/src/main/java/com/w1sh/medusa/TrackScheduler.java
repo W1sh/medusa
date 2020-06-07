@@ -61,10 +61,10 @@ public final class TrackScheduler implements AudioLoadResultHandler {
         player.getPlayingTrack().setPosition(Math.negateExact(player.getPlayingTrack().getPosition()));
     }
 
-    public LoopAction loop(MessageChannel channel, String possibleLoop) {
+    public LoopAction loop(MessageChannel channel, String loopAction) {
         trackEventListener.setMessageChannel(channel);
-        loopAction = LoopAction.of(possibleLoop);
-        return loopAction;
+        this.loopAction = LoopAction.of(loopAction);
+        return this.loopAction;
     }
 
     public AudioTrack rewind(long milliseconds) {

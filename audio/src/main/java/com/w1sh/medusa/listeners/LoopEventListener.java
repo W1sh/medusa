@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public class LoopEventListener implements EventListener<LoopEvent> {
+public final class LoopEventListener implements EventListener<LoopEvent> {
 
     private final AudioConnectionManager audioConnectionManager;
     private final ResponseDispatcher responseDispatcher;
@@ -23,12 +23,12 @@ public class LoopEventListener implements EventListener<LoopEvent> {
 
     @Override
     public Mono<Void> execute(LoopEvent event) {
-        String loopMode = event.getArguments().get(0);
+        String loopAction = event.getArguments().get(0);
 
         return Mono.justOrEmpty(event.getGuildId())
                 .flatMap(audioConnectionManager::getAudioConnection)
-                .zipWith(event.getMessage().getChannel(), (con, mc) -> con.getTrackScheduler().loop(mc, loopMode))
-                .flatMap(lm -> changeLoopModeMessage(event, lm))
+                .zipWith(event.getMessage().getChannel(), (con, mc) -> con.getTrackScheduler().loop(mc, loopAction))
+                .flatMap(la -> changeLoopModeMessage(event, la))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();

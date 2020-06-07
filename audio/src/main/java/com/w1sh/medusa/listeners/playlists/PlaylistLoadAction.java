@@ -2,10 +2,9 @@ package com.w1sh.medusa.listeners.playlists;
 
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.data.Track;
+import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.events.playlists.LoadPlaylistEvent;
-import com.w1sh.medusa.listeners.EventListener;
+import com.w1sh.medusa.events.PlaylistEvent;
 import com.w1sh.medusa.services.PlaylistService;
 import com.w1sh.medusa.services.TrackService;
 import com.w1sh.medusa.utils.ResponseUtils;
@@ -22,21 +21,15 @@ import java.util.function.Function;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public final class LoadPlaylistListener implements EventListener<LoadPlaylistEvent> {
+public final class PlaylistLoadAction implements Function<PlaylistEvent, Mono<? extends Response>> {
 
     private final PlaylistService playlistService;
     private final TrackService trackService;
-    private final ResponseDispatcher responseDispatcher;
     private final AudioConnectionManager audioConnectionManager;
 
     @Override
-    public Class<LoadPlaylistEvent> getEventType() {
-        return LoadPlaylistEvent.class;
-    }
-
-    @Override
-    public Mono<Void> execute(LoadPlaylistEvent event) {
-        int index = Integer.parseInt(event.getArguments().get(0));
+    public Mono<? extends Response> apply(PlaylistEvent event) {
+        int index = Integer.parseInt(event.getArguments().get(1));
         String userId = event.getMember().map(member -> member.getId().asString()).orElse("");
         Snowflake guildId = event.getGuildId().orElse(Snowflake.of(0L));
 
@@ -49,13 +42,10 @@ public final class LoadPlaylistListener implements EventListener<LoadPlaylistEve
                 .doOnNext(track -> audioConnectionManager.requestTrack(guildId.asLong(), track.getUri()))
                 .collectList()
                 .flatMap(tracks -> createEmbed(tracks, event))
-                .onErrorResume(throwable -> Mono.fromRunnable(() -> log.error("Failed to load playlist", throwable)))
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
-                .then();
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> log.error("Failed to load playlist", throwable)));
     }
 
-    private Mono<TextMessage> createEmbed(List<Track> tracks, LoadPlaylistEvent event){
+    private Mono<TextMessage> createEmbed(List<Track> tracks, PlaylistEvent event){
         Long duration = tracks.stream().map(Track::getDuration).reduce(Long::sum).orElse(0L);
 
         return event.getMessage().getChannel()
