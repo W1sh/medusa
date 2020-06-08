@@ -1,7 +1,7 @@
 package com.w1sh.medusa;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.w1sh.medusa.listeners.TrackEventListener;
+import com.w1sh.medusa.player.listeners.TrackEventListener;
 import reactor.core.publisher.Mono;
 
 public class AudioConnection {

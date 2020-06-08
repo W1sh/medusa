@@ -4,7 +4,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.w1sh.medusa.data.events.Event;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.listeners.TrackEventListener;
+import com.w1sh.medusa.player.listeners.TrackEventListener;
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
