@@ -1,12 +1,13 @@
 package com.w1sh.medusa.player;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import com.w1sh.medusa.data.LoopAction;
 
 import java.util.Queue;
 
 public interface AudioTrackScheduler {
 
-    AudioTrack play();
+    AudioTrack queue();
 
     AudioTrack skip();
 
@@ -16,11 +17,19 @@ public interface AudioTrackScheduler {
 
     Queue<AudioTrack> shuffle();
 
-    void forward();
+    void clear();
 
-    void rewind();
+    void forward(long milliseconds);
+
+    void rewind(long milliseconds);
 
     boolean pause();
 
     boolean resume();
+
+    LoopAction loop(String loop);
+
+    Queue<AudioTrack> getFullQueue();
+
+    long getQueueDuration();
 }
