@@ -17,11 +17,11 @@ public final class QueueTrackListener implements EventListener<QueueTrackEvent> 
         return QueueTrackEvent.class;
     }
 
+    // TODO: move playlist print logic to here
     @Override
     public Mono<Void> execute(QueueTrackEvent event) {
-        return Mono.justOrEmpty(event.getGuildId())
-                .flatMap(audioConnectionManager::getAudioConnection)
-                .zipWith(event.getMessage().getChannel(), (ac, channel) -> ac.getTrackScheduler().printQueue(channel))
+        return audioConnectionManager.getAudioConnection(event)
+                .doOnNext(con -> con.getTrackScheduler().getFullQueue())
                 .then();
     }
 }

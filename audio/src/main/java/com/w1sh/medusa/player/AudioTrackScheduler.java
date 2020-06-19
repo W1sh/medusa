@@ -7,7 +7,9 @@ import java.util.Queue;
 
 public interface AudioTrackScheduler {
 
-    AudioTrack queue();
+    AudioTrack next();
+
+    void queue(AudioTrack audioTrack);
 
     AudioTrack skip();
 
@@ -27,9 +29,11 @@ public interface AudioTrackScheduler {
 
     boolean resume();
 
-    LoopAction loop(String loop);
+    LoopAction loop(LoopAction loop);
 
     Queue<AudioTrack> getFullQueue();
 
     long getQueueDuration();
+
+    void destroy();
 }

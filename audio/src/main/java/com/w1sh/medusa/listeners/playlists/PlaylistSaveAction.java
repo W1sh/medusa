@@ -30,8 +30,7 @@ public final class PlaylistSaveAction implements Function<PlaylistEvent, Mono<? 
 
     @Override
     public Mono<? extends Response> apply(PlaylistEvent event) {
-        Mono<List<Track>> tracks = Mono.justOrEmpty(event.getGuildId())
-                .flatMap(audioConnectionManager::getAudioConnection)
+        Mono<List<Track>> tracks = audioConnectionManager.getAudioConnection(event)
                 .flatMap(this::getAllTracks);
 
         return tracks.map(t -> createPlaylist(event, t))

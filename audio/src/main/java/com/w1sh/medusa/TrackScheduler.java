@@ -48,7 +48,7 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     }
 
     public Queue<AudioTrack> shuffle(MessageChannel channel){
-        trackEventListener.setMessageChannel(channel);
+        //trackEventListener.setMessageChannel(channel);
         final var list = new ArrayList<>(queue);
         Collections.shuffle(list);
         queue.clear();
@@ -62,7 +62,7 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     }
 
     public LoopAction loop(MessageChannel channel, String loopAction) {
-        trackEventListener.setMessageChannel(channel);
+        //trackEventListener.setMessageChannel(channel);
         this.loopAction = LoopAction.of(loopAction);
         return this.loopAction;
     }
@@ -129,7 +129,7 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     }
 
     public AudioTrack skip(MessageChannel channel) {
-        trackEventListener.setMessageChannel(channel);
+        //trackEventListener.setMessageChannel(channel);
         next(true);
         return player.getPlayingTrack();
     }
@@ -143,27 +143,27 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     }
 
     public void stopQueue(MessageChannel channel){
-        trackEventListener.setMessageChannel(channel);
+        //trackEventListener.setMessageChannel(channel);
         trackEventListener.onTrackStop(player, queue.size());
         player.stopTrack();
         queue.clear();
     }
 
     public boolean clearQueue(MessageChannel channel){
-        trackEventListener.setMessageChannel(channel);
+        //trackEventListener.setMessageChannel(channel);
         trackEventListener.onPlaylistClear(queue.size());
         queue.clear();
         return true;
     }
 
     public boolean pause(MessageChannel channel){
-        trackEventListener.setMessageChannel(channel);
+        //trackEventListener.setMessageChannel(channel);
         if(!player.isPaused()) player.setPaused(true);
         return player.isPaused();
     }
 
     public boolean resume(MessageChannel channel){
-        trackEventListener.setMessageChannel(channel);
+        //trackEventListener.setMessageChannel(channel);
         if(player.isPaused()) player.setPaused(false);
         return !player.isPaused();
     }
@@ -176,7 +176,7 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     }
 
     public BlockingDeque<AudioTrack> printQueue(MessageChannel channel){
-        trackEventListener.setMessageChannel(channel);
+        //trackEventListener.setMessageChannel(channel);
         trackEventListener.onPlaylistPrint(player.getPlayingTrack(), queue, getQueueDuration());
         return queue;
     }
@@ -186,7 +186,7 @@ public final class TrackScheduler implements AudioLoadResultHandler {
     }
 
     public void updateResponseChannel(MessageChannel messageChannel) {
-        trackEventListener.setMessageChannel(messageChannel);
+        //trackEventListener.setMessageChannel(messageChannel);
     }
 
     public Optional<AudioTrack> getPlayingTrack() {

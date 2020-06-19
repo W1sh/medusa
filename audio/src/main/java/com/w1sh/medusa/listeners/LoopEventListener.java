@@ -23,12 +23,11 @@ public final class LoopEventListener implements EventListener<LoopEvent> {
 
     @Override
     public Mono<Void> execute(LoopEvent event) {
-        String loopAction = event.getArguments().get(0);
+        LoopAction loopAction = LoopAction.of(event.getArguments().get(0));
 
-        return Mono.justOrEmpty(event.getGuildId())
-                .flatMap(audioConnectionManager::getAudioConnection)
-                .zipWith(event.getMessage().getChannel(), (con, mc) -> con.getTrackScheduler().loop(mc, loopAction))
-                .flatMap(la -> changeLoopModeMessage(event, la))
+        return audioConnectionManager.getAudioConnection(event)
+                .doOnNext(con -> con.getTrackScheduler().loop(loopAction))
+                .flatMap(la -> changeLoopModeMessage(event, loopAction))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();

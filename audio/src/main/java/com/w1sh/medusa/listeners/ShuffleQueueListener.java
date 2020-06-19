@@ -19,9 +19,8 @@ public final class ShuffleQueueListener implements EventListener<ShuffleQueueEve
 
     @Override
     public Mono<Void> execute(ShuffleQueueEvent event) {
-        return Mono.justOrEmpty(event.getGuildId())
-                .flatMap(audioConnectionManager::getAudioConnection)
-                .zipWith(event.getMessage().getChannel(), (con, mc) -> con.getTrackScheduler().shuffle(mc))
+        return audioConnectionManager.getAudioConnection(event)
+                .doOnNext(con -> con.getTrackScheduler().shuffle())
                 .then();
     }
 }

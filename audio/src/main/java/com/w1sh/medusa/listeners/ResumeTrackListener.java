@@ -19,9 +19,8 @@ public final class ResumeTrackListener implements EventListener<ResumeTrackEvent
 
     @Override
     public Mono<Void> execute(ResumeTrackEvent event) {
-        return Mono.justOrEmpty(event.getGuildId())
-                .flatMap(audioConnectionManager::getAudioConnection)
-                .zipWith(event.getMessage().getChannel(), (con, mc) -> con.getTrackScheduler().resume(mc))
+        return audioConnectionManager.getAudioConnection(event)
+                .doOnNext(con -> con.getTrackScheduler().resume())
                 .then();
     }
 }

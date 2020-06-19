@@ -4,7 +4,6 @@ import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.RewindTrackEvent;
-import discord4j.common.util.Snowflake;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -39,11 +38,10 @@ public final class RewindTrackListener implements EventListener<RewindTrackEvent
 
     @Override
     public Mono<Void> execute(RewindTrackEvent event) {
-        Snowflake guildId = event.getGuildId().orElse(Snowflake.of(0));
-
         return Mono.justOrEmpty(event.getArguments().get(0))
                 .handle(this::parseTime)
-                .zipWith(audioConnectionManager.getAudioConnection(guildId), (time, ac) -> ac.getTrackScheduler().rewind(time))
+                .zipWith(audioConnectionManager.getAudioConnection(event),
+                        (time, ac) -> Mono.fromRunnable(() -> ac.getTrackScheduler().rewind(time)))
                 .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to rewind track to requested time <{}>", event.getArguments().get(0), t)))
                 .transform(isEmpty())
                 .flatMap(b -> createErrorMessage(event))

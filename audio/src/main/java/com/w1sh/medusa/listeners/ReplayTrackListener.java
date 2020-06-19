@@ -19,8 +19,7 @@ public final class ReplayTrackListener implements EventListener<ReplayTrackEvent
 
     @Override
     public Mono<Void> execute(ReplayTrackEvent event) {
-        return Mono.justOrEmpty(event.getGuildId())
-                .flatMap(audioConnectionManager::getAudioConnection)
+        return audioConnectionManager.getAudioConnection(event)
                 .doOnNext(audioConnection -> audioConnection.getTrackScheduler().replay())
                 .then();
     }

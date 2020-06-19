@@ -19,9 +19,8 @@ public final class PauseTrackListener implements EventListener<PauseTrackEvent> 
 
     @Override
     public Mono<Void> execute(PauseTrackEvent event) {
-        return Mono.justOrEmpty(event.getGuildId())
-                .flatMap(audioConnectionManager::getAudioConnection)
-                .zipWith(event.getMessage().getChannel(), (con, mc) -> con.getTrackScheduler().pause(mc))
+        return audioConnectionManager.getAudioConnection(event)
+                .doOnNext(con -> con.getTrackScheduler().pause())
                 .then();
     }
 }

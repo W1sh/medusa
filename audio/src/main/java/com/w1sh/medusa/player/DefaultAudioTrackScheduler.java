@@ -16,7 +16,7 @@ import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
 @Slf4j
-public class AudioTrackSchedulerImpl implements AudioTrackScheduler {
+public final class DefaultAudioTrackScheduler implements AudioTrackScheduler {
 
     private static final Integer MAX_QUEUE_SIZE = 250;
 
@@ -27,17 +27,22 @@ public class AudioTrackSchedulerImpl implements AudioTrackScheduler {
 
     private LoopAction loopAction;
 
-    AudioTrackSchedulerImpl(final AudioPlayer player, final TrackEventListener trackEventListener) {
+    private DefaultAudioTrackScheduler(final AudioPlayer player, final TrackEventListener trackEventListener) {
         this.player = player;
         this.trackEventListener = trackEventListener;
-        this.player.addListener(trackEventListener);
-        this.audioLoadResultListener = new AudioLoadResultListener(player);
+        this.audioLoadResultListener = new AudioLoadResultListener(this);
         this.queue = new LinkedBlockingDeque<>(MAX_QUEUE_SIZE);
-        this.loopAction = LoopAction.OFF;
+    }
+
+    public static DefaultAudioTrackScheduler of(final AudioPlayer player, final TrackEventListener trackEventListener){
+        DefaultAudioTrackScheduler defaultAudioTrackScheduler = new DefaultAudioTrackScheduler(player, trackEventListener);
+        defaultAudioTrackScheduler.player.addListener(trackEventListener);
+        defaultAudioTrackScheduler.loopAction = LoopAction.OFF;
+        return defaultAudioTrackScheduler;
     }
 
     @Override
-    public AudioTrack queue() {
+    public AudioTrack next() {
         AudioTrack nextTrack = this.queue.poll();
         if (nextTrack == null) return null;
         switch (loopAction) {
@@ -49,6 +54,11 @@ public class AudioTrackSchedulerImpl implements AudioTrackScheduler {
         }
         player.playTrack(nextTrack);
         return nextTrack;
+    }
+
+    @Override
+    public void queue(AudioTrack audioTrack) {
+        queue.offerLast(audioTrack);
     }
 
     @Override
@@ -112,8 +122,8 @@ public class AudioTrackSchedulerImpl implements AudioTrackScheduler {
     }
 
     @Override
-    public LoopAction loop(String loop) {
-        this.loopAction = LoopAction.of(loop);
+    public LoopAction loop(LoopAction loop) {
+        this.loopAction = loop;
         return this.loopAction;
     }
 
@@ -131,6 +141,12 @@ public class AudioTrackSchedulerImpl implements AudioTrackScheduler {
                 .map(AudioTrack::getDuration)
                 .reduce(Long::sum)
                 .orElse(0L);
+    }
+
+    @Override
+    public void destroy() {
+        stop();
+        player.destroy();
     }
 
     public AudioLoadResultHandler getAudioLoadResultListener() {
