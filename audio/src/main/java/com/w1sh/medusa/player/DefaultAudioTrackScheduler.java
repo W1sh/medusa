@@ -58,7 +58,11 @@ public final class DefaultAudioTrackScheduler implements AudioTrackScheduler {
 
     @Override
     public void queue(AudioTrack audioTrack) {
+        trackEventListener.onTrackLoad(audioTrack);
         queue.offerLast(audioTrack);
+        if(player.getPlayingTrack() == null) {
+            next();
+        }
     }
 
     @Override
@@ -66,6 +70,7 @@ public final class DefaultAudioTrackScheduler implements AudioTrackScheduler {
         player.stopTrack();
         AudioTrack nextTrack = this.queue.poll();
         if(nextTrack != null){
+            trackEventListener.onTrackSkip(this.player.getPlayingTrack());
             player.playTrack(nextTrack);
             return nextTrack;
         } else return null;
@@ -73,6 +78,7 @@ public final class DefaultAudioTrackScheduler implements AudioTrackScheduler {
 
     @Override
     public void stop() {
+        trackEventListener.onTrackStop(player, queue.size());
         player.stopTrack();
         queue.clear();
     }
@@ -89,11 +95,13 @@ public final class DefaultAudioTrackScheduler implements AudioTrackScheduler {
         Collections.shuffle(list);
         queue.clear();
         queue.addAll(list);
+        trackEventListener.onPlaylistShuffle();
         return queue;
     }
 
     @Override
     public void clear() {
+        trackEventListener.onPlaylistClear(queue.size());
         queue.clear();
     }
 
@@ -145,7 +153,8 @@ public final class DefaultAudioTrackScheduler implements AudioTrackScheduler {
 
     @Override
     public void destroy() {
-        stop();
+        player.stopTrack();
+        queue.clear();
         player.destroy();
     }
 

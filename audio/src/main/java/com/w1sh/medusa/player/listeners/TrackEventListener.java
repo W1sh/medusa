@@ -17,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import java.util.Queue;
 import java.util.function.Function;
 
 @Slf4j
@@ -140,39 +139,6 @@ public final class TrackEventListener extends AudioEventAdapter {
         Mono.justOrEmpty(audioConnection.getMessageChannel())
                 .map(channel -> new TextMessage(channel, "The queue has been shuffled!", false))
                 .doOnSuccess(e -> log.info("Shuffled queue in guild with id <{}>", audioConnection.getGuildId()))
-                .transform(dispatchElastic())
-                .subscribe();
-    }
-
-    public void onPlaylistPrint(final AudioTrack playingTrack, final Queue<AudioTrack> queue, final long queueDuration){
-        Mono.justOrEmpty(audioConnection.getMessageChannel())
-                .map(channel -> new Embed(channel, embedCreateSpec -> {
-                    embedCreateSpec.setColor(Color.GREEN);
-                    embedCreateSpec.setTitle(":notes:\tQueued tracks");
-                    if (playingTrack != null) {
-                        embedCreateSpec.addField("Currently playing",
-                                String.format("**%s**%n[%s](%s) | %s",
-                                        playingTrack.getInfo().author,
-                                        playingTrack.getInfo().title,
-                                        playingTrack.getInfo().uri,
-                                        ResponseUtils.formatDuration(playingTrack.getInfo().length)), true);
-                    }
-                    int queuePosition = 0;
-                    if(!queue.isEmpty()) embedCreateSpec.addField(ResponseUtils.ZERO_WIDTH_SPACE,
-                            ":arrow_down: **Queue** :arrow_down:", false);
-                    for (AudioTrack track : queue) {
-                        if(queuePosition < 5) {
-                            queuePosition++;
-                            embedCreateSpec.addField(String.format("**%s**", track.getInfo().author), String.format("**%d**\t[%s](%s) | %s",
-                                    queuePosition,
-                                    track.getInfo().title,
-                                    track.getInfo().uri,
-                                    ResponseUtils.formatDuration(track.getInfo().length)), false);
-                        } else break;
-                    }
-                    embedCreateSpec.setFooter(String.format("%d queued tracks | Queue duration: %s",
-                            queue.size(), ResponseUtils.formatDuration(queueDuration)), null);
-                }))
                 .transform(dispatchElastic())
                 .subscribe();
     }

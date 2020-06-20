@@ -135,6 +135,7 @@ public final class AudioConnectionManager {
     private Mono<AudioConnection> createAudioConnection(AudioPlayer player, VoiceConnection voiceConnection, MessageChannel channel){
         final Long guildId = ((GuildChannel) channel).getGuildId().asLong();
         final AudioConnection audioConnection = new AudioConnection(player, voiceConnection, responseDispatcher);
+        audioConnection.setMessageChannel(channel);
 
         logger.info("Creating new audio connection in guild <{}>", guildId);
         audioConnections.put(guildId, audioConnection);
