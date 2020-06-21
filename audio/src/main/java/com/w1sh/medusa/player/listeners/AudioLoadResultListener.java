@@ -23,7 +23,8 @@ public final class AudioLoadResultListener implements AudioLoadResultHandler {
     // LavaPlayer found multiple AudioTracks from some playlist
     @Override
     public void playlistLoaded(AudioPlaylist playlist) {
-
+        log.info("Found playlist with {} tracks", playlist.getTracks().size());
+        audioTrackScheduler.queue(playlist);
     }
 
     // LavaPlayer did not find any audio to extract

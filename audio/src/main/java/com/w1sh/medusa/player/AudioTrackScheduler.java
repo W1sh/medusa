@@ -1,5 +1,6 @@
 package com.w1sh.medusa.player;
 
+import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.w1sh.medusa.data.LoopAction;
 
@@ -10,6 +11,8 @@ public interface AudioTrackScheduler {
     AudioTrack next();
 
     void queue(AudioTrack audioTrack);
+
+    void queue(AudioPlaylist audioPlaylist);
 
     AudioTrack skip();
 

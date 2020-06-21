@@ -28,8 +28,7 @@ public final class TrackEventListener extends AudioEventAdapter {
 
     @Override
     public void onPlayerPause(AudioPlayer player) {
-        Mono.justOrEmpty(audioConnection.getMessageChannel())
-                .map(c -> new TextMessage(c, ":pause_button: The audio player was paused. Use `!resume` to unpause", false))
+        TextMessage.monoOf(audioConnection.getMessageChannel(), ":pause_button: The audio player was paused. Use `!resume` to unpause")
                 .doOnSuccess(msg -> log.info("Paused audio player in guild with id <{}>", audioConnection.getGuildId()))
                 .transform(dispatchElastic())
                 .subscribe();
@@ -37,8 +36,7 @@ public final class TrackEventListener extends AudioEventAdapter {
 
     @Override
     public void onPlayerResume(AudioPlayer player) {
-        Mono.justOrEmpty(audioConnection.getMessageChannel())
-                .map(c -> new TextMessage(c, ":arrow_forward: The audio player was resumed", false))
+        TextMessage.monoOf(audioConnection.getMessageChannel(), ":arrow_forward: The audio player was resumed")
                 .doOnSuccess(msg -> log.info("Resumed audio player in guild with id <{}>", audioConnection.getGuildId()))
                 .transform(dispatchElastic())
                 .subscribe();
@@ -46,16 +44,15 @@ public final class TrackEventListener extends AudioEventAdapter {
 
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
-        Mono.justOrEmpty(audioConnection.getMessageChannel())
-                .map(c -> new Embed(c, embedCreateSpec ->
-                        embedCreateSpec.setTitle(":musical_note:\tCurrently playing")
-                                .setColor(Color.GREEN)
-                                .setThumbnail(getArtwork(track))
-                                .addField(String.format("**%s**", track.getInfo().author),
-                                        String.format("[%s](%s) | %s",
-                                                track.getInfo().title,
-                                                track.getInfo().uri,
-                                                ResponseUtils.formatDuration(track.getInfo().length)), false)))
+        Mono.just(new Embed(audioConnection.getMessageChannel(), embedCreateSpec ->
+                embedCreateSpec.setTitle(":musical_note:\tCurrently playing")
+                        .setColor(Color.GREEN)
+                        .setThumbnail(getArtwork(track))
+                        .addField(String.format("**%s**", track.getInfo().author),
+                                String.format("[%s](%s) | %s",
+                                        track.getInfo().title,
+                                        track.getInfo().uri,
+                                        ResponseUtils.formatDuration(track.getInfo().length)), false)))
                 .doOnSuccess(e -> log.info("Starting track <{}> in guild with id <{}>", track.getInfo().title, audioConnection.getGuildId()))
                 .transform(dispatchElastic())
                 .subscribe();
@@ -86,14 +83,13 @@ public final class TrackEventListener extends AudioEventAdapter {
 
 
     public void onTrackLoad(AudioTrack track){
-        Mono.justOrEmpty(audioConnection.getMessageChannel())
-                .map(chan -> new Embed(chan, embedCreateSpec -> embedCreateSpec.setTitle(":ballot_box_with_check:\tAdded to queue")
-                        .setColor(Color.GREEN)
-                        .addField(ResponseUtils.ZERO_WIDTH_SPACE, String.format("**%s**%n[%s](%s) | %s",
-                                track.getInfo().author,
-                                track.getInfo().title,
-                                track.getInfo().uri,
-                                ResponseUtils.formatDuration(track.getInfo().length)), true)))
+        Mono.just(new Embed(audioConnection.getMessageChannel(), embedCreateSpec -> embedCreateSpec.setTitle(":ballot_box_with_check:\tAdded to queue")
+                .setColor(Color.GREEN)
+                .addField(ResponseUtils.ZERO_WIDTH_SPACE, String.format("**%s**%n[%s](%s) | %s",
+                        track.getInfo().author,
+                        track.getInfo().title,
+                        track.getInfo().uri,
+                        ResponseUtils.formatDuration(track.getInfo().length)), true)))
                 .doOnSuccess(e -> log.info("Loaded track <{}> in guild with id <{}>", track.getInfo().title, audioConnection.getGuildId()))
                 .transform(dispatchElastic())
                 .subscribe();
@@ -120,25 +116,29 @@ public final class TrackEventListener extends AudioEventAdapter {
     }
 
     public void onTrackSkip(AudioTrack audioTrack){
-        Mono.justOrEmpty(audioConnection.getMessageChannel())
-                .map(channel -> new TextMessage(channel, String.format(":track_next: Skipped track %s", audioTrack.getInfo().title), false))
+        TextMessage.monoOf(audioConnection.getMessageChannel(), String.format(":track_next: Skipped track %s", audioTrack.getInfo().title))
                 .doOnSuccess(e -> log.info("Skipped track <{}> in guild with id <{}>", audioTrack.getInfo().title, audioConnection.getGuildId()))
                 .transform(dispatchElastic())
                 .subscribe();
     }
 
     public void onPlaylistClear(Integer queueSize){
-        Mono.justOrEmpty(audioConnection.getMessageChannel())
-                .map(channel -> new TextMessage(channel, String.format("Cleared %d tracks from the queue", queueSize), false))
+        TextMessage.monoOf(audioConnection.getMessageChannel(), String.format("Cleared %d tracks from the queue", queueSize))
                 .doOnSuccess(e -> log.info("Cleared all tracks from queue in guild with id <{}>", audioConnection.getGuildId()))
                 .transform(dispatchElastic())
                 .subscribe();
     }
 
     public void onPlaylistShuffle(){
-        Mono.justOrEmpty(audioConnection.getMessageChannel())
-                .map(channel -> new TextMessage(channel, "The queue has been shuffled!", false))
+        TextMessage.monoOf(audioConnection.getMessageChannel(), "The queue has been shuffled!")
                 .doOnSuccess(e -> log.info("Shuffled queue in guild with id <{}>", audioConnection.getGuildId()))
+                .transform(dispatchElastic())
+                .subscribe();
+    }
+
+    public void onPlaylistLoaded(long playlistSize){
+        TextMessage.monoOf(audioConnection.getMessageChannel(), String.format("Loaded playlist with **%s** tracks!", playlistSize))
+                .doOnSuccess(e -> log.info("Loaded playlist into queue in guild with id <{}>", audioConnection.getGuildId()))
                 .transform(dispatchElastic())
                 .subscribe();
     }

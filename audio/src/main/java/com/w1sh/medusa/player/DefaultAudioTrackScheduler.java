@@ -2,6 +2,7 @@ package com.w1sh.medusa.player;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
+import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.w1sh.medusa.data.LoopAction;
 import com.w1sh.medusa.player.listeners.AudioLoadResultListener;
@@ -58,8 +59,19 @@ public final class DefaultAudioTrackScheduler implements AudioTrackScheduler {
 
     @Override
     public void queue(AudioTrack audioTrack) {
-        trackEventListener.onTrackLoad(audioTrack);
+        log.info("Loading track <{}> into the queue", audioTrack.getInfo().title);
         queue.offerLast(audioTrack);
+        trackEventListener.onTrackLoad(audioTrack);
+        if(player.getPlayingTrack() == null) {
+            next();
+        }
+    }
+
+    @Override
+    public void queue(AudioPlaylist audioPlaylist) {
+        log.info("Loading playlist with {} tracks into the queue", audioPlaylist.getTracks().size());
+        audioPlaylist.getTracks().forEach(queue::offerLast);
+        trackEventListener.onPlaylistLoaded(audioPlaylist.getTracks().size());
         if(player.getPlayingTrack() == null) {
             next();
         }
