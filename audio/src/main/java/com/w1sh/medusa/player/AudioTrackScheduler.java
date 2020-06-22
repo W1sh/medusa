@@ -36,7 +36,5 @@ public interface AudioTrackScheduler {
 
     Queue<AudioTrack> getFullQueue();
 
-    long getQueueDuration();
-
     void destroy();
 }

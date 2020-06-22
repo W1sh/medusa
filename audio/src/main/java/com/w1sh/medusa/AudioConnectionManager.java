@@ -88,13 +88,11 @@ public final class AudioConnectionManager {
     }
 
     public void onDisconnect(AudioConnection connection, VoiceChannel voiceChannel){
-        final Publisher<Boolean> isAlone = voiceChannel.getVoiceStates()
-                .count()
-                .map(count -> 1L == count);
-
         voiceChannel.getClient().getEventDispatcher().on(VoiceStateUpdateEvent.class)
                 .filter(event -> event.getOld().flatMap(VoiceState::getChannelId).map(voiceChannel.getId()::equals).orElse(false))
-                .filterWhen(ignored -> isAlone)
+                .filterWhen(ignored -> voiceChannel.getVoiceStates()
+                        .count()
+                        .map(count -> 1L == count))
                 .next()
                 .doOnSuccess(ignored -> logger.info("Destroying audio connection in guild <{}>", connection.getGuildId()))
                 .flatMap(ignored -> connection.destroy())

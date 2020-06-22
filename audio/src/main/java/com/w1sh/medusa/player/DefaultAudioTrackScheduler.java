@@ -156,14 +156,6 @@ public final class DefaultAudioTrackScheduler implements AudioTrackScheduler {
     }
 
     @Override
-    public long getQueueDuration() {
-        return getFullQueue().stream()
-                .map(AudioTrack::getDuration)
-                .reduce(Long::sum)
-                .orElse(0L);
-    }
-
-    @Override
     public void destroy() {
         player.stopTrack();
         queue.clear();
