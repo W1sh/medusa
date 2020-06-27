@@ -26,8 +26,7 @@ public final class PingEventListener implements EventListener<PingEvent> {
 
     @Override
     public Mono<Void> execute(PingEvent event) {
-        return Mono.just(event)
-                .flatMap(e -> e.getMessage().getChannel())
+        return event.getMessage().getChannel()
                 .doOnNext(channel -> {
                     Long duration = Duration.between(event.getMessage().getTimestamp(), Instant.now()).toMillis();
                     responseDispatcher.queue(new TextMessage(channel, String.format("Pong! `%sms`", duration), false));

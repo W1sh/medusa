@@ -6,7 +6,7 @@ import org.springframework.data.relational.core.mapping.Column;
 import java.time.LocalDateTime;
 
 @Data
-public class Audit {
+public final class Audit {
 
     @Column(value = "created_on")
     private LocalDateTime createdOn;
