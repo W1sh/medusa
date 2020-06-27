@@ -1,14 +1,11 @@
-package com.w1sh.medusa.listeners;
+package com.w1sh.medusa.listeners.playlists;
 
 import com.w1sh.medusa.data.PlaylistAction;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.PlaylistEvent;
-import com.w1sh.medusa.listeners.playlists.PlaylistDeleteAction;
-import com.w1sh.medusa.listeners.playlists.PlaylistLoadAction;
-import com.w1sh.medusa.listeners.playlists.PlaylistSaveAction;
-import com.w1sh.medusa.listeners.playlists.PlaylistShowAction;
+import com.w1sh.medusa.listeners.EventListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
