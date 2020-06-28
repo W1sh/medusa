@@ -118,6 +118,17 @@ public final class DefaultAudioTrackScheduler implements AudioTrackScheduler {
     }
 
     @Override
+    public AudioTrack remove(int index) {
+        final var list = new ArrayList<>(queue);
+        AudioTrack audioTrack = list.remove(index - 1);
+        list.clear();
+        if(queue.remove(audioTrack)) {
+            trackEventListener.onTrackRemoved(audioTrack);
+            return audioTrack;
+        }else return null;
+    }
+
+    @Override
     public void forward(long milliseconds) {
         final AudioTrack playingTrack = player.getPlayingTrack();
         final long newTrackPosition = (playingTrack.getPosition() - milliseconds) < 0 ? 0 : milliseconds;

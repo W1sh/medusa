@@ -24,6 +24,8 @@ public interface AudioTrackScheduler {
 
     void clear();
 
+    AudioTrack remove(int index);
+
     void forward(long milliseconds);
 
     void rewind(long milliseconds);

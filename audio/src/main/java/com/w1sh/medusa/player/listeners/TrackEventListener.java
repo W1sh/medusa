@@ -116,8 +116,15 @@ public final class TrackEventListener extends AudioEventAdapter {
     }
 
     public void onTrackSkip(AudioTrack audioTrack){
-        TextMessage.monoOf(audioConnection.getMessageChannel(), String.format(":track_next: Skipped track %s", audioTrack.getInfo().title))
+        TextMessage.monoOf(audioConnection.getMessageChannel(), String.format(":track_next: Skipped track **%s**", audioTrack.getInfo().title))
                 .doOnSuccess(e -> log.info("Skipped track <{}> in guild with id <{}>", audioTrack.getInfo().title, audioConnection.getGuildId()))
+                .transform(dispatchElastic())
+                .subscribe();
+    }
+
+    public void onTrackRemoved(AudioTrack audioTrack){
+        TextMessage.monoOf(audioConnection.getMessageChannel(), String.format(":x: Removed track **%s**", audioTrack.getInfo().title))
+                .doOnSuccess(e -> log.info("Removed track <{}> in guild with id <{}>", audioTrack.getInfo().title, audioConnection.getGuildId()))
                 .transform(dispatchElastic())
                 .subscribe();
     }
