@@ -123,8 +123,15 @@ public final class TrackEventListener extends AudioEventAdapter {
     }
 
     public void onTrackRemoved(AudioTrack audioTrack){
-        TextMessage.monoOf(audioConnection.getMessageChannel(), String.format(":x: Removed track **%s**", audioTrack.getInfo().title))
-                .doOnSuccess(e -> log.info("Removed track <{}> in guild with id <{}>", audioTrack.getInfo().title, audioConnection.getGuildId()))
+        Mono<TextMessage> failed = Mono.defer(() -> TextMessage.monoOf(audioConnection.getMessageChannel(), ":x: Failed to remove track, invalid index"))
+                .doOnSuccess(e -> log.info("Failed to remove track in guild with id <{}>", audioConnection.getGuildId()));
+
+        Mono<TextMessage> success = Mono.defer(() -> TextMessage.monoOf(audioConnection.getMessageChannel(), String.format(":x: Removed track **%s**", audioTrack.getInfo().title)))
+                .doOnSuccess(e -> log.info("Removed track <{}> in guild with id <{}>", audioTrack.getInfo().title, audioConnection.getGuildId()));
+
+        Mono.justOrEmpty(audioTrack)
+                .flatMap(ignored -> success)
+                .switchIfEmpty(failed)
                 .transform(dispatchElastic())
                 .subscribe();
     }

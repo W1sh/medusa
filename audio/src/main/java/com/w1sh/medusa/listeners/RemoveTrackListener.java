@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class RemoveTrackListener implements EventListener<RemoveTrackEvent> {
@@ -22,7 +24,7 @@ public class RemoveTrackListener implements EventListener<RemoveTrackEvent> {
         return Mono.justOrEmpty(event.getArguments().get(0))
                 .map(Integer::parseInt)
                 .zipWith(audioConnectionManager.getAudioConnection(event),
-                        (index, audioConnection) -> audioConnection.getTrackScheduler().remove(index))
+                        (index, audioConnection) -> Optional.ofNullable(audioConnection.getTrackScheduler().remove(index)))
                 .then();
     }
 }

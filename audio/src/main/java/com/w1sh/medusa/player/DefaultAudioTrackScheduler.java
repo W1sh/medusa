@@ -119,13 +119,15 @@ public final class DefaultAudioTrackScheduler implements AudioTrackScheduler {
 
     @Override
     public AudioTrack remove(int index) {
+        if (index <= 0 || index >= queue.size()) {
+            trackEventListener.onTrackRemoved(null);
+            return null;
+        }
         final var list = new ArrayList<>(queue);
         AudioTrack audioTrack = list.remove(index - 1);
         list.clear();
-        if(queue.remove(audioTrack)) {
-            trackEventListener.onTrackRemoved(audioTrack);
-            return audioTrack;
-        }else return null;
+        if(queue.remove(audioTrack)) trackEventListener.onTrackRemoved(audioTrack);
+        return audioTrack;
     }
 
     @Override
