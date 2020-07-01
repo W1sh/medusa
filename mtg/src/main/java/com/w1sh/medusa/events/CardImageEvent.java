@@ -7,9 +7,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 @Registered(prefix = "{{!")
 public final class CardImageEvent extends InlineEvent {
 
-    public static final String INLINE_PREFIX = "{{!";
-
     public CardImageEvent(MessageCreateEvent event) {
-        super(event, INLINE_PREFIX);
+        super(event);
     }
 }

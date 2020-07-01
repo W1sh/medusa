@@ -8,6 +8,7 @@ import reactor.core.publisher.Mono;
 @Component
 @RequiredArgsConstructor
 public final class CardSearchListener implements EventListener<CardSearchEvent> {
+
     @Override
     public Class<CardSearchEvent> getEventType() {
         return CardSearchEvent.class;

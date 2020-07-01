@@ -10,16 +10,12 @@ public abstract class InlineEvent extends Event {
     private boolean fragment;
 
     @Getter @Setter
-    private String inlinePrefix;
-
-    @Getter @Setter
     private String inlineArgument;
 
     @Getter @Setter
     private Integer inlineOrder;
 
-    public InlineEvent(MessageCreateEvent event, String inlinePrefix) {
+    public InlineEvent(MessageCreateEvent event) {
         super(event);
-        this.inlinePrefix = inlinePrefix;
     }
 }
