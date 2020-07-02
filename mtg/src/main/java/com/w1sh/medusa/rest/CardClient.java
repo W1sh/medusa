@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.resources.ListResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -16,10 +15,10 @@ import reactor.netty.http.client.HttpClientResponse;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Optional;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public final class CardClient {
 
@@ -27,20 +26,26 @@ public final class CardClient {
     private static final String NAMED_SEARCH_URL = "https://api.scryfall.com/cards/named?fuzzy=";
 
     private final ObjectMapper objectMapper;
+    private final HttpClient.ResponseReceiver<?> responseReceiver;
+
+    public CardClient(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+        this.responseReceiver = HttpClient.create().get();
+    }
 
     public Mono<ListResponse<Card>> getCardsByName(String name){
-        return HttpClient.create()
-                .get()
+        return responseReceiver
                 .uri(SEARCH_URL + URLEncoder.encode(name, StandardCharsets.UTF_8))
                 .responseSingle(((response, byteBuf) -> handleHttpResponse(response, byteBuf, new TypeReference<ListResponse<Card>>() {})))
+                .timeout(Duration.ofSeconds(10))
                 .doOnNext(s -> log.info("Queried Scryfall API for all cards with name like \"{}\"", name));
     }
 
     public Mono<Card> getCardByName(String name){
-        return HttpClient.create()
-                .get()
+        return responseReceiver
                 .uri(NAMED_SEARCH_URL + URLEncoder.encode(name, StandardCharsets.UTF_8))
                 .responseSingle(((response, byteBuf) -> handleHttpResponse(response, byteBuf, new TypeReference<Card>() {})))
+                .timeout(Duration.ofSeconds(10))
                 .doOnNext(s -> log.info("Queried Scryfall API for card with name similar to \"{}\"", name));
     }
 
