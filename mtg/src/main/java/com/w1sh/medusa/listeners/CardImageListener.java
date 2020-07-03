@@ -26,17 +26,12 @@ public final class CardImageListener implements EventListener<CardImageEvent> {
     @Override
     public Mono<Void> execute(CardImageEvent event) {
         return Mono.just(event)
-                .filterWhen(this::validate)
-                .flatMap(ev -> Mono.justOrEmpty(ev.getInlineArgument()))
-                .flatMap(cardService::getCardByName)
+                .filter(CardUtils::validateInline)
+                .flatMap(ev -> cardService.getCardByName(ev.getInlineArgument()))
                 .flatMap(tuple -> createEmbed(tuple, event))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
-    }
-
-    private Mono<Boolean> validate(CardImageEvent event) {
-        return Mono.just(event.getInlineArgument() != null && !event.getInlineArgument().isBlank());
     }
 
     private Mono<Embed> createEmbed(Card card, CardImageEvent event){

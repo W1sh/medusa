@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 
@@ -34,6 +33,7 @@ public final class CardService {
 
     public Flux<Card> getCardsByName(String name) {
         return cardClient.getCardsByName(name)
-                .flatMapIterable(ListResponse::getData);
+                .flatMapIterable(ListResponse::getData)
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to fetch cards with name \"{}\"", name, t)));
     }
 }

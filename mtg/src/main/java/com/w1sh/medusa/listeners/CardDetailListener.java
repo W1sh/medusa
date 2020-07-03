@@ -27,17 +27,12 @@ public final class CardDetailListener implements EventListener<CardDetailEvent> 
     @Override
     public Mono<Void> execute(CardDetailEvent event) {
         return Mono.just(event)
-                .filterWhen(this::validate)
-                .flatMap(ev -> Mono.justOrEmpty(ev.getInlineArgument()))
-                .flatMap(cardService::getCardByName)
+                .filter(CardUtils::validateInline)
+                .flatMap(ev -> cardService.getCardByName(ev.getInlineArgument()))
                 .flatMap(tuple -> this.createEmbed(tuple, event))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
-    }
-
-    private Mono<Boolean> validate(CardDetailEvent event) {
-        return Mono.just(event.getInlineArgument() != null && !event.getInlineArgument().isBlank());
     }
 
     private Mono<Embed> createEmbed(Card card, CardDetailEvent event){
