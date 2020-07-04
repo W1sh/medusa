@@ -1,5 +1,6 @@
 package com.w1sh.medusa.listeners;
 
+import com.w1sh.medusa.data.events.InlineEvent;
 import com.w1sh.medusa.data.responses.Embed;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.CardImageEvent;
@@ -26,7 +27,7 @@ public final class CardImageListener implements EventListener<CardImageEvent> {
     @Override
     public Mono<Void> execute(CardImageEvent event) {
         return Mono.just(event)
-                .filter(CardUtils::validateInline)
+                .filter(InlineEvent::hasArgument)
                 .flatMap(ev -> cardService.getCardByName(ev.getInlineArgument()))
                 .flatMap(tuple -> createEmbed(tuple, event))
                 .doOnNext(responseDispatcher::queue)

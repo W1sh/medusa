@@ -30,7 +30,7 @@ public final class AudioLoadResultListener implements AudioLoadResultHandler {
     // LavaPlayer did not find any audio to extract
     @Override
     public void noMatches() {
-
+        log.warn("No matches found for given input");
     }
 
     // LavaPlayer could not parse an audio source for some reason

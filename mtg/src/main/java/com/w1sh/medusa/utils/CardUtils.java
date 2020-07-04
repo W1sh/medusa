@@ -10,10 +10,6 @@ public class CardUtils {
 
     private CardUtils(){}
 
-    public static Boolean validateInline(InlineEvent inlineEvent){
-        return inlineEvent.getInlineArgument() != null && !inlineEvent.getInlineArgument().isBlank();
-    }
-
     public static Embed createErrorEmbed(MessageChannel messageChannel, InlineEvent event){
         return new Embed(messageChannel, embedCreateSpec -> {
             embedCreateSpec.setColor(Color.GREEN);

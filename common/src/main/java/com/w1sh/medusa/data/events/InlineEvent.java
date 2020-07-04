@@ -18,4 +18,8 @@ public abstract class InlineEvent extends Event {
     public InlineEvent(MessageCreateEvent event) {
         super(event);
     }
+
+    public boolean hasArgument(){
+        return inlineArgument != null && !inlineArgument.isBlank();
+    }
 }
