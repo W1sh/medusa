@@ -63,7 +63,7 @@ public final class TrackEventListener extends AudioEventAdapter {
         Mono.justOrEmpty(audioConnection.getTrackScheduler())
                 .doOnNext(trackScheduler -> {
                     if(endReason.mayStartNext){
-                        trackScheduler.skip();
+                        trackScheduler.next();
                     }
                 })
                 .doOnSuccess(ts -> log.info("Track <{}> on guild <{}> ended with reason <{}>", track.getInfo().title, audioConnection.getGuildId(), endReason))
