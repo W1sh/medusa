@@ -1,48 +1,25 @@
 package com.w1sh.medusa.data.events;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import lombok.Getter;
+import lombok.Setter;
 
 public abstract class InlineEvent extends Event {
 
+    @Getter @Setter
     private boolean fragment;
-    private String inlinePrefix;
+
+    @Getter @Setter
     private String inlineArgument;
+
+    @Getter @Setter
     private Integer inlineOrder;
 
-    public InlineEvent(MessageCreateEvent event, String inlinePrefix) {
+    public InlineEvent(MessageCreateEvent event) {
         super(event);
-        this.inlinePrefix = inlinePrefix;
     }
 
-    public boolean isFragment() {
-        return fragment;
-    }
-
-    public void setFragment(boolean fragment) {
-        this.fragment = fragment;
-    }
-
-    public String getInlinePrefix() {
-        return inlinePrefix;
-    }
-
-    public void setInlinePrefix(String inlinePrefix) {
-        this.inlinePrefix = inlinePrefix;
-    }
-
-    public String getInlineArgument() {
-        return inlineArgument;
-    }
-
-    public void setInlineArgument(String inlineArgument) {
-        this.inlineArgument = inlineArgument;
-    }
-
-    public Integer getInlineOrder() {
-        return inlineOrder;
-    }
-
-    public void setInlineOrder(Integer inlineOrder) {
-        this.inlineOrder = inlineOrder;
+    public boolean hasArgument(){
+        return inlineArgument != null && !inlineArgument.isBlank();
     }
 }

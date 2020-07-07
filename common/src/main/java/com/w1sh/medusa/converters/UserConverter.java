@@ -9,7 +9,7 @@ import org.springframework.data.r2dbc.mapping.OutboundRow;
 import org.springframework.data.r2dbc.mapping.SettableValue;
 import org.springframework.stereotype.Component;
 
-public class UserConverter {
+public final class UserConverter {
 
     private UserConverter(){}
 

@@ -18,7 +18,8 @@ import reactor.util.annotation.NonNull;
 
 import java.util.List;
 
-import static io.r2dbc.spi.ConnectionFactoryOptions.*;
+import static io.r2dbc.spi.ConnectionFactoryOptions.PASSWORD;
+import static io.r2dbc.spi.ConnectionFactoryOptions.USER;
 
 @Configuration
 @EnableR2dbcRepositories(value = "com.w1sh.medusa")
@@ -27,31 +28,26 @@ public class R2DBCConfiguration extends AbstractR2dbcConfiguration {
 
     private final List<Converter<?, ?>> converters;
 
-    @Value("${postgres.driver}")
-    private String driver;
-    @Value("${postgres.host}")
-    private String host;
     @Value("${postgres.user}")
     private String user;
     @Value("${postgres.password}")
     private String password;
-    @Value("${postgres.database}")
-    private String database;
+    @Value("${postgres.url}")
+    private String url;
 
     public R2DBCConfiguration(List<Converter<?, ?>> converters) {
         this.converters = converters;
     }
 
-    @Override
+    @Bean
     @NonNull
+    @Override
     public ConnectionFactory connectionFactory() {
-        return ConnectionFactories.get(ConnectionFactoryOptions.builder()
-                .option(DRIVER, driver)
-                .option(HOST, host)
+        ConnectionFactoryOptions options = ConnectionFactoryOptions.parse(url).mutate()
                 .option(USER, user)
                 .option(PASSWORD, password)
-                .option(DATABASE, database)
-                .build());
+                .build();
+        return ConnectionFactories.get(options);
     }
 
     @Bean
@@ -65,8 +61,9 @@ public class R2DBCConfiguration extends AbstractR2dbcConfiguration {
     }
 
     @Bean
+    @NonNull
     @Override
     public R2dbcCustomConversions r2dbcCustomConversions() {
-        return new R2dbcCustomConversions(getStoreConversions(), converters);
+        return new R2dbcCustomConversions(converters);
     }
 }

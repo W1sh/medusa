@@ -2,10 +2,12 @@ package com.w1sh.medusa.resources;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
 @JsonIgnoreProperties(value = {"object", "warnings"})
 public class ListResponse<T> {
 
@@ -24,35 +26,4 @@ public class ListResponse<T> {
         data = new ArrayList<>();
     }
 
-    public List<T> getData() {
-        return data;
-    }
-
-    public void setData(List<T> data) {
-        this.data = data;
-    }
-
-    public boolean hasMore() {
-        return hasMore;
-    }
-
-    public void setHasMore(boolean hasMore) {
-        this.hasMore = hasMore;
-    }
-
-    public String getNextPage() {
-        return nextPage;
-    }
-
-    public void setNextPage(String nextPage) {
-        this.nextPage = nextPage;
-    }
-
-    public Integer getTotalCards() {
-        return totalCards;
-    }
-
-    public void setTotalCards(Integer totalCards) {
-        this.totalCards = totalCards;
-    }
 }

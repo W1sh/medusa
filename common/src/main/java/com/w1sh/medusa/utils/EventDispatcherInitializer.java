@@ -8,9 +8,9 @@ import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.validators.Validator;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -21,9 +21,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public final class EventDispatcherInitializer {
-
-    private static final Logger logger = LoggerFactory.getLogger(EventDispatcherInitializer.class);
 
     private final MedusaEventDispatcher medusaEventDispatcher;
     private final Reflections reflections;
@@ -32,15 +32,6 @@ public final class EventDispatcherInitializer {
     private final List<Validator> validators;
     private final List<EventListener<?>> listeners;
     private Set<Class<? extends Event>> events;
-
-    public EventDispatcherInitializer(MedusaEventDispatcher medusaEventDispatcher, Reflections reflections,
-                                      EventFactory eventFactory, List<Validator> validators, List<EventListener<?>> listeners) {
-        this.medusaEventDispatcher = medusaEventDispatcher;
-        this.reflections = reflections;
-        this.validators = validators;
-        this.eventFactory = eventFactory;
-        this.listeners = listeners;
-    }
 
     @PostConstruct
     public void init(){
@@ -55,13 +46,13 @@ public final class EventDispatcherInitializer {
                 .filterWhen(ev -> Flux.fromIterable(validators)
                         .flatMap(validator -> validator.validate(ev))
                         .all(Boolean::booleanValue))
-                .doOnSubscribe(ev -> logger.info("Received new event of type <{}>", ev.getClass().getSimpleName()))
+                .doOnSubscribe(ev -> log.info("Received new event of type <{}>", ev.getClass().getSimpleName()))
                 .subscribe(medusaEventDispatcher::publish);
     }
 
     public void registerListeners() {
         listeners.forEach(medusaEventDispatcher::registerListener);
-        logger.info("Found and registered {} event listeners", listeners.size());
+        log.info("Found and registered {} event listeners", listeners.size());
     }
 
     public void registerEvents() {
@@ -72,13 +63,13 @@ public final class EventDispatcherInitializer {
             Registered registered = clazz.getAnnotation(Registered.class);
             if(registered != null){
                 eventFactory.registerEvent(registered.prefix(), clazz);
-                logger.info("Registering new event of type <{}>", clazz.getSimpleName());
+                log.info("Registering new event of type <{}>", clazz.getSimpleName());
             }
             if (!hasListenerRegistered(clazz)) {
-                logger.warn("Event of type <{}> has no listener registered!", clazz.getSimpleName());
+                log.warn("Event of type <{}> has no listener registered!", clazz.getSimpleName());
             }
         }
-        logger.info("Found and registered {} event listeners", events.size());
+        log.info("Found and registered {} event listeners", events.size());
     }
 
     private Set<Class<? extends Event>> findAllEvents(){

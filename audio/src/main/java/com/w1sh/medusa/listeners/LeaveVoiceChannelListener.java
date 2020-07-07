@@ -5,6 +5,7 @@ import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.LeaveVoiceChannelEvent;
 import discord4j.core.object.entity.Member;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -12,6 +13,7 @@ import reactor.core.publisher.Mono;
 import static com.w1sh.medusa.utils.Reactive.ifElse;
 
 @Component
+@RequiredArgsConstructor
 public final class LeaveVoiceChannelListener implements EventListener<LeaveVoiceChannelEvent> {
 
     @Value("${event.voice.leave}")
@@ -19,11 +21,6 @@ public final class LeaveVoiceChannelListener implements EventListener<LeaveVoice
 
     private final ResponseDispatcher responseDispatcher;
     private final AudioConnectionManager audioConnectionManager;
-
-    public LeaveVoiceChannelListener(ResponseDispatcher responseDispatcher, AudioConnectionManager audioConnectionManager) {
-        this.responseDispatcher = responseDispatcher;
-        this.audioConnectionManager = audioConnectionManager;
-    }
 
     @Override
     public Class<LeaveVoiceChannelEvent> getEventType() {

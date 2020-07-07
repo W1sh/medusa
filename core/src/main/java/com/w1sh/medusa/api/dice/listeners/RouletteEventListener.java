@@ -8,6 +8,7 @@ import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.services.GuildUserService;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Member;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -16,17 +17,12 @@ import java.util.Random;
 import static com.w1sh.medusa.utils.Reactive.flatZipWith;
 
 @Component
+@RequiredArgsConstructor
 public final class RouletteEventListener implements EventListener<RouletteEvent> {
 
     private final ResponseDispatcher responseDispatcher;
     private final GuildUserService guildUserService;
     private final Random random;
-
-    public RouletteEventListener(ResponseDispatcher responseDispatcher, GuildUserService guildUserService, Random random) {
-        this.responseDispatcher = responseDispatcher;
-        this.guildUserService = guildUserService;
-        this.random = random;
-    }
 
     @Override
     public Class<RouletteEvent> getEventType() {

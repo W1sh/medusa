@@ -2,51 +2,37 @@ package com.w1sh.medusa.listeners.playlists;
 
 import com.w1sh.medusa.data.Playlist;
 import com.w1sh.medusa.data.responses.Embed;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.events.playlists.PlaylistsEvent;
-import com.w1sh.medusa.listeners.EventListener;
+import com.w1sh.medusa.data.responses.Response;
+import com.w1sh.medusa.events.PlaylistEvent;
 import com.w1sh.medusa.services.PlaylistService;
 import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.core.object.entity.Member;
 import discord4j.rest.util.Color;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.function.Function;
 
 @Component
-public final class PlaylistsListener implements EventListener<PlaylistsEvent> {
-
-    private static final Logger logger = LoggerFactory.getLogger(PlaylistsListener.class);
+@RequiredArgsConstructor
+@Slf4j
+public final class PlaylistShowAction implements Function<PlaylistEvent, Mono<? extends Response>> {
 
     private final PlaylistService playlistService;
-    private final ResponseDispatcher responseDispatcher;
-
-    public PlaylistsListener(ResponseDispatcher responseDispatcher, PlaylistService playlistService) {
-        this.responseDispatcher = responseDispatcher;
-        this.playlistService = playlistService;
-    }
 
     @Override
-    public Class<PlaylistsEvent> getEventType() {
-        return PlaylistsEvent.class;
-    }
-
-    @Override
-    public Mono<Void> execute(PlaylistsEvent event) {
+    public Mono<? extends Response> apply(PlaylistEvent event) {
         String userId = event.getMember().map(member -> member.getId().asString()).orElse("");
 
         return playlistService.findAllByUserId(userId)
-                .flatMap(playlists -> createEmbed(playlists, event))
-                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to list all playlists of user", throwable)))
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
-                .then();
+                .flatMap(playlists -> createPlaylistsEmbed(playlists, event))
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> log.error("Failed to list all playlists of user", throwable)));
     }
 
-    private Mono<Embed> createEmbed(List<Playlist> playlists, PlaylistsEvent event){
+    private Mono<Embed> createPlaylistsEmbed(List<Playlist> playlists, PlaylistEvent event){
         return event.getMessage().getChannel()
                 .map(channel -> new Embed(channel, embedCreateSpec -> {
                     embedCreateSpec.setColor(Color.GREEN);

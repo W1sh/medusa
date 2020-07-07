@@ -4,6 +4,7 @@ import com.w1sh.medusa.api.misc.events.ClapifyEvent;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -12,13 +13,10 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public final class ClapifyEventListener implements EventListener<ClapifyEvent> {
 
     private final ResponseDispatcher responseDispatcher;
-
-    public ClapifyEventListener(ResponseDispatcher responseDispatcher) {
-        this.responseDispatcher = responseDispatcher;
-    }
 
     @Override
     public Class<ClapifyEvent> getEventType() {

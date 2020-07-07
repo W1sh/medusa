@@ -1,15 +1,13 @@
 package com.w1sh.medusa.listeners;
 
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
+@Slf4j
 public final class DisconnectListener implements EventListener<DisconnectEvent> {
-
-    private static final Logger logger = LoggerFactory.getLogger(DisconnectListener.class);
 
     @Override
     public Class<DisconnectEvent> getEventType() {
@@ -19,7 +17,7 @@ public final class DisconnectListener implements EventListener<DisconnectEvent> 
     @Override
     public Mono<Void> execute(DisconnectEvent event) {
         return Mono.justOrEmpty(event)
-                .doOnNext(e -> logger.info("Disconnected from gateway"))
+                .doOnNext(e -> log.info("Disconnected from gateway"))
                 .then();
     }
 }

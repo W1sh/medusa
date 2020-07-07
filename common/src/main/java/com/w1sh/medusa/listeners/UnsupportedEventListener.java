@@ -3,21 +3,19 @@ package com.w1sh.medusa.listeners;
 import com.w1sh.medusa.data.events.UnsupportedEvent;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
+@RequiredArgsConstructor
 public final class UnsupportedEventListener implements EventListener<UnsupportedEvent> {
 
     private final ResponseDispatcher responseDispatcher;
 
     @Value("${event.unsupported}")
     private String unsupported;
-
-    public UnsupportedEventListener(ResponseDispatcher responseDispatcher) {
-        this.responseDispatcher = responseDispatcher;
-    }
 
     @Override
     public Class<UnsupportedEvent> getEventType() {

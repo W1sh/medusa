@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
-public class PointDistributionConverter {
+public final class PointDistributionConverter {
 
     private PointDistributionConverter(){}
 

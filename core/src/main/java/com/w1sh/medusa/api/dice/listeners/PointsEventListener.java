@@ -7,22 +7,17 @@ import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.services.GuildUserService;
 import discord4j.common.util.Snowflake;
-import discord4j.core.object.entity.Member;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static com.w1sh.medusa.utils.Reactive.flatZipWith;
-
 @Component
+@RequiredArgsConstructor
 public final class PointsEventListener implements EventListener<PointsEvent> {
 
     private final ResponseDispatcher responseDispatcher;
     private final GuildUserService guildUserService;
-
-    public PointsEventListener(ResponseDispatcher responseDispatcher, GuildUserService guildUserService) {
-        this.responseDispatcher = responseDispatcher;
-        this.guildUserService = guildUserService;
-    }
 
     @Override
     public Class<PointsEvent> getEventType() {
@@ -34,8 +29,10 @@ public final class PointsEventListener implements EventListener<PointsEvent> {
         String guildId = event.getGuildId().map(Snowflake::asString).orElse("");
         String userId = event.getMember().map(member -> member.getId().asString()).orElse("");
 
-        return Mono.just(userId)
-                .transform(flatZipWith(Mono.just(guildId), guildUserService::findByUserIdAndGuildId))
+        return event.getMessage().getUserMentions()
+                .map(user -> user.getId().asString())
+                .switchIfEmpty(Flux.just(userId))
+                .flatMap(user -> guildUserService.findByUserIdAndGuildId(user, guildId))
                 .flatMap(user -> createUserPointsMessage(user, event))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
@@ -43,8 +40,10 @@ public final class PointsEventListener implements EventListener<PointsEvent> {
     }
 
     private Mono<TextMessage> createUserPointsMessage(GuildUser user, PointsEvent event) {
-        return event.getMessage().getChannel()
-                .map(chan -> new TextMessage(chan, String.format("**%s** has %d points!",
-                        event.getMember().flatMap(Member::getNickname).orElse("You"), user.getPoints()), false));
+        return event.getGuild()
+                .flatMap(guild -> guild.getMemberById(Snowflake.of(user.getUser().getUserId())))
+                .zipWith(event.getMessage().getChannel(), (member, messageChannel) ->
+                        new TextMessage(messageChannel, String.format("**%s** has %d points!",
+                                member.getNickname().orElse("User"), user.getPoints()), false));
     }
 }

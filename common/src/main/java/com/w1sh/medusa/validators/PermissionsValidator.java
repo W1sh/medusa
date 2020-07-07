@@ -6,8 +6,8 @@ import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.rest.util.PermissionSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -16,15 +16,11 @@ import static com.w1sh.medusa.utils.Reactive.flatZipWith;
 import static com.w1sh.medusa.utils.Reactive.isEmpty;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public final class PermissionsValidator implements Validator {
 
-    private static final Logger logger = LoggerFactory.getLogger(PermissionsValidator.class);
-
     private final ResponseDispatcher responseDispatcher;
-
-    public PermissionsValidator(ResponseDispatcher responseDispatcher) {
-        this.responseDispatcher = responseDispatcher;
-    }
 
     @Override
     public Mono<Boolean> validate(Event event) {
@@ -41,7 +37,7 @@ public final class PermissionsValidator implements Validator {
         return event.getMessage().getChannel()
                 .map(channel -> new TextMessage(channel, ":x: I do not have permission to do that", false))
                 .doOnNext(textMessage -> {
-                    logger.error("Permissions validation failed, event discarded");
+                    log.error("Permissions validation failed, event discarded");
                     responseDispatcher.queue(textMessage);
                 })
                 .doAfterTerminate(responseDispatcher::flush);

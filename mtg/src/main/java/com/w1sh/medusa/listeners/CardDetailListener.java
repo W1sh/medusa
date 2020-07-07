@@ -1,5 +1,6 @@
 package com.w1sh.medusa.listeners;
 
+import com.w1sh.medusa.data.events.InlineEvent;
 import com.w1sh.medusa.data.responses.Embed;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.CardDetailEvent;
@@ -7,20 +8,17 @@ import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.services.CardService;
 import com.w1sh.medusa.utils.CardUtils;
 import com.w1sh.medusa.utils.ResponseUtils;
+import discord4j.rest.util.Color;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import discord4j.rest.util.Color;
 
 @Component
+@RequiredArgsConstructor
 public final class CardDetailListener implements EventListener<CardDetailEvent> {
 
     private final CardService cardService;
     private final ResponseDispatcher responseDispatcher;
-
-    public CardDetailListener(CardService cardService, ResponseDispatcher responseDispatcher) {
-        this.cardService = cardService;
-        this.responseDispatcher = responseDispatcher;
-    }
 
     @Override
     public Class<CardDetailEvent> getEventType() {
@@ -30,17 +28,12 @@ public final class CardDetailListener implements EventListener<CardDetailEvent> 
     @Override
     public Mono<Void> execute(CardDetailEvent event) {
         return Mono.just(event)
-                .filterWhen(this::validate)
-                .flatMap(ev -> Mono.justOrEmpty(ev.getInlineArgument()))
-                .flatMap(cardService::getCardByName)
+                .filter(InlineEvent::hasArgument)
+                .flatMap(ev -> cardService.getCardByName(ev.getInlineArgument()))
                 .flatMap(tuple -> this.createEmbed(tuple, event))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
-    }
-
-    private Mono<Boolean> validate(CardDetailEvent event) {
-        return Mono.just(event.getInlineArgument() != null && !event.getInlineArgument().isBlank());
     }
 
     private Mono<Embed> createEmbed(Card card, CardDetailEvent event){

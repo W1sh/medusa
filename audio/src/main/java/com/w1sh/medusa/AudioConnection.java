@@ -1,26 +1,34 @@
 package com.w1sh.medusa;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.w1sh.medusa.listeners.TrackEventListener;
+import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.player.DefaultAudioTrackScheduler;
+import com.w1sh.medusa.player.listeners.TrackEventListener;
+import discord4j.core.object.entity.channel.GuildChannel;
+import discord4j.core.object.entity.channel.MessageChannel;
+import discord4j.voice.VoiceConnection;
 import reactor.core.publisher.Mono;
 
 public class AudioConnection {
 
-    private final TrackScheduler trackScheduler;
-    private final Mono<Void> disconnect;
+    private final DefaultAudioTrackScheduler trackScheduler;
+    private final VoiceConnection voiceConnection;
     private boolean leaving;
+    private MessageChannel messageChannel;
+    private Long guildId;
 
-    public AudioConnection(AudioPlayer player, Mono<Void> disconnect, TrackEventListener trackEventListener) {
-        this.disconnect = disconnect;
-        this.trackScheduler = new TrackScheduler(player, trackEventListener);
+    public AudioConnection(AudioPlayer player, VoiceConnection voiceConnection, ResponseDispatcher responseDispatcher) {
+        this.voiceConnection = voiceConnection;
+        final TrackEventListener trackEventListener = new TrackEventListener(this, responseDispatcher);
+        this.trackScheduler = DefaultAudioTrackScheduler.of(player, trackEventListener);
     }
 
-    public void destroy(){
+    public Mono<Void> destroy(){
         this.trackScheduler.destroy();
-        this.disconnect.block();
+        return this.voiceConnection.disconnect();
     }
 
-    public TrackScheduler getTrackScheduler() {
+    public DefaultAudioTrackScheduler getTrackScheduler() {
         return trackScheduler;
     }
 
@@ -30,5 +38,20 @@ public class AudioConnection {
 
     public void setLeaving(boolean leaving) {
         this.leaving = leaving;
+    }
+
+    public MessageChannel getMessageChannel() {
+        return messageChannel;
+    }
+
+    public void setMessageChannel(MessageChannel messageChannel) {
+        this.messageChannel = messageChannel;
+    }
+
+    public Long getGuildId() {
+        if(guildId == null) {
+            guildId = ((GuildChannel) messageChannel).getGuildId().asLong();
+        }
+        return guildId;
     }
 }

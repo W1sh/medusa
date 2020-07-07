@@ -1,10 +1,12 @@
 package com.w1sh.medusa.data;
 
+import lombok.Data;
 import org.springframework.data.relational.core.mapping.Column;
 
 import java.time.LocalDateTime;
 
-public class Audit {
+@Data
+public final class Audit {
 
     @Column(value = "created_on")
     private LocalDateTime createdOn;
@@ -16,15 +18,4 @@ public class Audit {
         return createdOn != null ? createdOn : LocalDateTime.now();
     }
 
-    public void setCreatedOn(LocalDateTime createdOn) {
-        this.createdOn = createdOn;
-    }
-
-    public LocalDateTime getUpdatedOn() {
-        return updatedOn;
-    }
-
-    public void setUpdatedOn(LocalDateTime updatedOn) {
-        this.updatedOn = updatedOn;
-    }
 }

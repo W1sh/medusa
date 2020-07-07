@@ -1,25 +1,23 @@
 package com.w1sh.medusa.listeners;
 
+import com.w1sh.medusa.data.events.InlineEvent;
 import com.w1sh.medusa.data.responses.Embed;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.CardImageEvent;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.services.CardService;
 import com.w1sh.medusa.utils.CardUtils;
+import discord4j.rest.util.Color;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import discord4j.rest.util.Color;
 
 @Component
+@RequiredArgsConstructor
 public final class CardImageListener implements EventListener<CardImageEvent> {
 
     private final CardService cardService;
     private final ResponseDispatcher responseDispatcher;
-
-    public CardImageListener(CardService cardService, ResponseDispatcher responseDispatcher) {
-        this.cardService = cardService;
-        this.responseDispatcher = responseDispatcher;
-    }
 
     @Override
     public Class<CardImageEvent> getEventType() {
@@ -29,17 +27,12 @@ public final class CardImageListener implements EventListener<CardImageEvent> {
     @Override
     public Mono<Void> execute(CardImageEvent event) {
         return Mono.just(event)
-                .filterWhen(this::validate)
-                .flatMap(ev -> Mono.justOrEmpty(ev.getInlineArgument()))
-                .flatMap(cardService::getCardByName)
+                .filter(InlineEvent::hasArgument)
+                .flatMap(ev -> cardService.getCardByName(ev.getInlineArgument()))
                 .flatMap(tuple -> createEmbed(tuple, event))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
-    }
-
-    private Mono<Boolean> validate(CardImageEvent event) {
-        return Mono.just(event.getInlineArgument() != null && !event.getInlineArgument().isBlank());
     }
 
     private Mono<Embed> createEmbed(Card card, CardImageEvent event){

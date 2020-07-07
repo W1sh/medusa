@@ -1,5 +1,7 @@
 package com.w1sh.medusa.data;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
@@ -9,6 +11,8 @@ import org.springframework.data.relational.core.mapping.Table;
 import java.util.List;
 import java.util.Objects;
 
+@Data
+@NoArgsConstructor
 @Table(value = "core.playlists")
 public final class Playlist {
 
@@ -26,54 +30,12 @@ public final class Playlist {
     @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY)
     private Audit audit;
 
-    public Playlist() { }
-
     public Playlist(String user, String name, List<Track> tracks) {
         this.name = name;
         this.user = new User();
         this.user.setUserId(user);
         this.tracks = tracks;
         this.audit = new Audit();
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public List<Track> getTracks() {
-        return tracks;
-    }
-
-    public void setTracks(List<Track> tracks) {
-        this.tracks = tracks;
-    }
-
-    public Audit getAudit() {
-        return audit;
-    }
-
-    public void setAudit(Audit audit) {
-        this.audit = audit;
     }
 
     public Long getFullDuration(){

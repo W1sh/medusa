@@ -8,22 +8,20 @@ import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.metrics.Trackers;
 import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.core.object.entity.channel.MessageChannel;
+import discord4j.rest.util.Color;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import discord4j.rest.util.Color;
 
 @Component
+@RequiredArgsConstructor
 public final class StatusEventListener implements EventListener<StatusEvent> {
 
     @Value("${medusa.version}")
     private String version;
 
     private final ResponseDispatcher responseDispatcher;
-
-    public StatusEventListener(ResponseDispatcher responseDispatcher) {
-        this.responseDispatcher = responseDispatcher;
-    }
 
     @Override
     public Class<StatusEvent> getEventType() {

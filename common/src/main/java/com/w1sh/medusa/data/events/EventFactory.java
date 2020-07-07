@@ -1,6 +1,8 @@
 package com.w1sh.medusa.data.events;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -22,12 +24,14 @@ public final class EventFactory {
     private static final Logger logger = LoggerFactory.getLogger(EventFactory.class);
 
     private static final Pattern INLINE_EVENT_PATTERN = Pattern.compile("\\{\\{.+?(?:}})");
-    private static final Pattern INLINE_SPECIALS_PATTERN = Pattern.compile("[{!}]");
+    private static final Pattern INLINE_SPECIALS_PATTERN = Pattern.compile("[{!?}]");
     private static final Pattern WORD_PATTERN = Pattern.compile("\\w");
     private static final String ARGUMENT_DELIMITER = " ";
 
-    private String prefix;
     private final Map<String, Class<? extends Event>> events;
+
+    @Getter @Setter
+    private String prefix;
 
     public EventFactory() {
         this.events = new HashMap<>(10);
@@ -107,13 +111,5 @@ public final class EventFactory {
             return;
         }
         events.put(keyword, clazz);
-    }
-
-    public String getPrefix() {
-        return prefix;
-    }
-
-    public void setPrefix(String prefix) {
-        this.prefix = prefix;
     }
 }

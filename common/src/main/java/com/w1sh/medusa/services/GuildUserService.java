@@ -7,8 +7,7 @@ import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.object.presence.Status;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +21,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 @Service
+@Slf4j
 public class GuildUserService {
-
-    private static final Logger logger = LoggerFactory.getLogger(GuildUserService.class);
 
     private final GuildUserRepository repository;
     private final UserService userService;
@@ -42,7 +40,7 @@ public class GuildUserService {
         this.cache = new MemoryCacheBuilder<String, List<GuildUser>>()
                 .maximumSize(10000)
                 .expireAfterAccess(Duration.ofHours(6))
-                .defaultFetch(key -> repository.findAllByGuildId(key)
+                .fetch(key -> repository.findAllByGuildId(key)
                         .collectList()
                         .filter(Predicate.not(List::isEmpty)))
                 .build();
@@ -52,7 +50,7 @@ public class GuildUserService {
     public Mono<GuildUser> save(GuildUser guildUser){
         return fetchUserByUserId(guildUser)
                 .flatMap(repository::save)
-                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to save guild user with id \"{}\"", guildUser.getId(), t)))
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to save guild user with id \"{}\"", guildUser.getId(), t)))
                 .doOnNext(this::cache);
     }
 
@@ -113,7 +111,7 @@ public class GuildUserService {
 
     private Flux<GuildUser> fetchAllGuildUsersInGuild(String guildId) {
         return cache.get(guildId)
-                .onErrorResume(t -> Mono.fromRunnable(() -> logger.error("Failed to retrieve all guild users in guild with guild id \"{}\"", guildId, t)))
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to retrieve all guild users in guild with guild id \"{}\"", guildId, t)))
                 .flatMapIterable(Function.identity());
     }
 
