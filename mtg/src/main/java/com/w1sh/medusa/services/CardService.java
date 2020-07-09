@@ -3,6 +3,8 @@ package com.w1sh.medusa.services;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.resources.ListResponse;
 import com.w1sh.medusa.rest.CardClient;
+import com.w1sh.medusa.services.cache.MemoryCache;
+import com.w1sh.medusa.services.cache.MemoryCacheBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -20,7 +22,6 @@ public final class CardService {
     public CardService(CardClient cardClient) {
         this.cardClient = cardClient;
         this.cache = new MemoryCacheBuilder<String, Card>()
-                .maximumSize(10000)
                 .expireAfterAccess(Duration.ofHours(6))
                 .fetch(cardClient::getCardByName)
                 .build();

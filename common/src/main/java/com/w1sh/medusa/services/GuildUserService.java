@@ -3,6 +3,8 @@ package com.w1sh.medusa.services;
 import com.w1sh.medusa.data.GuildUser;
 import com.w1sh.medusa.mappers.Member2GuildUserMapper;
 import com.w1sh.medusa.repos.GuildUserRepository;
+import com.w1sh.medusa.services.cache.MemoryCache;
+import com.w1sh.medusa.services.cache.MemoryCacheBuilder;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.presence.Presence;
@@ -38,7 +40,6 @@ public class GuildUserService {
         this.userService = userService;
         this.member2GuildUserMapper = member2GuildUserMapper;
         this.cache = new MemoryCacheBuilder<String, List<GuildUser>>()
-                .maximumSize(10000)
                 .expireAfterAccess(Duration.ofHours(6))
                 .fetch(key -> repository.findAllByGuildId(key)
                         .collectList()

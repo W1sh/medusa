@@ -1,4 +1,4 @@
-package com.w1sh.medusa.services;
+package com.w1sh.medusa.services.cache;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import lombok.RequiredArgsConstructor;
@@ -17,19 +17,19 @@ public class MemoryCache<K, V> {
     private final Cache<K, V> cache;
     private final Function<K, Mono<V>> fetch;
 
-    protected void put(K key, V value) {
+    public void put(K key, V value) {
         log.debug("Caching new value of type {}", value.getClass().getSimpleName());
         cache.put(key, value);
     }
 
-    protected Mono<V> get(K keyProvided){
+    public Mono<V> get(K keyProvided){
         return CacheMono.lookup(key -> Mono.justOrEmpty(cache.getIfPresent(keyProvided))
                 .map(Signal::next), keyProvided)
                 .onCacheMissResume(() -> fetch.apply(keyProvided))
                 .andWriteWith(this::writeWith);
     }
 
-    protected Mono<Void> writeWith(K key, Signal<? extends V> possibleValue){
+    public Mono<Void> writeWith(K key, Signal<? extends V> possibleValue){
         return Mono.fromRunnable(() -> Optional.ofNullable(possibleValue.get()).ifPresent(value -> put(key, value)));
     }
 }
