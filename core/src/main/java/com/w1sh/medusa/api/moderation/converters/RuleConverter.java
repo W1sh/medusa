@@ -21,7 +21,7 @@ public final class RuleConverter {
         public Rule convert(Row source) {
             Rule rule = new Rule();
             rule.setId(source.get("id", Integer.class));
-            rule.setRuleValue(RuleEnum.of(source.get("role", String.class)));
+            rule.setRuleValue(RuleEnum.of(source.get("rule", String.class)));
             return rule;
         }
     }
@@ -34,7 +34,7 @@ public final class RuleConverter {
         public OutboundRow convert(Rule source) {
             OutboundRow row = new OutboundRow();
             row.put("id", SettableValue.fromOrEmpty(source.getId(), Integer.class));
-            row.put("role", SettableValue.from(source.getRuleValue()));
+            row.put("rule", SettableValue.from(source.getRuleValue()));
             return row;
         }
     }
