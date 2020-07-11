@@ -13,22 +13,22 @@ import reactor.core.publisher.Mono;
 public class RuleService {
 
     private final RuleRepository ruleRepository;
-    private final MemoryCache<String, Rule> cache;
+    private final MemoryCache<Integer, Rule> cache;
 
     public RuleService(RuleRepository ruleRepository) {
         this.ruleRepository = ruleRepository;
-        this.cache = new MemoryCacheBuilder<String, Rule>().build();
+        this.cache = new MemoryCacheBuilder<Integer, Rule>().build();
     }
 
     public void loadAllRulesIntoCache(){
         ruleRepository.findAll()
-                .doOnNext(rule -> cache.put(rule.getRuleValue().name(), rule))
+                .doOnNext(rule -> cache.put(rule.getId(), rule))
                 .count()
                 .doOnSuccess(count -> log.info("Loaded {} rules into cache", count))
                 .block();
     }
 
-    public Mono<Rule> findByRuleName(String ruleName){
-        return cache.get(ruleName);
+    public Mono<Rule> findById(Integer id){
+        return cache.get(id);
     }
 }

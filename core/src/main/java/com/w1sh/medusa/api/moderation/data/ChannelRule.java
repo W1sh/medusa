@@ -12,6 +12,7 @@ public class ChannelRule {
     @Id
     private Integer id;
 
+    @Column(value = "channel_id")
     private String channel;
 
     @Column(value = "rule_id")
