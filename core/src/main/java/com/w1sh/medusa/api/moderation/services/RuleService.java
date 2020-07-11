@@ -22,7 +22,7 @@ public class RuleService {
 
     public void loadAllRulesIntoCache(){
         ruleRepository.findAll()
-                .doOnNext(rule -> cache.put(rule.getRole().name(), rule))
+                .doOnNext(rule -> cache.put(rule.getRuleValue().name(), rule))
                 .count()
                 .doOnSuccess(count -> log.info("Loaded {} rules into cache", count))
                 .block();
