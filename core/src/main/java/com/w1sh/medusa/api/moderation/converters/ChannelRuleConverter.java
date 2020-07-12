@@ -21,7 +21,7 @@ public final class ChannelRuleConverter {
         public ChannelRule convert(Row source) {
             ChannelRule channelRule = new ChannelRule();
             channelRule.setId(source.get("id", Integer.class));
-            channelRule.setChannel(source.get("channel", String.class));
+            channelRule.setChannel(source.get("channel_id", String.class));
 
             Rule rule = new Rule();
             rule.setId(source.get("rule_id", Integer.class));
@@ -39,8 +39,8 @@ public final class ChannelRuleConverter {
         public OutboundRow convert(ChannelRule source) {
             OutboundRow row = new OutboundRow();
             row.put("id", SettableValue.fromOrEmpty(source.getId(), Integer.class));
-            row.put("channel", SettableValue.from(source.getChannel()));
-            row.put("rule", SettableValue.from(source.getRule().getId()));
+            row.put("channel_id", SettableValue.from(source.getChannel()));
+            row.put("rule_id", SettableValue.from(source.getRule().getId()));
             return row;
         }
     }

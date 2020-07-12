@@ -11,8 +11,8 @@ public enum RuleEnum {
     }
 
     public static RuleEnum of(String string){
-        for (RuleEnum value : values()) {
-            if(value.name().equalsIgnoreCase(string)) return value;
+        for (RuleEnum rule : values()) {
+            if(rule.name().equalsIgnoreCase(string) || rule.value.replaceAll(" ", "").equalsIgnoreCase(string)) return rule;
         }
         throw new EnumConstantNotPresentException(RuleEnum.class, string);
     }

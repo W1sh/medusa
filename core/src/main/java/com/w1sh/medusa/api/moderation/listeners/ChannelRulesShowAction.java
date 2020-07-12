@@ -8,7 +8,6 @@ import com.w1sh.medusa.data.responses.Embed;
 import com.w1sh.medusa.data.responses.Response;
 import discord4j.rest.util.Color;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -17,8 +16,7 @@ import java.util.function.Function;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
-public class ChannelRulesShowAction implements Function<ChannelRulesEvent, Mono<? extends Response>> {
+public final class ChannelRulesShowAction implements Function<ChannelRulesEvent, Mono<? extends Response>> {
 
     private final ChannelRuleService channelRuleService;
 

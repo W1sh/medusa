@@ -26,6 +26,14 @@ public class ChannelRuleService {
                 .build();
     }
 
+    public Mono<ChannelRule> save(ChannelRule channelRule){
+        return repository.save(channelRule);
+    }
+
+    public Mono<Void> delete(ChannelRule channelRule){
+        return repository.delete(channelRule);
+    }
+
     public Mono<List<ChannelRule>> findAllByChannel(String channelId){
         return cache.get(channelId)
                 .doOnNext(channelRules -> cache.put(channelId, channelRules));
