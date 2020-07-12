@@ -14,6 +14,7 @@ public final class ChannelRulesEventListener implements EventListener<ChannelRul
 
     private final ChannelRulesShowAction channelRulesShowAction;
     private final ChannelRulesActivateAction channelRulesActivateAction;
+    private final ChannelRulesDeactivateAction channelRulesDeactivateAction;
     private final ResponseDispatcher responseDispatcher;
 
     @Override
@@ -35,7 +36,7 @@ public final class ChannelRulesEventListener implements EventListener<ChannelRul
         if ("on".equals(action)) {
             return channelRulesActivateAction.apply(event);
         } else if ("off".equals(action)) {
-            return Mono.empty();
+            return channelRulesDeactivateAction.apply(event);
         }
         return Mono.empty();
     }

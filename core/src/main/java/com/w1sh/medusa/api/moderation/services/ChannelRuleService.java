@@ -1,6 +1,8 @@
 package com.w1sh.medusa.api.moderation.services;
 
 import com.w1sh.medusa.api.moderation.data.ChannelRule;
+import com.w1sh.medusa.api.moderation.data.Rule;
+import com.w1sh.medusa.api.moderation.data.RuleEnum;
 import com.w1sh.medusa.api.moderation.repos.ChannelRuleRepository;
 import com.w1sh.medusa.services.cache.MemoryCache;
 import com.w1sh.medusa.services.cache.MemoryCacheBuilder;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.function.Function;
 
 @Service
 public class ChannelRuleService {
@@ -30,13 +33,20 @@ public class ChannelRuleService {
         return repository.save(channelRule);
     }
 
-    public Mono<Void> delete(ChannelRule channelRule){
-        return repository.delete(channelRule);
+    public Mono<Boolean> delete(ChannelRule channelRule){
+        return repository.delete(channelRule)
+                .then(Mono.just(true));
     }
 
-    public Mono<List<ChannelRule>> findAllByChannel(String channelId){
-        return cache.get(channelId)
-                .doOnNext(channelRules -> cache.put(channelId, channelRules));
+    public Mono<ChannelRule> findByChannelAndRule(String channelId, Rule rule){
+        return findAllByChannel(channelId)
+                .flatMapIterable(Function.identity())
+                .filter(channelRule -> channelRule.getRule().getId().equals(rule.getId()))
+                .next();
+    }
+
+    public Mono<List<ChannelRule>> findAllByChannel(String channelId) {
+        return cache.get(channelId);
     }
 
     private Mono<ChannelRule> fetchRules(ChannelRule channelRule){
