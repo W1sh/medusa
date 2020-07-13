@@ -36,10 +36,9 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.w1sh</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>common</artifactId>
         </dependency>
     </dependencies>
 </project>
