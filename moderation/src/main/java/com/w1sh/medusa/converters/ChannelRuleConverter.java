@@ -1,7 +1,7 @@
-package com.w1sh.medusa.api.moderation.converters;
+package com.w1sh.medusa.converters;
 
-import com.w1sh.medusa.api.moderation.data.ChannelRule;
-import com.w1sh.medusa.api.moderation.data.Rule;
+import com.w1sh.medusa.data.ChannelRule;
+import com.w1sh.medusa.data.Rule;
 import io.r2dbc.spi.Row;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;

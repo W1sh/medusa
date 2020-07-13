@@ -1,6 +1,5 @@
 package com.w1sh.medusa.core;
 
-import com.w1sh.medusa.api.moderation.services.RuleService;
 import com.w1sh.medusa.dispatchers.MedusaEventDispatcher;
 import com.w1sh.medusa.utils.EventDispatcherInitializer;
 import com.w1sh.medusa.utils.Executor;
@@ -30,7 +29,6 @@ public class DiscordBot {
 
     private final EventDispatcherInitializer eventDispatcherInitializer;
     private final MedusaEventDispatcher medusaEventDispatcher;
-    private final RuleService ruleService;
     private final Executor executor;
 
     @Value("${discord.token}")
@@ -65,8 +63,6 @@ public class DiscordBot {
         eventDispatcherInitializer.registerEvents();
 
         executor.startPointDistribution(gateway);
-
-        ruleService.loadAllRulesIntoCache();
 
         gateway.onDisconnect().block();
     }

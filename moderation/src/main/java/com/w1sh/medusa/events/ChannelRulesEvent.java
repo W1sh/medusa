@@ -1,4 +1,4 @@
-package com.w1sh.medusa.api.moderation.events;
+package com.w1sh.medusa.events;
 
 import com.w1sh.medusa.data.events.Event;
 import com.w1sh.medusa.data.events.Registered;

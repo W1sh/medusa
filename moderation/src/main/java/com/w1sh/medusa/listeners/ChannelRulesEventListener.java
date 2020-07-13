@@ -1,6 +1,6 @@
-package com.w1sh.medusa.api.moderation.listeners;
+package com.w1sh.medusa.listeners;
 
-import com.w1sh.medusa.api.moderation.events.ChannelRulesEvent;
+import com.w1sh.medusa.events.ChannelRulesEvent;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;

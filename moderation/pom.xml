@@ -9,42 +9,31 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>client</artifactId>
+    <artifactId>moderation</artifactId>
 
     <dependencies>
+        <dependency>
+            <groupId>com.discord4j</groupId>
+            <artifactId>discord4j-core</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-r2dbc</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>io.r2dbc</groupId>
-            <artifactId>r2dbc-postgresql</artifactId>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>com.w1sh</groupId>
-            <artifactId>audio</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.w1sh</groupId>
-            <artifactId>mtg</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.w1sh</groupId>
-            <artifactId>moderation</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.w1sh</groupId>
-            <artifactId>core</artifactId>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
         </dependency>
 
         <dependency>

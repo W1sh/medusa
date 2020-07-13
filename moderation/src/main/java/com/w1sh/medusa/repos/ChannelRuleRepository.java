@@ -1,6 +1,6 @@
-package com.w1sh.medusa.api.moderation.repos;
+package com.w1sh.medusa.repos;
 
-import com.w1sh.medusa.api.moderation.data.ChannelRule;
+import com.w1sh.medusa.data.ChannelRule;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;

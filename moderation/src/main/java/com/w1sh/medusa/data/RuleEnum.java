@@ -1,4 +1,4 @@
-package com.w1sh.medusa.api.moderation.data;
+package com.w1sh.medusa.data;
 
 public enum RuleEnum {
     NO_LINKS("No links"),

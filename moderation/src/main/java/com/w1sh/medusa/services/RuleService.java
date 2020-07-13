@@ -1,8 +1,8 @@
-package com.w1sh.medusa.api.moderation.services;
+package com.w1sh.medusa.services;
 
-import com.w1sh.medusa.api.moderation.data.Rule;
-import com.w1sh.medusa.api.moderation.data.RuleEnum;
-import com.w1sh.medusa.api.moderation.repos.RuleRepository;
+import com.w1sh.medusa.data.Rule;
+import com.w1sh.medusa.data.RuleEnum;
+import com.w1sh.medusa.repos.RuleRepository;
 import com.w1sh.medusa.services.cache.MemoryCache;
 import com.w1sh.medusa.services.cache.MemoryCacheBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +26,8 @@ public class RuleService {
         this.cache = new MemoryCacheBuilder<Integer, Rule>()
                 .fetch(ruleRepository::findById)
                 .build();
+
+        loadAllRulesIntoCache();
     }
 
     public void loadAllRulesIntoCache(){

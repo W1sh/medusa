@@ -1,9 +1,9 @@
-package com.w1sh.medusa.api.moderation.listeners;
+package com.w1sh.medusa.listeners;
 
-import com.w1sh.medusa.api.moderation.data.ChannelRule;
-import com.w1sh.medusa.api.moderation.data.RuleEnum;
-import com.w1sh.medusa.api.moderation.events.ChannelRulesEvent;
-import com.w1sh.medusa.api.moderation.services.ChannelRuleService;
+import com.w1sh.medusa.data.ChannelRule;
+import com.w1sh.medusa.data.RuleEnum;
+import com.w1sh.medusa.events.ChannelRulesEvent;
+import com.w1sh.medusa.services.ChannelRuleService;
 import com.w1sh.medusa.data.responses.Embed;
 import com.w1sh.medusa.data.responses.Response;
 import discord4j.rest.util.Color;

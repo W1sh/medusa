@@ -1,9 +1,8 @@
-package com.w1sh.medusa.api.moderation.services;
+package com.w1sh.medusa.services;
 
-import com.w1sh.medusa.api.moderation.data.ChannelRule;
-import com.w1sh.medusa.api.moderation.data.Rule;
-import com.w1sh.medusa.api.moderation.data.RuleEnum;
-import com.w1sh.medusa.api.moderation.repos.ChannelRuleRepository;
+import com.w1sh.medusa.data.ChannelRule;
+import com.w1sh.medusa.data.Rule;
+import com.w1sh.medusa.repos.ChannelRuleRepository;
 import com.w1sh.medusa.services.cache.MemoryCache;
 import com.w1sh.medusa.services.cache.MemoryCacheBuilder;
 import org.springframework.stereotype.Service;
