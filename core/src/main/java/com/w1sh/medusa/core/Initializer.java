@@ -1,4 +1,4 @@
-package com.w1sh.medusa.utils;
+package com.w1sh.medusa.core;
 
 import com.w1sh.medusa.data.events.Event;
 import com.w1sh.medusa.data.events.EventFactory;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public final class EventDispatcherInitializer {
+public final class Initializer {
 
     private final MedusaEventDispatcher medusaEventDispatcher;
     private final Reflections reflections;
@@ -35,13 +35,12 @@ public final class EventDispatcherInitializer {
 
     @PostConstruct
     public void init(){
-        events = findAllEvents();
+        events = reflections.getSubTypesOf(Event.class);
     }
 
     public void setupDispatcher(final GatewayDiscordClient gateway){
         gateway.on(MessageCreateEvent.class)
-                .filter(event -> event.getClass().equals(MessageCreateEvent.class) &&
-                        event.getMember().isPresent() && event.getMember().map(user -> !user.isBot()).orElse(false))
+                .filter(event -> event.getClass().equals(MessageCreateEvent.class) && event.getMember().map(user -> !user.isBot()).orElse(false))
                 .flatMap(eventFactory::extractEvents)
                 .filterWhen(ev -> Flux.fromIterable(validators)
                         .flatMap(validator -> validator.validate(ev))
@@ -70,10 +69,6 @@ public final class EventDispatcherInitializer {
             }
         }
         log.info("Found and registered {} event listeners", events.size());
-    }
-
-    private Set<Class<? extends Event>> findAllEvents(){
-        return reflections.getSubTypesOf(Event.class);
     }
 
     private boolean hasListenerRegistered(final Class<? extends Event> clazz){

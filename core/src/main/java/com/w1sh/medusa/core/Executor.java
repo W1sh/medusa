@@ -1,4 +1,4 @@
-package com.w1sh.medusa.utils;
+package com.w1sh.medusa.core;
 
 import com.w1sh.medusa.services.PointDistributionService;
 import discord4j.core.GatewayDiscordClient;
@@ -24,7 +24,7 @@ public final class Executor {
     private String rewardPeriod;
 
     public void startPointDistribution(GatewayDiscordClient gateway) {
-        Schedulers.boundedElastic().schedulePeriodically(() -> schedulePointDistribution(gateway),
+        Schedulers.elastic().schedulePeriodically(() -> schedulePointDistribution(gateway),
                 Integer.parseInt(rewardDelay),
                 Integer.parseInt(rewardPeriod),
                 TimeUnit.MINUTES);
@@ -38,7 +38,6 @@ public final class Executor {
                 .collectList()
                 .flatMap(pointDistributionService::distribute)
                 .doAfterTerminate(() -> log.info("Finished point distribution - {} ms elapsed", (System.currentTimeMillis() - start)))
-                .subscribeOn(Schedulers.elastic())
                 .subscribe();
     }
 }

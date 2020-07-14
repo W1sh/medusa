@@ -1,8 +1,6 @@
 package com.w1sh.medusa.core;
 
 import com.w1sh.medusa.dispatchers.MedusaEventDispatcher;
-import com.w1sh.medusa.utils.EventDispatcherInitializer;
-import com.w1sh.medusa.utils.Executor;
 import discord4j.core.DiscordClient;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
@@ -25,9 +23,9 @@ import java.time.Duration;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class DiscordBot {
+public final class DiscordBot {
 
-    private final EventDispatcherInitializer eventDispatcherInitializer;
+    private final Initializer initializer;
     private final MedusaEventDispatcher medusaEventDispatcher;
     private final Executor executor;
 
@@ -58,9 +56,9 @@ public class DiscordBot {
 
         assert gateway != null;
 
-        eventDispatcherInitializer.setupDispatcher(gateway);
-        eventDispatcherInitializer.registerListeners();
-        eventDispatcherInitializer.registerEvents();
+        initializer.setupDispatcher(gateway);
+        initializer.registerListeners();
+        initializer.registerEvents();
 
         executor.startPointDistribution(gateway);
 
