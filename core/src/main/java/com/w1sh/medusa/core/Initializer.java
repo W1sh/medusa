@@ -2,7 +2,7 @@ package com.w1sh.medusa.core;
 
 import com.w1sh.medusa.data.events.Event;
 import com.w1sh.medusa.data.events.EventFactory;
-import com.w1sh.medusa.data.events.Registered;
+import com.w1sh.medusa.data.events.Type;
 import com.w1sh.medusa.dispatchers.MedusaEventDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.validators.Validator;
@@ -59,9 +59,9 @@ public final class Initializer {
                 .filter(event -> !Modifier.isAbstract(event.getModifiers()))
                 .collect(Collectors.toList());
         for (Class<? extends Event> clazz : candidates) {
-            Registered registered = clazz.getAnnotation(Registered.class);
-            if(registered != null){
-                eventFactory.registerEvent(registered.prefix(), clazz);
+            Type type = clazz.getAnnotation(Type.class);
+            if(type != null){
+                eventFactory.registerEvent(type.prefix(), clazz);
                 log.info("Registering new event of type <{}>", clazz.getSimpleName());
             }
             if (!hasListenerRegistered(clazz)) {

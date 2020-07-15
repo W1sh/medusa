@@ -7,8 +7,10 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Registered {
+public @interface Type {
 
     String prefix();
+
+    EventType eventType() default EventType.OTHER;
 
 }
