@@ -12,7 +12,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 @Component
-public class NoLinksRule implements Function<MessageCreateEvent, Mono<? extends Response>> {
+public final class NoLinksRule implements Function<MessageCreateEvent, Mono<? extends Response>> {
 
     private static final String URL_REGEX = "^((https?|ftp)://|(www|ftp)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$";
     private final Pattern p = Pattern.compile(URL_REGEX);

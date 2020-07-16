@@ -27,6 +27,7 @@ public final class MessageCreateEventListener implements EventListener<MessageCr
     @PostConstruct
     private void init(){
         rulesImplementation.put(RuleEnum.NO_LINKS, context.getBean("noLinksRule", Function.class));
+        rulesImplementation.put(RuleEnum.NO_GAMBLING, context.getBean("noGamblingRule", Function.class));
     }
 
     @Override
