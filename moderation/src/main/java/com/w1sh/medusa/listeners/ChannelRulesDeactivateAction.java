@@ -15,7 +15,7 @@ import java.util.function.Function;
 
 @Component
 @RequiredArgsConstructor
-public class ChannelRulesDeactivateAction implements Function<ChannelRulesEvent, Mono<? extends Response>> {
+public final class ChannelRulesDeactivateAction implements Function<ChannelRulesEvent, Mono<? extends Response>> {
 
     private final ChannelRuleService channelRuleService;
     private final RuleService ruleService;

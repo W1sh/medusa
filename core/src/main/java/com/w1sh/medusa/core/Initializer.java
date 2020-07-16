@@ -68,7 +68,7 @@ public final class Initializer {
                 log.warn("Event of type <{}> has no listener registered!", clazz.getSimpleName());
             }
         }
-        log.info("Found and registered {} event listeners", events.size());
+        log.info("Found and registered {} events", events.size());
     }
 
     private boolean hasListenerRegistered(final Class<? extends Event> clazz){
