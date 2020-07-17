@@ -2,6 +2,7 @@ package com.w1sh.medusa.services;
 
 import com.w1sh.medusa.data.ChannelRule;
 import com.w1sh.medusa.data.Rule;
+import com.w1sh.medusa.data.RuleEnum;
 import com.w1sh.medusa.repos.ChannelRuleRepository;
 import com.w1sh.medusa.services.cache.MemoryCache;
 import com.w1sh.medusa.services.cache.MemoryCacheBuilder;
@@ -46,6 +47,17 @@ public class ChannelRuleService {
 
     public Mono<List<ChannelRule>> findAllByChannel(String channelId) {
         return cache.get(channelId);
+    }
+
+    public Mono<Boolean> hasRule(String channelId, RuleEnum ruleEnum){
+        return findByChannelAndRuleEnum(channelId, ruleEnum).hasElement();
+    }
+
+    private Mono<ChannelRule> findByChannelAndRuleEnum(String channelId, RuleEnum ruleEnum){
+        return findAllByChannel(channelId)
+                .flatMapIterable(Function.identity())
+                .filter(channelRule -> channelRule.getRule().getRuleValue().equals(ruleEnum))
+                .next();
     }
 
     private Mono<ChannelRule> fetchRules(ChannelRule channelRule){

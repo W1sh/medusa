@@ -2,10 +2,14 @@ package com.w1sh.medusa.api.dice.listeners;
 
 import com.w1sh.medusa.api.dice.events.PointsBoardEvent;
 import com.w1sh.medusa.data.GuildUser;
+import com.w1sh.medusa.data.RuleEnum;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
+import com.w1sh.medusa.rules.NoGamblingRule;
+import com.w1sh.medusa.services.ChannelRuleService;
 import com.w1sh.medusa.services.GuildUserService;
+import com.w1sh.medusa.utils.Reactive;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.channel.MessageChannel;
@@ -22,6 +26,7 @@ public final class PointsBoardEventListener implements EventListener<PointsBoard
 
     private final ResponseDispatcher responseDispatcher;
     private final GuildUserService guildUserService;
+    private final NoGamblingRule noGamblingRule;
 
     @Override
     public Class<PointsBoardEvent> getEventType() {
@@ -32,11 +37,14 @@ public final class PointsBoardEventListener implements EventListener<PointsBoard
     public Mono<Void> execute(PointsBoardEvent event) {
         String guildId = event.getGuildId().map(Snowflake::asString).orElse("");
 
-        return guildUserService.findTop5PointsInGuild(guildId)
+        Mono<TextMessage> pointsLeaderboardMessage = guildUserService.findTop5PointsInGuild(guildId)
                 .collectList()
                 .zipWith(event.getGuild(), this::buildBoard)
                 .flatMap(Flux::collectList)
-                .zipWith(event.getMessage().getChannel(), this::listUsers)
+                .zipWith(event.getMessage().getChannel(), this::listUsers);
+
+        return noGamblingRule.isNoGamblingActive(event)
+                .transform(Reactive.ifElse(bool -> noGamblingRule.createNoGamblingMessage(event), bool -> pointsLeaderboardMessage))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
