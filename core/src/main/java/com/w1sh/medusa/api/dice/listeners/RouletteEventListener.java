@@ -5,7 +5,9 @@ import com.w1sh.medusa.data.GuildUser;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
+import com.w1sh.medusa.rules.NoGamblingRule;
 import com.w1sh.medusa.services.GuildUserService;
+import com.w1sh.medusa.utils.Reactive;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Member;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public final class RouletteEventListener implements EventListener<RouletteEvent>
 
     private final ResponseDispatcher responseDispatcher;
     private final GuildUserService guildUserService;
+    private final NoGamblingRule noGamblingRule;
     private final Random random;
 
     @Override
@@ -38,13 +41,15 @@ public final class RouletteEventListener implements EventListener<RouletteEvent>
                 .map(Integer::parseInt)
                 .filter(value -> value > 0);
 
-        Mono<GuildUser> guildUserMono = Mono.just(userId)
-                .transform(flatZipWith(Mono.just(guildId), guildUserService::findByUserIdAndGuildId));
+        Mono<GuildUser> guildUserMono = Mono.defer(() -> guildUserService.findByUserIdAndGuildId(userId, guildId));
 
-        return Mono.zip(valueMono, guildUserMono)
+        Mono<TextMessage> rouletteMessage = Mono.defer(() -> Mono.zip(valueMono, guildUserMono)
                 .filter(tuple -> tuple.getT1() <= tuple.getT2().getPoints())
                 .flatMap(tuple -> roulettePoints(tuple.getT1(), tuple.getT2(), event))
-                .switchIfEmpty(createErrorMessage(event))
+                .switchIfEmpty(createErrorMessage(event)));
+
+        return noGamblingRule.isNoGamblingActive(event)
+                .transform(Reactive.ifElse(bool -> noGamblingRule.createNoGamblingMessage(event), bool -> rouletteMessage))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();

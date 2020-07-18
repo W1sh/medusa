@@ -5,7 +5,9 @@ import com.w1sh.medusa.data.GuildUser;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
+import com.w1sh.medusa.rules.NoGamblingRule;
 import com.w1sh.medusa.services.GuildUserService;
+import com.w1sh.medusa.utils.Reactive;
 import discord4j.common.util.Snowflake;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -18,6 +20,7 @@ public final class PointsEventListener implements EventListener<PointsEvent> {
 
     private final ResponseDispatcher responseDispatcher;
     private final GuildUserService guildUserService;
+    private final NoGamblingRule noGamblingRule;
 
     @Override
     public Class<PointsEvent> getEventType() {
@@ -29,7 +32,7 @@ public final class PointsEventListener implements EventListener<PointsEvent> {
         String guildId = event.getGuildId().map(Snowflake::asString).orElse("");
         String userId = event.getMember().map(member -> member.getId().asString()).orElse("");
 
-        return event.getMessage().getUserMentions()
+        Mono<Void> pointsMessage =  event.getMessage().getUserMentions()
                 .map(user -> user.getId().asString())
                 .switchIfEmpty(Flux.just(userId))
                 .flatMap(user -> guildUserService.findByUserIdAndGuildId(user, guildId))
@@ -37,6 +40,14 @@ public final class PointsEventListener implements EventListener<PointsEvent> {
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
+
+        Mono<Void> noGamblingResponse = noGamblingRule.createNoGamblingMessage(event)
+                .doOnNext(responseDispatcher::queue)
+                .doAfterTerminate(responseDispatcher::flush)
+                .then();
+
+        return noGamblingRule.isNoGamblingActive(event)
+                .transform(Reactive.ifElse(bool -> noGamblingResponse, bool -> pointsMessage));
     }
 
     private Mono<TextMessage> createUserPointsMessage(GuildUser user, PointsEvent event) {

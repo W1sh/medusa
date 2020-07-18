@@ -37,11 +37,11 @@ public final class PointsBoardEventListener implements EventListener<PointsBoard
     public Mono<Void> execute(PointsBoardEvent event) {
         String guildId = event.getGuildId().map(Snowflake::asString).orElse("");
 
-        Mono<TextMessage> pointsLeaderboardMessage = guildUserService.findTop5PointsInGuild(guildId)
+        Mono<TextMessage> pointsLeaderboardMessage = Mono.defer(() -> guildUserService.findTop5PointsInGuild(guildId)
                 .collectList()
                 .zipWith(event.getGuild(), this::buildBoard)
                 .flatMap(Flux::collectList)
-                .zipWith(event.getMessage().getChannel(), this::listUsers);
+                .zipWith(event.getMessage().getChannel(), this::listUsers));
 
         return noGamblingRule.isNoGamblingActive(event)
                 .transform(Reactive.ifElse(bool -> noGamblingRule.createNoGamblingMessage(event), bool -> pointsLeaderboardMessage))
