@@ -17,6 +17,9 @@ public class Warning {
     @Column(value = "fk_user")
     private User user;
 
+    @Column(value = "channel_id")
+    private String channelId;
+
     @Column(value = "created_on")
     private LocalDateTime createdOn;
 }

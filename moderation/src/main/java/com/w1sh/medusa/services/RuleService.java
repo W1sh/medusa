@@ -16,22 +16,22 @@ import java.util.Map;
 @Slf4j
 public class RuleService {
 
-    private final RuleRepository ruleRepository;
+    private final RuleRepository repository;
     private final Map<RuleEnum, Integer> rules;
     private final MemoryCache<Integer, Rule> cache;
 
-    public RuleService(RuleRepository ruleRepository) {
-        this.ruleRepository = ruleRepository;
+    public RuleService(RuleRepository repository) {
+        this.repository = repository;
         this.rules = new EnumMap<>(RuleEnum.class);
         this.cache = new MemoryCacheBuilder<Integer, Rule>()
-                .fetch(ruleRepository::findById)
+                .fetch(repository::findById)
                 .build();
 
         loadAllRulesIntoCache();
     }
 
     public void loadAllRulesIntoCache(){
-        ruleRepository.findAll()
+        repository.findAll()
                 .doOnNext(rule -> cache.put(rule.getId(), rule))
                 .doOnNext(rule -> rules.put(rule.getRuleValue(),rule.getId()))
                 .count()

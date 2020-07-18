@@ -30,6 +30,7 @@ public final class WarningConverter {
             user.setId(source.get("fk_user", Integer.class));
             warning.setUser(user);
 
+            warning.setChannelId(source.get("channel_id", String.class));
             warning.setCreatedOn(source.get("created_on", LocalDateTime.class));
             return warning;
         }
@@ -44,6 +45,7 @@ public final class WarningConverter {
             OutboundRow row = new OutboundRow();
             row.put("id", SettableValue.fromOrEmpty(source.getId(), Integer.class));
             row.put("fk_user", SettableValue.from(source.getUser().getId()));
+            row.put("channel_id", SettableValue.from(source.getChannelId()));
             row.put("created_on", SettableValue.from(LocalDateTime.now()));
             return row;
         }
