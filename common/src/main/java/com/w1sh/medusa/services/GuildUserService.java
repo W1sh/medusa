@@ -1,10 +1,10 @@
 package com.w1sh.medusa.services;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.w1sh.medusa.data.GuildUser;
 import com.w1sh.medusa.mappers.Member2GuildUserMapper;
 import com.w1sh.medusa.repos.GuildUserRepository;
-import com.w1sh.medusa.services.cache.MemoryCache;
-import com.w1sh.medusa.services.cache.MemoryCacheBuilder;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.presence.Presence;
@@ -13,14 +13,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.cache.CacheMono;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Signal;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 @Service
 @Slf4j
@@ -28,7 +32,7 @@ public class GuildUserService {
 
     private final GuildUserRepository repository;
     private final UserService userService;
-    private final MemoryCache<String, List<GuildUser>> cache;
+    private final Cache<String, List<GuildUser>> cache;
     private final Member2GuildUserMapper member2GuildUserMapper;
 
     @Value("${points.reward.amount}")
@@ -39,11 +43,8 @@ public class GuildUserService {
         this.repository = repository;
         this.userService = userService;
         this.member2GuildUserMapper = member2GuildUserMapper;
-        this.cache = new MemoryCacheBuilder<String, List<GuildUser>>()
+        this.cache = Caffeine.newBuilder()
                 .expireAfterAccess(Duration.ofHours(6))
-                .fetch(key -> repository.findAllByGuildId(key)
-                        .collectList()
-                        .filter(Predicate.not(List::isEmpty)))
                 .build();
     }
 
@@ -86,7 +87,8 @@ public class GuildUserService {
     }
 
     private Mono<GuildUser> cache(GuildUser user) {
-        return cache.get(user.getGuildId())
+        return fetchAllGuildUsersInGuild(user.getGuildId())
+                .collectList()
                 .defaultIfEmpty(new ArrayList<>())
                 .doOnNext(users -> {
                     users.remove(user);
@@ -111,7 +113,14 @@ public class GuildUserService {
     }
 
     private Flux<GuildUser> fetchAllGuildUsersInGuild(String guildId) {
-        return cache.get(guildId)
+        final Supplier<Mono<List<GuildUser>>> supplier = () -> repository.findAllByGuildId(guildId)
+                .collectList()
+                .filter(Predicate.not(List::isEmpty));
+
+        return CacheMono.lookup(key -> Mono.justOrEmpty(cache.getIfPresent(key))
+                .map(Signal::next), guildId)
+                .onCacheMissResume(supplier)
+                .andWriteWith((key, signal) -> Mono.fromRunnable(() -> Optional.ofNullable(signal.get()).ifPresent(value -> cache.put(key, value))))
                 .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to retrieve all guild users in guild with guild id \"{}\"", guildId, t)))
                 .flatMapIterable(Function.identity());
     }
