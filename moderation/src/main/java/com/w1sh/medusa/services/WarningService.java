@@ -37,17 +37,20 @@ public class WarningService {
 
     public Mono<Warning> save(Warning warning) {
         return repository.save(warning)
-                .flatMap(this::cache);
+                .flatMap(this::cache)
+                .flatMap(this::saveTemporary)
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to save warning with id \"{}\"", warning.getId(), t)));
     }
 
     public Mono<Warning> saveTemporary(Warning warning) {
-        temporaryWarnings.put(warning.getUser().getId(), warning);
-        return Mono.just(warning);
+        return Mono.just(warning).doOnNext(w -> temporaryWarnings.put(w.getUser().getId(), w))
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to save temporary warning with id \"{}\"", warning.getId(), t)));
     }
 
     public Mono<Warning> addWarning(String userId, String channelId){
         Mono<Warning> warning = Mono.defer(() -> userService.findByUserId(userId)
-                .map(user -> new Warning(user, channelId)));
+                .map(user -> new Warning(user, channelId)))
+                .doOnNext(w -> log.info("Creating warning for user with id \"{}\" in channel \"{}\"", w.getUser().getUserId(), w.getChannelId()));
 
         return userService.findByUserId(userId)
                 .filterWhen(user -> Mono.justOrEmpty(temporaryWarnings.getIfPresent(user.getId())).hasElement())

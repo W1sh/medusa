@@ -10,10 +10,12 @@ import org.springframework.stereotype.Service;
 import reactor.cache.CacheMono;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Signal;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 @Service
 @Slf4j
@@ -28,26 +30,30 @@ public class RuleService {
         this.rules = new EnumMap<>(RuleEnum.class);
         this.cache = Caffeine.newBuilder().build();
 
-        loadAllRulesIntoCache();
+        Schedulers.single().schedule(this::loadAllRulesIntoCache);
     }
 
-    public void loadAllRulesIntoCache(){
-        repository.findAll()
-                .doOnNext(rule -> cache.put(rule.getId(), rule))
-                .doOnNext(rule -> rules.put(rule.getRuleValue(),rule.getId()))
-                .count()
-                .doOnSuccess(count -> log.info("Loaded {} rules into cache", count))
-                .block();
+    public Mono<Rule> findById(Integer id){
+        final Supplier<Mono<Rule>> supplier = () -> repository.findById(id)
+                .doOnSuccess(rule -> log.info("Fetched rule with id \"{}\" from database", rule.getId()));
+
+        return CacheMono.lookup(key -> Mono.justOrEmpty(cache.getIfPresent(key))
+                .map(Signal::next), id)
+                .onCacheMissResume(supplier)
+                .andWriteWith((key, signal) -> Mono.fromRunnable(() -> Optional.ofNullable(signal.get()).ifPresent(value -> cache.put(key, value))))
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to retrieve rule with id \"{}\"", id, t)));
     }
 
     public Mono<Rule> findByRuleEnum(RuleEnum ruleEnum){
         return findById(rules.get(ruleEnum));
     }
 
-    public Mono<Rule> findById(Integer id){
-        return CacheMono.lookup(key -> Mono.justOrEmpty(cache.getIfPresent(key))
-                .map(Signal::next), id)
-                .onCacheMissResume(() -> repository.findById(id))
-                .andWriteWith((key, signal) -> Mono.fromRunnable(() -> Optional.ofNullable(signal.get()).ifPresent(value -> cache.put(key, value))));
+    private void loadAllRulesIntoCache(){
+        repository.findAll()
+                .doOnNext(rule -> cache.put(rule.getId(), rule))
+                .doOnNext(rule -> rules.put(rule.getRuleValue(),rule.getId()))
+                .count()
+                .doOnSuccess(count -> log.info("Loaded {} rules into cache", count))
+                .subscribe();
     }
 }
