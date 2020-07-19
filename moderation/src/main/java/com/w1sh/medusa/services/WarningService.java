@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.w1sh.medusa.data.Warning;
 import com.w1sh.medusa.repos.WarningRepository;
+import com.w1sh.medusa.utils.Caches;
 import com.w1sh.medusa.utils.Reactive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,7 +38,7 @@ public class WarningService {
 
     public Mono<Warning> save(Warning warning) {
         return repository.save(warning)
-                .flatMap(this::cache)
+                .doOnNext(w -> Caches.storeMultivalue(w.getUser().getId(), w, warnings.getIfPresent(w.getUser().getId()), warnings))
                 .flatMap(this::saveTemporary)
                 .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to save warning with id \"{}\"", warning.getId(), t)));
     }
@@ -75,6 +76,5 @@ public class WarningService {
                 .doOnNext(ws -> warnings.put(warning.getUser().getId(), ws))
                 .then(Mono.just(warning));
     }
-
 
 }
