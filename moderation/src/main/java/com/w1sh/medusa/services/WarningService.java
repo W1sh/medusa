@@ -70,11 +70,4 @@ public class WarningService {
                 .andWriteWith((key, signal) -> Mono.fromRunnable(() -> Optional.ofNullable(signal.get()).ifPresent(value -> warnings.put(key, value))));
     }
 
-    private Mono<Warning> cache(Warning warning) {
-        return Mono.justOrEmpty(warnings.getIfPresent(warning.getUser().getId()))
-                .doOnNext(ws -> ws.add(warning))
-                .doOnNext(ws -> warnings.put(warning.getUser().getId(), ws))
-                .then(Mono.just(warning));
-    }
-
 }

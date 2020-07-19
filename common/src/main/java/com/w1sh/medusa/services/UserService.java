@@ -6,7 +6,6 @@ import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.repos.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import reactor.cache.CacheMono;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Signal;

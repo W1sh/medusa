@@ -5,11 +5,10 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.w1sh.medusa.data.ChannelRule;
 import com.w1sh.medusa.data.Rule;
 import com.w1sh.medusa.data.RuleEnum;
-import com.w1sh.medusa.data.Warning;
 import com.w1sh.medusa.repos.ChannelRuleRepository;
 import com.w1sh.medusa.utils.Caches;
+import com.w1sh.medusa.utils.Reactive;
 import lombok.extern.slf4j.Slf4j;
-import org.reactivestreams.Publisher;
 import org.springframework.stereotype.Service;
 import reactor.cache.CacheMono;
 import reactor.core.publisher.Mono;
@@ -17,7 +16,6 @@ import reactor.core.publisher.Signal;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Service
@@ -51,17 +49,11 @@ public class ChannelRuleService {
     }
 
     public Mono<ChannelRule> findByChannelAndRule(String channelId, Rule rule){
-        return findAllByChannel(channelId)
-                .flatMapIterable(Function.identity())
-                .filter(channelRule -> channelRule.getRule().getId().equals(rule.getId()))
-                .next();
+        return findAllByChannel(channelId).transform(Reactive.findFirst(cr -> cr.getRule().getId().equals(rule.getId())));
     }
 
     private Mono<ChannelRule> findByChannelAndRuleEnum(String channelId, RuleEnum ruleEnum){
-        return findAllByChannel(channelId)
-                .flatMapIterable(Function.identity())
-                .filter(channelRule -> channelRule.getRule().getRuleValue().equals(ruleEnum))
-                .next();
+        return findAllByChannel(channelId).transform(Reactive.findFirst(cr -> cr.getRule().getRuleValue().equals(ruleEnum)));
     }
 
     public Mono<List<ChannelRule>> findAllByChannel(String channelId) {
