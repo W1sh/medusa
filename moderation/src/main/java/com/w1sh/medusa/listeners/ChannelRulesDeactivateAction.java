@@ -22,8 +22,7 @@ public final class ChannelRulesDeactivateAction implements Function<ChannelRules
 
     @Override
     public Mono<? extends Response> apply(ChannelRulesEvent event) {
-        return Mono.justOrEmpty(event.getArguments().get(0))
-                .map(RuleEnum::of)
+        return Mono.justOrEmpty(RuleEnum.of(event.getArguments().get(0)))
                 .flatMap(ruleService::findByRuleEnum)
                 .transform(Reactive.flatZipWith(event.getMessage().getChannel(),
                         (rule, messageChannel) -> channelRuleService.findByChannelAndRule(messageChannel.getId().asString(), rule)))

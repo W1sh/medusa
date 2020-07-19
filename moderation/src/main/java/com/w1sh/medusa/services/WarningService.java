@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Signal;
 
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -38,7 +39,7 @@ public class WarningService {
 
     public Mono<Warning> save(Warning warning) {
         return repository.save(warning)
-                .doOnNext(w -> Caches.storeMultivalue(w.getUser().getId(), w, warnings.getIfPresent(w.getUser().getId()), warnings))
+                .doOnNext(w -> Caches.storeMultivalue(w.getUser().getId(), w, warnings.asMap().getOrDefault(w.getUser().getId(), new HashSet<>()), warnings))
                 .flatMap(this::saveTemporary)
                 .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to save warning with id \"{}\"", warning.getId(), t)));
     }

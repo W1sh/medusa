@@ -11,7 +11,7 @@ public final class Caches {
 
     public static <K, V, C extends Collection<V>> void storeMultivalue(K key, V value, C collection, Cache<K, C> cache) {
         requireNonNullArguments(key, value, collection, cache);
-
+        
         collection.remove(value);
         collection.add(value);
         cache.put(key, collection);

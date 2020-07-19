@@ -44,6 +44,9 @@ public final class DiscordBot {
                 .onClientResponse(ResponseFunction.retryOnceOnErrorStatus(500))
                 .build();
 
+        initializer.registerListeners();
+        initializer.registerEvents();
+
         final var gateway = client.gateway()
                 .setSharding(ShardingStrategy.recommended())
                 .setShardCoordinator(LocalShardCoordinator.create())
@@ -57,8 +60,6 @@ public final class DiscordBot {
         assert gateway != null;
 
         initializer.setupDispatcher(gateway);
-        initializer.registerListeners();
-        initializer.registerEvents();
 
         executor.startPointDistribution(gateway);
 

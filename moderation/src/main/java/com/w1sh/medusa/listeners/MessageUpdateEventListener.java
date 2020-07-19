@@ -4,28 +4,29 @@ import com.w1sh.medusa.data.RuleEnum;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.rules.NoLinksValidator;
 import com.w1sh.medusa.services.ChannelRuleService;
-import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.event.domain.message.MessageUpdateEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class MessageCreateEventListener implements EventListener<MessageCreateEvent> {
+public final class MessageUpdateEventListener implements EventListener<MessageUpdateEvent> {
 
     private final NoLinksValidator noLinksValidator;
-    private final ResponseDispatcher responseDispatcher;
     private final ChannelRuleService channelRuleService;
+    private final ResponseDispatcher responseDispatcher;
 
     @Override
-    public Class<MessageCreateEvent> getEventType() {
-        return MessageCreateEvent.class;
+    public Class<MessageUpdateEvent> getEventType() {
+        return MessageUpdateEvent.class;
     }
 
     @Override
-    public Mono<Void> execute(MessageCreateEvent event) {
-        return event.getMessage().getChannel()
-                .filter(ignored -> event.getClass().equals(MessageCreateEvent.class))
+    public Mono<Void> execute(MessageUpdateEvent event) {
+        return Mono.justOrEmpty(event)
+                .filter(MessageUpdateEvent::isContentChanged)
+                .flatMap(MessageUpdateEvent::getChannel)
                 .flatMap(messageChannel -> channelRuleService.findByChannelAndRuleEnum(messageChannel.getId().asString(), RuleEnum.NO_LINKS))
                 .flatMap(channelRule -> noLinksValidator.validate(event))
                 .doOnNext(responseDispatcher::queue)

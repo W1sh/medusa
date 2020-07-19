@@ -14,6 +14,7 @@ import reactor.cache.CacheMono;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Signal;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -34,7 +35,7 @@ public class ChannelRuleService {
 
     public Mono<ChannelRule> save(ChannelRule channelRule){
         return repository.save(channelRule)
-                .doOnNext(cr -> Caches.storeMultivalue(cr.getChannel(), cr, cache.getIfPresent(cr.getChannel()), cache))
+                .doOnNext(cr -> Caches.storeMultivalue(cr.getChannel(), cr, cache.asMap().getOrDefault(cr.getChannel(), new ArrayList<>()), cache))
                 .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to save channel rule with id \"{}\"", channelRule.getId(), t)));
     }
 
@@ -52,7 +53,7 @@ public class ChannelRuleService {
         return findAllByChannel(channelId).transform(Reactive.findFirst(cr -> cr.getRule().getId().equals(rule.getId())));
     }
 
-    private Mono<ChannelRule> findByChannelAndRuleEnum(String channelId, RuleEnum ruleEnum){
+    public Mono<ChannelRule> findByChannelAndRuleEnum(String channelId, RuleEnum ruleEnum){
         return findAllByChannel(channelId).transform(Reactive.findFirst(cr -> cr.getRule().getRuleValue().equals(ruleEnum)));
     }
 

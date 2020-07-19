@@ -5,32 +5,43 @@ import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.services.WarningService;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.event.domain.message.MessageUpdateEvent;
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.Message;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
 @Component
 @RequiredArgsConstructor
-public final class NoLinksRule implements Function<MessageCreateEvent, Mono<? extends Response>> {
+public final class NoLinksValidator {
 
-    private static final String URL_REGEX = "^((https?|ftp)://|(www|ftp)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$";
-
-    private final Pattern p = Pattern.compile(URL_REGEX);
+    private final Pattern p = Pattern.compile("^((https?|ftp)://|(www|ftp)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$");
     private final WarningService warningService;
 
-    @Override
-    public Mono<? extends Response> apply(MessageCreateEvent event) {
+    public Mono<? extends Response> validate(MessageCreateEvent event) {
         return Mono.justOrEmpty(event.getMessage().getContent())
-                .flatMapIterable(message -> Arrays.asList(message.split(" ")))
-                .filter(s -> p.matcher(s).find())
-                .next()
+                .flatMap(this::hasMatches)
                 .flatMap(ignored -> warnAndDelete(event))
                 .flatMap(ignored -> createNoLinksMessage(event));
+    }
+
+    public Mono<? extends Response> validate(MessageUpdateEvent event) {
+        return event.getMessage()
+                .map(Message::getContent)
+                .flatMap(this::hasMatches)
+                .doOnNext(e -> event.getMessage().flatMap(Message::delete).subscribe())
+                .then(Mono.empty());
+    }
+
+    private Mono<String> hasMatches(String message) {
+        return Mono.justOrEmpty(message)
+                .flatMapIterable(m -> Arrays.asList(m.split(" ")))
+                .filter(s -> p.matcher(s).find())
+                .next();
     }
 
     private Mono<TextMessage> createNoLinksMessage(MessageCreateEvent event){
