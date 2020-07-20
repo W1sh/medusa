@@ -6,6 +6,8 @@ import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.shard.LocalShardCoordinator;
 import discord4j.core.shard.ShardingStrategy;
+import discord4j.gateway.intent.Intent;
+import discord4j.gateway.intent.IntentSet;
 import discord4j.rest.http.client.ClientException;
 import discord4j.rest.request.RouteMatcher;
 import discord4j.rest.response.ResponseFunction;
@@ -48,6 +50,7 @@ public final class DiscordBot {
         initializer.registerEvents();
 
         final var gateway = client.gateway()
+                .setEnabledIntents(IntentSet.of(Intent.GUILD_MESSAGES, Intent.GUILD_VOICE_STATES))
                 .setSharding(ShardingStrategy.recommended())
                 .setShardCoordinator(LocalShardCoordinator.create())
                 .setAwaitConnections(true)
