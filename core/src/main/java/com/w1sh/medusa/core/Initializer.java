@@ -5,8 +5,6 @@ import com.w1sh.medusa.data.events.EventFactory;
 import com.w1sh.medusa.data.events.Type;
 import com.w1sh.medusa.dispatchers.MedusaEventDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
-import com.w1sh.medusa.validators.ArgumentValidator;
-import com.w1sh.medusa.validators.PermissionsValidator;
 import com.w1sh.medusa.validators.Validator;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -31,8 +29,7 @@ public final class Initializer {
     private final Reflections reflections;
     private final EventFactory eventFactory;
 
-    private final ArgumentValidator argumentValidator;
-    private final PermissionsValidator permissionsValidator;
+    private final List<Validator> validators;
     private final List<EventListener<?>> listeners;
     private Set<Class<? extends Event>> events;
 
@@ -45,7 +42,7 @@ public final class Initializer {
         gateway.on(MessageCreateEvent.class)
                 .filter(event -> event.getClass().equals(MessageCreateEvent.class) && event.getMember().map(user -> !user.isBot()).orElse(false))
                 .flatMap(eventFactory::extractEvents)
-                .filterWhen(ev -> Flux.just(argumentValidator, permissionsValidator)
+                .filterWhen(ev -> Flux.fromIterable(validators)
                         .flatMap(validator -> validator.validate(ev))
                         .all(Boolean::booleanValue))
                 .doOnSubscribe(ev -> log.info("Received new event of type <{}>", ev.getClass().getSimpleName()))
