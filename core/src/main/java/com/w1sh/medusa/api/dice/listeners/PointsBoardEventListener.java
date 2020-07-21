@@ -2,12 +2,11 @@ package com.w1sh.medusa.api.dice.listeners;
 
 import com.w1sh.medusa.api.dice.events.PointsBoardEvent;
 import com.w1sh.medusa.data.GuildUser;
-import com.w1sh.medusa.data.RuleEnum;
+import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
-import com.w1sh.medusa.rules.NoGamblingRule;
-import com.w1sh.medusa.services.ChannelRuleService;
+import com.w1sh.medusa.rules.NoGamblingRuleEnforcer;
 import com.w1sh.medusa.services.GuildUserService;
 import com.w1sh.medusa.utils.Reactive;
 import discord4j.common.util.Snowflake;
@@ -26,7 +25,7 @@ public final class PointsBoardEventListener implements EventListener<PointsBoard
 
     private final ResponseDispatcher responseDispatcher;
     private final GuildUserService guildUserService;
-    private final NoGamblingRule noGamblingRule;
+    private final NoGamblingRuleEnforcer noGamblingRuleEnforcer;
 
     @Override
     public Class<PointsBoardEvent> getEventType() {
@@ -37,20 +36,21 @@ public final class PointsBoardEventListener implements EventListener<PointsBoard
     public Mono<Void> execute(PointsBoardEvent event) {
         String guildId = event.getGuildId().map(Snowflake::asString).orElse("");
 
-        Mono<TextMessage> pointsLeaderboardMessage = Mono.defer(() -> guildUserService.findTop5PointsInGuild(guildId)
+        Mono<Response> pointsLeaderboardMessage = Mono.defer(() -> guildUserService.findTop5PointsInGuild(guildId)
                 .collectList()
                 .zipWith(event.getGuild(), this::buildBoard)
                 .flatMap(Flux::collectList)
                 .zipWith(event.getMessage().getChannel(), this::listUsers));
 
-        return noGamblingRule.isNoGamblingActive(event)
-                .transform(Reactive.ifElse(bool -> noGamblingRule.createNoGamblingMessage(event), bool -> pointsLeaderboardMessage))
+        return event.getMessage().getChannel()
+                .flatMap(chan -> noGamblingRuleEnforcer.validate(chan.getId().asString()))
+                .transform(Reactive.ifElse(bool -> noGamblingRuleEnforcer.enforce(event), bool -> pointsLeaderboardMessage))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
     }
 
-    private TextMessage listUsers(List<String> usersList, MessageChannel channel){
+    private Response listUsers(List<String> usersList, MessageChannel channel){
         StringBuilder stringBuilder = new StringBuilder();
         for(String u : usersList){
             stringBuilder.append(u);

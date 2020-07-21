@@ -5,7 +5,7 @@ import com.w1sh.medusa.data.GuildUser;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
-import com.w1sh.medusa.rules.NoGamblingRule;
+import com.w1sh.medusa.rules.NoGamblingRuleEnforcer;
 import com.w1sh.medusa.services.GuildUserService;
 import com.w1sh.medusa.utils.Reactive;
 import discord4j.common.util.Snowflake;
@@ -20,7 +20,7 @@ public final class PointsEventListener implements EventListener<PointsEvent> {
 
     private final ResponseDispatcher responseDispatcher;
     private final GuildUserService guildUserService;
-    private final NoGamblingRule noGamblingRule;
+    private final NoGamblingRuleEnforcer noGamblingRuleEnforcer;
 
     @Override
     public Class<PointsEvent> getEventType() {
@@ -41,12 +41,13 @@ public final class PointsEventListener implements EventListener<PointsEvent> {
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
 
-        Mono<Void> noGamblingResponse = noGamblingRule.createNoGamblingMessage(event)
+        Mono<Void> noGamblingResponse = noGamblingRuleEnforcer.enforce(event)
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
 
-        return noGamblingRule.isNoGamblingActive(event)
+        return event.getMessage().getChannel()
+                .flatMap(chan -> noGamblingRuleEnforcer.validate(chan.getId().asString()))
                 .transform(Reactive.ifElse(bool -> noGamblingResponse, bool -> pointsMessage));
     }
 

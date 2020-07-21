@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 
 @Component
 @RequiredArgsConstructor
-public final class NoLinksValidator {
+public final class NoLinksRule {
 
     private final Pattern p = Pattern.compile("^((https?|ftp)://|(www|ftp)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$");
     private final WarningService warningService;
