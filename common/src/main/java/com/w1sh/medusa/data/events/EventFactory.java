@@ -95,7 +95,8 @@ public final class EventFactory {
 
     private Event createInstance(final String prefix, final MessageCreateEvent event) {
         try {
-            final Class<? extends Event> clazz = events.getOrDefault(prefix, UnsupportedEvent.class);
+            final Class<? extends Event> clazz = events.get(prefix);
+            if(clazz == null) return null;
             return clazz.getConstructor(MessageCreateEvent.class).newInstance(event);
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException e) {
             logger.error("Could not access or instantiate constructor", e);
