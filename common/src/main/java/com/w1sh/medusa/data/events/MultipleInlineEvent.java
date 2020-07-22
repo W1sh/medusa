@@ -6,7 +6,7 @@ import lombok.Setter;
 
 import java.util.List;
 
-@Registered(prefix = "multiple")
+@Type(prefix = "multiple")
 public final class MultipleInlineEvent extends Event {
 
     @Getter @Setter

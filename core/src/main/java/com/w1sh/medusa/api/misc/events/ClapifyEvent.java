@@ -1,10 +1,10 @@
 package com.w1sh.medusa.api.misc.events;
 
 import com.w1sh.medusa.data.events.Event;
-import com.w1sh.medusa.data.events.Registered;
+import com.w1sh.medusa.data.events.Type;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 
-@Registered(prefix = "clapify")
+@Type(prefix = "clapify")
 public final class ClapifyEvent extends Event {
 
     public ClapifyEvent(MessageCreateEvent event) {

@@ -1,15 +1,22 @@
 package com.w1sh.medusa.services;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.w1sh.medusa.data.Playlist;
 import com.w1sh.medusa.repos.PlaylistRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import reactor.cache.CacheMono;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Signal;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 @Service
 @Slf4j
@@ -19,7 +26,7 @@ public class PlaylistService {
     private final TrackService trackService;
     private final PlaylistTrackService playlistTrackService;
     private final PlaylistRepository repository;
-    private final MemoryCache<String, List<Playlist>> cache;
+    private final Cache<String, List<Playlist>> cache;
 
     public PlaylistService(UserService userService, TrackService trackService, PlaylistTrackService playlistTrackService,
                            PlaylistRepository repository) {
@@ -27,10 +34,8 @@ public class PlaylistService {
         this.trackService = trackService;
         this.playlistTrackService = playlistTrackService;
         this.repository = repository;
-        this.cache = new MemoryCacheBuilder<String, List<Playlist>>()
-                .maximumSize(1000)
+        this.cache = Caffeine.newBuilder()
                 .expireAfterAccess(Duration.ofHours(6))
-                .fetch(key -> repository.findAllByUserId(key).collectList())
                 .build();
     }
 
@@ -47,17 +52,24 @@ public class PlaylistService {
     }
 
     public Mono<List<Playlist>> findAllByUserId(String userId){
-        return cache.get(userId)
+        final Supplier<Mono<List<Playlist>>> supplier = () -> repository.findAllByUserId(userId)
+                .collectList()
+                .filter(Predicate.not(List::isEmpty));
+
+        return CacheMono.lookup(key -> Mono.justOrEmpty(cache.getIfPresent(key))
+                .map(Signal::next), userId)
+                .onCacheMissResume(supplier)
+                .andWriteWith((key, signal) -> Mono.fromRunnable(() -> Optional.ofNullable(signal.get()).ifPresent(value -> cache.put(key, value))))
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to fetch playlists of user with id \"{}\"", userId, t)))
                 .flatMapIterable(Function.identity())
                 .flatMap(playlist -> trackService.findAllByPlaylistId(playlist)
                         .doOnNext(playlist::setTracks)
                         .then(Mono.just(playlist)))
-                .collectList()
-                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to fetch playlists of user with id \"{}\"", userId, t)));
+                .collectList();
     }
 
     public Mono<Boolean> deleteIndex(String userId, Integer index) {
-        return cache.get(userId)
+        return findAllByUserId(userId)
                 .map(playlists -> {
                     Playlist removedPlaylist = playlists.remove(index - 1);
                     cache.put(userId, playlists);
@@ -72,7 +84,7 @@ public class PlaylistService {
     }
 
     private Mono<Playlist> cache(Playlist playlist) {
-        return cache.get(playlist.getUser().getUserId())
+        return findAllByUserId(playlist.getUser().getUserId())
                 .defaultIfEmpty(new ArrayList<>())
                 .doOnNext(playlists -> {
                     playlists.remove(playlist);

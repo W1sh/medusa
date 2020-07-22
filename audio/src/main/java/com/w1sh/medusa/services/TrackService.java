@@ -1,5 +1,7 @@
 package com.w1sh.medusa.services;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.w1sh.medusa.data.Playlist;
 import com.w1sh.medusa.data.Track;
 import com.w1sh.medusa.repos.TrackRepository;
@@ -15,15 +17,12 @@ import java.util.List;
 public class TrackService {
 
     private final TrackRepository trackRepository;
-    private final MemoryCache<Integer, Track> cache;
+    private final Cache<Integer, Track> cache;
 
     public TrackService(TrackRepository trackRepository) {
         this.trackRepository = trackRepository;
-        this.cache = new MemoryCacheBuilder<Integer, Track>()
-                .initialCapacity(100)
-                .maximumSize(5000)
+        this.cache = Caffeine.newBuilder()
                 .expireAfterAccess(Duration.ofHours(6))
-                .fetch(key -> Mono.empty())
                 .build();
     }
 

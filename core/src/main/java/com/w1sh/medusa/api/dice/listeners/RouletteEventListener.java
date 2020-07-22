@@ -2,10 +2,13 @@ package com.w1sh.medusa.api.dice.listeners;
 
 import com.w1sh.medusa.api.dice.events.RouletteEvent;
 import com.w1sh.medusa.data.GuildUser;
+import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
+import com.w1sh.medusa.rules.NoGamblingRuleEnforcer;
 import com.w1sh.medusa.services.GuildUserService;
+import com.w1sh.medusa.utils.Reactive;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Member;
 import lombok.RequiredArgsConstructor;
@@ -14,14 +17,13 @@ import reactor.core.publisher.Mono;
 
 import java.util.Random;
 
-import static com.w1sh.medusa.utils.Reactive.flatZipWith;
-
 @Component
 @RequiredArgsConstructor
 public final class RouletteEventListener implements EventListener<RouletteEvent> {
 
     private final ResponseDispatcher responseDispatcher;
     private final GuildUserService guildUserService;
+    private final NoGamblingRuleEnforcer noGamblingRuleEnforcer;
     private final Random random;
 
     @Override
@@ -38,19 +40,22 @@ public final class RouletteEventListener implements EventListener<RouletteEvent>
                 .map(Integer::parseInt)
                 .filter(value -> value > 0);
 
-        Mono<GuildUser> guildUserMono = Mono.just(userId)
-                .transform(flatZipWith(Mono.just(guildId), guildUserService::findByUserIdAndGuildId));
+        Mono<GuildUser> guildUserMono = Mono.defer(() -> guildUserService.findByUserIdAndGuildId(userId, guildId));
 
-        return Mono.zip(valueMono, guildUserMono)
+        Mono<Response> rouletteMessage = Mono.defer(() -> Mono.zip(valueMono, guildUserMono)
                 .filter(tuple -> tuple.getT1() <= tuple.getT2().getPoints())
                 .flatMap(tuple -> roulettePoints(tuple.getT1(), tuple.getT2(), event))
-                .switchIfEmpty(createErrorMessage(event))
+                .switchIfEmpty(createErrorMessage(event)));
+
+        return event.getMessage().getChannel()
+                .flatMap(chan -> noGamblingRuleEnforcer.validate(chan.getId().asString()))
+                .transform(Reactive.ifElse(bool -> noGamblingRuleEnforcer.enforce(event), bool -> rouletteMessage))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
     }
 
-    private Mono<TextMessage> roulettePoints(Integer points, GuildUser user, RouletteEvent event){
+    private Mono<Response> roulettePoints(Integer points, GuildUser user, RouletteEvent event){
         String result;
         if (random.nextBoolean()) {
             result = "won";

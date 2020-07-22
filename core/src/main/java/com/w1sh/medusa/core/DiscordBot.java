@@ -1,13 +1,12 @@
 package com.w1sh.medusa.core;
 
 import com.w1sh.medusa.dispatchers.MedusaEventDispatcher;
-import com.w1sh.medusa.utils.EventDispatcherInitializer;
-import com.w1sh.medusa.utils.Executor;
 import discord4j.core.DiscordClient;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.shard.LocalShardCoordinator;
 import discord4j.core.shard.ShardingStrategy;
+import discord4j.gateway.intent.IntentSet;
 import discord4j.rest.http.client.ClientException;
 import discord4j.rest.request.RouteMatcher;
 import discord4j.rest.response.ResponseFunction;
@@ -22,11 +21,14 @@ import reactor.retry.Retry;
 import javax.annotation.PostConstruct;
 import java.time.Duration;
 
+import static discord4j.gateway.intent.Intent.*;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class DiscordBot {
-    private final EventDispatcherInitializer eventDispatcherInitializer;
+public final class DiscordBot {
+
+    private final Initializer initializer;
     private final MedusaEventDispatcher medusaEventDispatcher;
     private final Executor executor;
 
@@ -45,7 +47,11 @@ public class DiscordBot {
                 .onClientResponse(ResponseFunction.retryOnceOnErrorStatus(500))
                 .build();
 
+        initializer.registerListeners();
+        initializer.registerEvents();
+
         final var gateway = client.gateway()
+                .setEnabledIntents(IntentSet.of(GUILD_MEMBERS, GUILD_MESSAGES, GUILD_VOICE_STATES))
                 .setSharding(ShardingStrategy.recommended())
                 .setShardCoordinator(LocalShardCoordinator.create())
                 .setAwaitConnections(true)
@@ -57,9 +63,7 @@ public class DiscordBot {
 
         assert gateway != null;
 
-        eventDispatcherInitializer.setupDispatcher(gateway);
-        eventDispatcherInitializer.registerListeners();
-        eventDispatcherInitializer.registerEvents();
+        initializer.setupDispatcher(gateway);
 
         executor.startPointDistribution(gateway);
 

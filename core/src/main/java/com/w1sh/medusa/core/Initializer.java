@@ -1,8 +1,8 @@
-package com.w1sh.medusa.utils;
+package com.w1sh.medusa.core;
 
 import com.w1sh.medusa.data.events.Event;
 import com.w1sh.medusa.data.events.EventFactory;
-import com.w1sh.medusa.data.events.Registered;
+import com.w1sh.medusa.data.events.Type;
 import com.w1sh.medusa.dispatchers.MedusaEventDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.validators.Validator;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public final class EventDispatcherInitializer {
+public final class Initializer {
 
     private final MedusaEventDispatcher medusaEventDispatcher;
     private final Reflections reflections;
@@ -35,13 +35,12 @@ public final class EventDispatcherInitializer {
 
     @PostConstruct
     public void init(){
-        events = findAllEvents();
+        events = reflections.getSubTypesOf(Event.class);
     }
 
     public void setupDispatcher(final GatewayDiscordClient gateway){
         gateway.on(MessageCreateEvent.class)
-                .filter(event -> event.getClass().equals(MessageCreateEvent.class) &&
-                        event.getMember().isPresent() && event.getMember().map(user -> !user.isBot()).orElse(false))
+                .filter(event -> event.getClass().equals(MessageCreateEvent.class) && event.getMember().map(user -> !user.isBot()).orElse(false))
                 .flatMap(eventFactory::extractEvents)
                 .filterWhen(ev -> Flux.fromIterable(validators)
                         .flatMap(validator -> validator.validate(ev))
@@ -60,20 +59,16 @@ public final class EventDispatcherInitializer {
                 .filter(event -> !Modifier.isAbstract(event.getModifiers()))
                 .collect(Collectors.toList());
         for (Class<? extends Event> clazz : candidates) {
-            Registered registered = clazz.getAnnotation(Registered.class);
-            if(registered != null){
-                eventFactory.registerEvent(registered.prefix(), clazz);
+            Type type = clazz.getAnnotation(Type.class);
+            if(type != null){
+                eventFactory.registerEvent(type.prefix(), clazz);
                 log.info("Registering new event of type <{}>", clazz.getSimpleName());
             }
             if (!hasListenerRegistered(clazz)) {
                 log.warn("Event of type <{}> has no listener registered!", clazz.getSimpleName());
             }
         }
-        log.info("Found and registered {} event listeners", events.size());
-    }
-
-    private Set<Class<? extends Event>> findAllEvents(){
-        return reflections.getSubTypesOf(Event.class);
+        log.info("Found and registered {} events", events.size());
     }
 
     private boolean hasListenerRegistered(final Class<? extends Event> clazz){
