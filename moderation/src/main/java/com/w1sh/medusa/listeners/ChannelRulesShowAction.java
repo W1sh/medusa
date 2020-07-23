@@ -1,11 +1,11 @@
 package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.data.ChannelRule;
-import com.w1sh.medusa.data.RuleEnum;
-import com.w1sh.medusa.events.ChannelRulesEvent;
-import com.w1sh.medusa.services.ChannelRuleService;
+import com.w1sh.medusa.data.Rule;
 import com.w1sh.medusa.data.responses.Embed;
 import com.w1sh.medusa.data.responses.Response;
+import com.w1sh.medusa.events.ChannelRulesEvent;
+import com.w1sh.medusa.services.ChannelRuleService;
 import discord4j.rest.util.Color;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -38,13 +38,13 @@ public final class ChannelRulesShowAction implements Function<ChannelRulesEvent,
 
     private String rulesEmbedDescription(List<ChannelRule> channelRules){
         StringBuilder stringBuilder = new StringBuilder();
-        for(RuleEnum ruleEnum : RuleEnum.values()){
-            stringBuilder.append(String.format("**%s** rule is `%s`%n", ruleEnum.getValue(), isRuleActive(channelRules, ruleEnum) ? "on" : "off"));
+        for(Rule rule : Rule.values()){
+            stringBuilder.append(String.format("**%s** rule is `%s`%n", rule.getValue(), isRuleActive(channelRules, rule) ? "on" : "off"));
         }
         return stringBuilder.toString();
     }
 
-    private boolean isRuleActive(List<ChannelRule> channelRules, RuleEnum ruleEnum){
-        return channelRules.stream().anyMatch(channelRule -> channelRule.getRule().getRuleValue().equals(ruleEnum));
+    private boolean isRuleActive(List<ChannelRule> channelRules, Rule rule){
+        return channelRules.stream().anyMatch(channelRule -> channelRule.getRule().equals(rule));
     }
 }

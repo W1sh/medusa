@@ -1,6 +1,6 @@
 package com.w1sh.medusa.listeners;
 
-import com.w1sh.medusa.data.RuleEnum;
+import com.w1sh.medusa.data.Rule;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.rules.NoLinksRuleEnforcer;
 import com.w1sh.medusa.services.ChannelRuleService;
@@ -26,7 +26,7 @@ public final class MessageCreateEventListener implements EventListener<MessageCr
     public Mono<Void> execute(MessageCreateEvent event) {
         return event.getMessage().getChannel()
                 .filter(ignored -> event.getClass().equals(MessageCreateEvent.class))
-                .flatMap(messageChannel -> channelRuleService.findByChannelAndRuleEnum(messageChannel.getId().asString(), RuleEnum.NO_LINKS))
+                .flatMap(messageChannel -> channelRuleService.findByChannelAndRule(messageChannel.getId().asString(), Rule.NO_LINKS))
                 .hasElement()
                 .map(ignored -> event.getMessage().getContent())
                 .filterWhen(noLinksRuleEnforcer::validate)
