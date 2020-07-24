@@ -20,7 +20,9 @@ public final class NoGamblingRuleEnforcer implements RuleEnforcer<String>{
 
     @Override
     public Mono<Boolean> validate(String channelId) {
-        return channelRuleService.findByChannelAndRule(channelId, Rule.NO_GAMBLING).hasElement();
+        return channelRuleService.findByChannel(channelId)
+                .filter(cr -> cr.getRules().contains(Rule.NO_GAMBLING))
+                .hasElement();
     }
 
     @Override

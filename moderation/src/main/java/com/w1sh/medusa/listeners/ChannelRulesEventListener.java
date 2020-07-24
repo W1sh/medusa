@@ -1,9 +1,8 @@
 package com.w1sh.medusa.listeners;
 
-import com.w1sh.medusa.events.ChannelRulesEvent;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.listeners.EventListener;
+import com.w1sh.medusa.events.ChannelRulesEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;

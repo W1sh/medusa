@@ -51,7 +51,7 @@ public final class DiscordBot {
         initializer.registerEvents();
 
         final var gateway = client.gateway()
-                .setEnabledIntents(IntentSet.of(GUILD_MEMBERS, GUILD_MESSAGES, GUILD_VOICE_STATES))
+                //.setEnabledIntents(IntentSet.of(GUILD_MEMBERS, GUILD_MESSAGES, GUILD_VOICE_STATES))
                 .setSharding(ShardingStrategy.recommended())
                 .setShardCoordinator(LocalShardCoordinator.create())
                 .setAwaitConnections(true)

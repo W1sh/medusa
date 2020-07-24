@@ -2,12 +2,14 @@ package com.w1sh.medusa.repos;
 
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.reactivestreams.client.MongoClients;
-import com.w1sh.medusa.data.ChannelRule;
+import com.w1sh.medusa.data.Channel;
+import com.w1sh.medusa.utils.Reactive;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
@@ -19,16 +21,25 @@ public class ChannelRuleRepository {
         this.template = new ReactiveMongoTemplate(MongoClients.create(), "test");
     }
 
-    public Mono<ChannelRule> save(ChannelRule channelRule) {
-        return template.save(channelRule);
+    public Mono<Channel> save(Channel channel) {
+        final Query query = new Query(Criteria.where("channelId").is(channel.getChannelId()));
+
+        return template.exists(query, Channel.class)
+                .transform(Reactive.ifElse(bool -> update(query, channel), bool -> template.save(channel)));
     }
 
-    public Mono<DeleteResult> remove(ChannelRule channelRule) {
-        return template.remove(channelRule);
+    public Mono<Channel> update(Query query, Channel channel) {
+        final Update update = new Update().set("rules", channel.getRules());
+        final FindAndModifyOptions modifyOptions = FindAndModifyOptions.options().returnNew(true);
+        return template.findAndModify(query, update, modifyOptions, Channel.class);
     }
 
-    public Flux<ChannelRule> findAllByChannel(String channel) {
-        return template.find(Query.query(Criteria.where("channel").is(channel)), ChannelRule.class);
+    public Mono<DeleteResult> remove(Channel channel) {
+        return template.remove(channel);
+    }
+
+    public Mono<Channel> findByChannel(String channel) {
+        return template.findOne(Query.query(Criteria.where("channelId").is(channel)), Channel.class);
     }
 
 }

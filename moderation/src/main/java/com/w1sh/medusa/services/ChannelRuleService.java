@@ -3,20 +3,15 @@ package com.w1sh.medusa.services;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.mongodb.client.result.DeleteResult;
-import com.w1sh.medusa.data.ChannelRule;
-import com.w1sh.medusa.data.Rule;
+import com.w1sh.medusa.data.Channel;
 import com.w1sh.medusa.repos.ChannelRuleRepository;
-import com.w1sh.medusa.utils.Caches;
 import com.w1sh.medusa.utils.Reactive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import reactor.bool.BooleanUtils;
 import reactor.cache.CacheMono;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Signal;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -25,35 +20,36 @@ import java.util.function.Supplier;
 public class ChannelRuleService {
 
     private final ChannelRuleRepository repository;
-    private final Cache<String, List<ChannelRule>> cache;
+    private final Cache<String, Channel> cache;
 
     public ChannelRuleService(ChannelRuleRepository repository) {
         this.repository = repository;
         this.cache = Caffeine.newBuilder().build();
     }
 
-    public Mono<ChannelRule> save(ChannelRule channelRule){
-        return Mono.justOrEmpty(channelRule)
-                .filterWhen(cr -> BooleanUtils.not(findByChannelAndRule(channelRule.getChannel(), channelRule.getRule()).hasElement()))
+    public Mono<Channel> save(Channel channel){
+        return Mono.justOrEmpty(channel)
                 .flatMap(repository::save)
-                .doOnNext(cr -> Caches.storeMultivalue(cr.getChannel(), cr, cache.asMap().getOrDefault(cr.getChannel(), new ArrayList<>()), cache))
-                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to save channel rule with id \"{}\"", channelRule.getId(), t)));
+                .doOnNext(cr -> cache.put(cr.getId(), cr))
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to save channel rule for channel with id \"{}\"", channel.getChannelId(), t)));
     }
 
-    public Mono<Boolean> delete(ChannelRule channelRule){
-        return repository.remove(channelRule)
+    public Mono<Boolean> delete(Channel channel){
+        final Mono<Boolean> deleteMono = Mono.defer(() -> repository.remove(channel)
                 .map(DeleteResult::wasAcknowledged)
-                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete channel rule with id \"{}\"", channelRule.getId(), t)));
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete channel rule with id \"{}\"", channel.getId(), t))));
+
+        final Mono<Boolean> saveMono = Mono.defer(() -> save(channel).hasElement());
+
+        return Mono.justOrEmpty(channel)
+                .filter(chan -> chan.getRules().isEmpty())
+                .hasElement()
+                .transform(Reactive.ifElse(bool -> deleteMono, bool -> saveMono));
     }
 
-    public Mono<ChannelRule> findByChannelAndRule(String channelId, Rule rule){
-        return findAllByChannel(channelId).transform(Reactive.findFirst(cr -> cr.getRule().equals(rule)));
-    }
-
-    public Mono<List<ChannelRule>> findAllByChannel(String channelId) {
-        final Supplier<Mono<List<ChannelRule>>> supplier = () -> repository.findAllByChannel(channelId)
-                .collectList()
-                .doOnSuccess(channelRules -> log.info("Fetched {} channel rules from database for channel with id {}", channelRules.size(), channelId));
+    public Mono<Channel> findByChannel(String channelId) {
+        final Supplier<Mono<Channel>> supplier = () -> repository.findByChannel(channelId)
+                .doOnSuccess(channel -> log.info("Fetched channel rules from database for channel with id {}", channelId));
 
         return CacheMono.lookup(key -> Mono.justOrEmpty(cache.getIfPresent(key))
                 .map(Signal::next), channelId)

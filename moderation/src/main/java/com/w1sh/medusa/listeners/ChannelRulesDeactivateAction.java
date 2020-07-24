@@ -5,7 +5,6 @@ import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.events.ChannelRulesEvent;
 import com.w1sh.medusa.services.ChannelRuleService;
-import com.w1sh.medusa.utils.Reactive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -20,12 +19,13 @@ public final class ChannelRulesDeactivateAction implements Function<ChannelRules
 
     @Override
     public Mono<? extends Response> apply(ChannelRulesEvent event) {
-        return Mono.justOrEmpty(Rule.of(event.getArguments().get(0)))
-                .transform(Reactive.flatZipWith(event.getMessage().getChannel(),
-                        (rule, messageChannel) -> channelRuleService.findByChannelAndRule(messageChannel.getId().asString(), rule)))
+        final Rule rule = Rule.of(event.getArguments().get(0));
+
+        return event.getMessage().getChannel()
+                .flatMap(chan -> channelRuleService.findByChannel(chan.getId().asString()))
+                .doOnNext(channelRule -> channelRule.getRules().remove(rule))
                 .flatMap(channelRuleService::delete)
-                .map(ignored -> Rule.of(event.getArguments().get(0)))
-                .flatMap(ruleEnum -> createRuleDeactivatedMessage(ruleEnum, event));
+                .flatMap(ruleEnum -> createRuleDeactivatedMessage(rule, event));
     }
 
     private Mono<TextMessage> createRuleDeactivatedMessage(Rule rule, ChannelRulesEvent event){
