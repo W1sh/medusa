@@ -30,6 +30,7 @@ public final class ChannelRulesActivateAction implements Function<ChannelRulesEv
         return event.getMessage().getChannel()
                 .flatMap(messageChannel -> channelRuleService.findByChannel(messageChannel.getId().asString()))
                 .switchIfEmpty(createChannelMono)
+                .filter(channel -> !channel.getRules().contains(rule))
                 .doOnNext(channel -> channel.getRules().add(rule))
                 .flatMap(channelRuleService::save)
                 .flatMap(channel -> createRuleActivatedMessage(rule, event));

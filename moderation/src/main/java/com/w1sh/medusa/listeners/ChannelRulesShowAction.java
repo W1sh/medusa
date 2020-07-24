@@ -25,8 +25,7 @@ public final class ChannelRulesShowAction implements Function<ChannelRulesEvent,
         final String guildId = event.getGuildId().map(Snowflake::asString).orElse("");
 
         final Mono<Channel> createChannelMono = Mono.defer(() -> event.getMessage().getChannel()
-                .map(chan -> new Channel(chan.getId().asString(), guildId))
-                .flatMap(channelRuleService::save));
+                .map(chan -> new Channel(chan.getId().asString(), guildId)));
 
         return event.getMessage().getChannel()
                 .flatMap(messageChannel -> channelRuleService.findByChannel(messageChannel.getId().asString()))
