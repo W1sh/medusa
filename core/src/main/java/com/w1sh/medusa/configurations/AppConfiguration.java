@@ -8,12 +8,14 @@ import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBu
 import org.reflections.Reflections;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.security.SecureRandom;
 
 @Configuration
 @EnableScheduling
+@EnableMongoAuditing
 public class AppConfiguration {
 
     @Bean

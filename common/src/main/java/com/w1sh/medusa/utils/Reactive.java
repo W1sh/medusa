@@ -2,10 +2,8 @@ package com.w1sh.medusa.utils;
 
 import reactor.core.publisher.Mono;
 
-import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 public final class Reactive {
 
@@ -22,9 +20,5 @@ public final class Reactive {
 
     public static <A> Function<Mono<A>, Mono<Boolean>> isEmpty() {
         return pipeline -> pipeline.hasElement().map(bool -> !bool);
-    }
-
-    public static <A, C extends Collection<A>> Function<Mono<C>, Mono<A>> findFirst(Predicate<A> filter) {
-        return pipeline -> pipeline.flatMapIterable(Function.identity()).filter(filter).next();
     }
 }
