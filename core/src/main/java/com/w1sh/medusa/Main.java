@@ -2,6 +2,7 @@ package com.w1sh.medusa;
 
 import com.w1sh.medusa.core.DiscordBot;
 import com.w1sh.medusa.metrics.Trackers;
+import com.w1sh.medusa.utils.ResponseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -34,7 +35,8 @@ public class Main {
 
     @PreDestroy
     public void onDestroy(){
-        logger.info("Closing Medusa - Alive for {}h", Duration.between(startInstant, Instant.now()).toHours());
+        String duration = ResponseUtils.formatDuration(Duration.between(startInstant, Instant.now()).toMillis());
+        logger.info("Closing Medusa - Alive for {}", duration);
     }
 
     @EventListener

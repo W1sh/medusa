@@ -3,7 +3,6 @@ package com.w1sh.medusa.repos;
 import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.utils.Reactive;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.ReactiveMongoDatabaseFactory;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -20,8 +19,8 @@ public class UserRepository {
 
     private final ReactiveMongoTemplate template;
 
-    public UserRepository(ReactiveMongoDatabaseFactory reactiveMongoDatabaseFactory) {
-        this.template = new ReactiveMongoTemplate(reactiveMongoDatabaseFactory);
+    public UserRepository(ReactiveMongoTemplate reactiveMongoTemplate) {
+        this.template = reactiveMongoTemplate;
     }
 
     public Mono<User> save(User user) {

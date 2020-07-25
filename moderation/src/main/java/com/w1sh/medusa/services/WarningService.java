@@ -6,13 +6,11 @@ import com.w1sh.medusa.data.Warning;
 import com.w1sh.medusa.utils.Caches;
 import com.w1sh.medusa.utils.Reactive;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.mongodb.ReactiveMongoDatabaseFactory;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,16 +22,15 @@ public class WarningService {
     private final Cache<String, Set<Warning>> warnings;
     private final Cache<String, Warning> temporaryWarnings;
 
-    public WarningService(ReactiveMongoDatabaseFactory reactiveMongoDatabaseFactory) {
-        this.template = new ReactiveMongoTemplate(reactiveMongoDatabaseFactory);
+    public WarningService(ReactiveMongoTemplate reactiveMongoTemplate){
+        this.template = reactiveMongoTemplate;
         this.warnings = Caffeine.newBuilder().build();
-        this.temporaryWarnings =  Caffeine.newBuilder()
+        this.temporaryWarnings = Caffeine.newBuilder()
                 .expireAfterAccess(Duration.ofMinutes(30))
                 .build();
     }
 
     public Mono<Warning> save(Warning warning) {
-        warning.setCreatedOn(Instant.now());
         return template.save(warning)
                 .doOnNext(w -> Caches.storeMultivalue(w.getUserId(), w, warnings.asMap().getOrDefault(w.getUserId(), new HashSet<>()), warnings))
                 .flatMap(this::saveTemporary)
