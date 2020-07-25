@@ -4,9 +4,11 @@ import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.utils.Reactive;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.ReactiveMongoDatabaseFactory;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,16 +25,16 @@ public class UserRepository {
     }
 
     public Mono<User> save(User user) {
-        final Query query = new Query(Criteria.where("userId").is(user.getUserId()));
+        final Query query = new Query(Criteria.where("userId").is(user.getUserId()))
+                .addCriteria(Criteria.where("guildId").is(user.getGuildId()));
         return template.exists(query, User.class)
                 .transform(Reactive.ifElse(bool -> update(query, user), bool -> template.save(user)));
     }
 
-    public Mono<User> update(Query query, User channel) {
-        return Mono.empty();
-        /*final Update update = new Update().set("rules", channel.getRules());
+    public Mono<User> update(Query query, User user) {
+        final Update update = new Update().set("points", user.getPoints());
         final FindAndModifyOptions modifyOptions = FindAndModifyOptions.options().returnNew(true);
-        return template.findAndModify(query, update, modifyOptions, User.class);*/
+        return template.findAndModify(query, update, modifyOptions, User.class);
     }
 
     public Mono<List<User>> findAllByGuildId(String guildId) {
