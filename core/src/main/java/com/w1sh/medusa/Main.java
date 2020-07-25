@@ -1,14 +1,14 @@
 package com.w1sh.medusa;
 
+import com.w1sh.medusa.core.DiscordBot;
 import com.w1sh.medusa.metrics.Trackers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.data.mongo.MongoReactiveDataAutoConfiguration;
-import org.springframework.boot.autoconfigure.data.mongo.MongoReactiveRepositoriesAutoConfiguration;
-import org.springframework.boot.autoconfigure.mongo.MongoReactiveAutoConfiguration;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.event.EventListener;
 
 import javax.annotation.PreDestroy;
 import java.text.SimpleDateFormat;
@@ -16,8 +16,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 
-@SpringBootApplication(exclude = {MongoReactiveAutoConfiguration.class, MongoReactiveDataAutoConfiguration.class,
-        MongoReactiveRepositoriesAutoConfiguration.class})
+@SpringBootApplication
 @PropertySource(value = "classpath:text-constants.properties")
 public class Main {
 
@@ -36,5 +35,10 @@ public class Main {
     @PreDestroy
     public void onDestroy(){
         logger.info("Closing Medusa - Alive for {}h", Duration.between(startInstant, Instant.now()).toHours());
+    }
+
+    @EventListener
+    public void onApplicationReadyEvent(ApplicationReadyEvent event) {
+        event.getApplicationContext().getBean("discordBot", DiscordBot.class).start();
     }
 }
