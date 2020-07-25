@@ -2,6 +2,7 @@ package com.w1sh.medusa.data;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -21,6 +22,7 @@ public class Warning {
 
     private String guildId;
 
+    @CreatedDate
     private Instant createdOn;
 
     public Warning(String userId, String channelId, String guildId) {

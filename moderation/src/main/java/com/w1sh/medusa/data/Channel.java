@@ -2,9 +2,12 @@ package com.w1sh.medusa.data;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +24,12 @@ public class Channel {
     private String guildId;
 
     private List<Rule> rules;
+
+    @CreatedDate
+    private Instant createdOn;
+
+    @LastModifiedDate
+    private Instant updatedOn;
 
     public Channel(String channelId, String guildId) {
         this.channelId = channelId;

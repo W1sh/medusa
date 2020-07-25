@@ -2,7 +2,9 @@ package com.w1sh.medusa.data;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
@@ -23,8 +25,10 @@ public final class Playlist {
 
     private List<Track> tracks;
 
+    @CreatedDate
     private Instant createdOn;
 
+    @LastModifiedDate
     private Instant updatedOn;
 
     public Playlist(String user, String name, List<Track> tracks) {
