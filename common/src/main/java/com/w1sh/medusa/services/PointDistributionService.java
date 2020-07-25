@@ -1,9 +1,9 @@
 package com.w1sh.medusa.services;
 
-import com.mongodb.reactivestreams.client.MongoClients;
 import com.w1sh.medusa.data.PointDistribution;
 import discord4j.core.object.entity.Guild;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.mongodb.ReactiveMongoDatabaseFactory;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -18,8 +18,8 @@ public class PointDistributionService {
     private final ReactiveMongoTemplate template;
     private final UserService userService;
 
-    public PointDistributionService(UserService userService) {
-        this.template = new ReactiveMongoTemplate(MongoClients.create(), "test");
+    public PointDistributionService(UserService userService, ReactiveMongoDatabaseFactory reactiveMongoDatabaseFactory) {
+        this.template = new ReactiveMongoTemplate(reactiveMongoDatabaseFactory);
         this.userService = userService;
     }
 

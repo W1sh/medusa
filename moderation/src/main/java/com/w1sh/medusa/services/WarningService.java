@@ -2,11 +2,11 @@ package com.w1sh.medusa.services;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.mongodb.reactivestreams.client.MongoClients;
 import com.w1sh.medusa.data.Warning;
 import com.w1sh.medusa.utils.Caches;
 import com.w1sh.medusa.utils.Reactive;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.mongodb.ReactiveMongoDatabaseFactory;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -24,8 +24,8 @@ public class WarningService {
     private final Cache<String, Set<Warning>> warnings;
     private final Cache<String, Warning> temporaryWarnings;
 
-    public WarningService() {
-        this.template = new ReactiveMongoTemplate(MongoClients.create(), "test");
+    public WarningService(ReactiveMongoDatabaseFactory reactiveMongoDatabaseFactory) {
+        this.template = new ReactiveMongoTemplate(reactiveMongoDatabaseFactory);
         this.warnings = Caffeine.newBuilder().build();
         this.temporaryWarnings =  Caffeine.newBuilder()
                 .expireAfterAccess(Duration.ofMinutes(30))

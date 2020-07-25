@@ -1,9 +1,9 @@
 package com.w1sh.medusa.repos;
 
 import com.mongodb.client.result.DeleteResult;
-import com.mongodb.reactivestreams.client.MongoClients;
 import com.w1sh.medusa.data.Channel;
 import com.w1sh.medusa.utils.Reactive;
+import org.springframework.data.mongodb.ReactiveMongoDatabaseFactory;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -17,8 +17,8 @@ public class ChannelRuleRepository {
 
     private final ReactiveMongoTemplate template;
 
-    public ChannelRuleRepository() {
-        this.template = new ReactiveMongoTemplate(MongoClients.create(), "test");
+    public ChannelRuleRepository(ReactiveMongoDatabaseFactory reactiveMongoDatabaseFactory) {
+        this.template = new ReactiveMongoTemplate(reactiveMongoDatabaseFactory);
     }
 
     public Mono<Channel> save(Channel channel) {
