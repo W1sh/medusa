@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -32,6 +33,7 @@ public class WarningService {
     }
 
     public Mono<Warning> save(Warning warning) {
+        warning.setCreatedOn(Instant.now());
         return template.save(warning)
                 .doOnNext(w -> Caches.storeMultivalue(w.getUserId(), w, warnings.asMap().getOrDefault(w.getUserId(), new HashSet<>()), warnings))
                 .flatMap(this::saveTemporary)

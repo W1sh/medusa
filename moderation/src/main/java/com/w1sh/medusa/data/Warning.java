@@ -5,6 +5,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
+
 @Data
 @NoArgsConstructor
 @Document
@@ -18,6 +20,8 @@ public class Warning {
     private String channelId;
 
     private String guildId;
+
+    private Instant createdOn;
 
     public Warning(String userId, String channelId, String guildId) {
         this.userId = userId;
