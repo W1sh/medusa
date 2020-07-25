@@ -1,12 +1,12 @@
 package com.w1sh.medusa.listeners.playlists;
 
 import com.w1sh.medusa.AudioConnectionManager;
+import com.w1sh.medusa.data.Playlist;
 import com.w1sh.medusa.data.Track;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.events.PlaylistEvent;
 import com.w1sh.medusa.services.PlaylistService;
-import com.w1sh.medusa.services.TrackService;
 import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.common.util.Snowflake;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,6 @@ import java.util.function.Function;
 public final class PlaylistLoadAction implements Function<PlaylistEvent, Mono<? extends Response>> {
 
     private final PlaylistService playlistService;
-    private final TrackService trackService;
     private final AudioConnectionManager audioConnectionManager;
 
     @Override
@@ -37,7 +36,7 @@ public final class PlaylistLoadAction implements Function<PlaylistEvent, Mono<? 
                 .flatMapIterable(Function.identity())
                 .take(index)
                 .last()
-                .flatMap(trackService::findAllByPlaylistId)
+                .map(Playlist::getTracks)
                 .flatMapMany(Flux::fromIterable)
                 .doOnNext(track -> audioConnectionManager.requestTrack(guildId.asLong(), track.getUri()))
                 .collectList()

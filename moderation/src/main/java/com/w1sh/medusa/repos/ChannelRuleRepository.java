@@ -23,7 +23,6 @@ public class ChannelRuleRepository {
 
     public Mono<Channel> save(Channel channel) {
         final Query query = new Query(Criteria.where("channelId").is(channel.getChannelId()));
-
         return template.exists(query, Channel.class)
                 .transform(Reactive.ifElse(bool -> update(query, channel), bool -> template.save(channel)));
     }
