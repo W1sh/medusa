@@ -27,11 +27,4 @@ public class Channel {
         this.guildId = guildId;
         this.rules = new ArrayList<>();
     }
-
-    public Channel(String channelId, String guildId, Rule rule) {
-        this.channelId = channelId;
-        this.guildId = guildId;
-        this.rules = new ArrayList<>();
-        rules.add(rule);
-    }
 }
