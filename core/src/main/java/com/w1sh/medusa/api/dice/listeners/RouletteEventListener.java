@@ -1,13 +1,13 @@
 package com.w1sh.medusa.api.dice.listeners;
 
 import com.w1sh.medusa.api.dice.events.RouletteEvent;
-import com.w1sh.medusa.data.GuildUser;
+import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.rules.NoGamblingRuleEnforcer;
-import com.w1sh.medusa.services.GuildUserService;
+import com.w1sh.medusa.services.UserService;
 import com.w1sh.medusa.utils.Reactive;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Member;
@@ -22,7 +22,7 @@ import java.util.Random;
 public final class RouletteEventListener implements EventListener<RouletteEvent> {
 
     private final ResponseDispatcher responseDispatcher;
-    private final GuildUserService guildUserService;
+    private final UserService userService;
     private final NoGamblingRuleEnforcer noGamblingRuleEnforcer;
     private final Random random;
 
@@ -40,7 +40,7 @@ public final class RouletteEventListener implements EventListener<RouletteEvent>
                 .map(Integer::parseInt)
                 .filter(value -> value > 0);
 
-        Mono<GuildUser> guildUserMono = Mono.defer(() -> guildUserService.findByUserIdAndGuildId(userId, guildId));
+        Mono<User> guildUserMono = Mono.defer(() -> userService.findByUserIdAndGuildId(userId, guildId));
 
         Mono<Response> rouletteMessage = Mono.defer(() -> Mono.zip(valueMono, guildUserMono)
                 .filter(tuple -> tuple.getT1() <= tuple.getT2().getPoints())
@@ -55,7 +55,7 @@ public final class RouletteEventListener implements EventListener<RouletteEvent>
                 .then();
     }
 
-    private Mono<Response> roulettePoints(Integer points, GuildUser user, RouletteEvent event){
+    private Mono<Response> roulettePoints(Integer points, User user, RouletteEvent event){
         String result;
         if (random.nextBoolean()) {
             result = "won";

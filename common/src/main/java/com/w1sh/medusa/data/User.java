@@ -3,22 +3,35 @@ package com.w1sh.medusa.data;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.Instant;
 
 @Data
 @NoArgsConstructor
-@Table(value = "core.users")
+@Document
 public class User {
 
     @Id
-    private Integer id;
+    private String id;
 
-    @Column(value = "user_id")
     private String userId;
 
-    public User(String userId) {
+    private String guildId;
+
+    private Long points;
+
+    private Instant createdOn;
+
+    private Instant updatedOn;
+
+    public User(String userId, String guildId) {
         this.userId = userId;
+        this.guildId = guildId;
+    }
+
+    public Long getPoints() {
+        return points != null ? points : 0;
     }
 
 }

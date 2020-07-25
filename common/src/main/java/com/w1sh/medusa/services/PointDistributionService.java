@@ -16,11 +16,11 @@ import java.util.List;
 public class PointDistributionService {
 
     private final ReactiveMongoTemplate template;
-    private final GuildUserService guildUserService;
+    private final UserService userService;
 
-    public PointDistributionService(GuildUserService guildUserService) {
+    public PointDistributionService(UserService userService) {
         this.template = new ReactiveMongoTemplate(MongoClients.create(), "test");
-        this.guildUserService = guildUserService;
+        this.userService = userService;
     }
 
     public Mono<PointDistribution> save(PointDistribution pointDistribution){
@@ -30,7 +30,7 @@ public class PointDistributionService {
 
     public Mono<Void> distribute(List<Guild> guilds) {
         return Flux.fromIterable(guilds)
-                .flatMap(guildUserService::distributePointsInGuild)
+                .flatMap(userService::distributePointsInGuild)
                 .reduce(Long::sum)
                 .zipWith(Mono.just(guilds.size()), PointDistribution::new)
                 .flatMap(this::save)
