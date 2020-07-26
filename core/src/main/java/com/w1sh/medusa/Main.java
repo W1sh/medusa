@@ -19,12 +19,11 @@ import java.util.Date;
 public class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
-    private static Instant startInstant;
+    private static final Instant START_INSTANT = Instant.now();
 
     public static void main(String[] args) {
-        startInstant = Instant.now();
-        Trackers.setStartInstant(startInstant);
-        String now = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(Date.from(startInstant));
+        Trackers.setStartInstant(START_INSTANT);
+        String now = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(Date.from(START_INSTANT));
         logger.info("Booting Medusa - {}", now);
         Thread.currentThread().setName("medusa-main");
         SpringApplication.run(Main.class, args);
@@ -32,7 +31,7 @@ public class Main {
 
     @PreDestroy
     public void onDestroy(){
-        String duration = ResponseUtils.formatDuration(Duration.between(startInstant, Instant.now()).toMillis());
+        String duration = ResponseUtils.formatDuration(Duration.between(START_INSTANT, Instant.now()).toMillis());
         logger.info("Closing Medusa - Alive for {}", duration);
     }
 }
