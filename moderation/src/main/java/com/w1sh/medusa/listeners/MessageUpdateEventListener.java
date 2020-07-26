@@ -1,6 +1,6 @@
 package com.w1sh.medusa.listeners;
 
-import com.w1sh.medusa.data.RuleEnum;
+import com.w1sh.medusa.data.Rule;
 import com.w1sh.medusa.rules.NoLinksRuleEnforcer;
 import com.w1sh.medusa.services.ChannelRuleService;
 import discord4j.core.event.domain.message.MessageUpdateEvent;
@@ -26,7 +26,9 @@ public final class MessageUpdateEventListener implements EventListener<MessageUp
         return Mono.justOrEmpty(event)
                 .filter(MessageUpdateEvent::isContentChanged)
                 .flatMap(MessageUpdateEvent::getChannel)
-                .flatMap(messageChannel -> channelRuleService.findByChannelAndRuleEnum(messageChannel.getId().asString(), RuleEnum.NO_LINKS))
+                .filterWhen(messageChannel -> channelRuleService.findByChannel(messageChannel.getId().asString())
+                        .filter(cr -> cr.getRules().contains(Rule.NO_LINKS))
+                        .hasElement())
                 .filterWhen(channelRule -> event.getMessage()
                         .map(Message::getContent)
                         .flatMap(noLinksRuleEnforcer::validate))

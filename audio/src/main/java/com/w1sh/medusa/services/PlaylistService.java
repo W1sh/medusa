@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.w1sh.medusa.data.Playlist;
 import com.w1sh.medusa.repos.PlaylistRepository;
+import com.w1sh.medusa.utils.Caches;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.cache.CacheMono;
@@ -22,17 +23,10 @@ import java.util.function.Supplier;
 @Slf4j
 public class PlaylistService {
 
-    private final UserService userService;
-    private final TrackService trackService;
-    private final PlaylistTrackService playlistTrackService;
     private final PlaylistRepository repository;
     private final Cache<String, List<Playlist>> cache;
 
-    public PlaylistService(UserService userService, TrackService trackService, PlaylistTrackService playlistTrackService,
-                           PlaylistRepository repository) {
-        this.userService = userService;
-        this.trackService = trackService;
-        this.playlistTrackService = playlistTrackService;
+    public PlaylistService(PlaylistRepository repository) {
         this.repository = repository;
         this.cache = Caffeine.newBuilder()
                 .expireAfterAccess(Duration.ofHours(6))
@@ -40,57 +34,28 @@ public class PlaylistService {
     }
 
     public Mono<Playlist> save(Playlist playlist){
-        return userService.findByUserId(playlist.getUser().getUserId())
-                .doOnNext(playlist::setUser)
-                .flatMap(ignored -> trackService.saveAll(playlist.getTracks()))
-                .doOnNext(playlist::setTracks)
-                .flatMap(ignored -> repository.save(playlist))
-                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to save playlist", t)))
-                .flatMap(this::cache)
-                .flatMapMany(playlistTrackService::save)
-                .then(Mono.just(playlist));
+        return repository.save(playlist)
+                .doOnNext(p -> Caches.storeMultivalue(p.getUserId(), p, cache.asMap().getOrDefault(p.getUserId(), new ArrayList<>()), cache))
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to save playlist", t)));
     }
 
     public Mono<List<Playlist>> findAllByUserId(String userId){
         final Supplier<Mono<List<Playlist>>> supplier = () -> repository.findAllByUserId(userId)
-                .collectList()
                 .filter(Predicate.not(List::isEmpty));
 
         return CacheMono.lookup(key -> Mono.justOrEmpty(cache.getIfPresent(key))
                 .map(Signal::next), userId)
                 .onCacheMissResume(supplier)
                 .andWriteWith((key, signal) -> Mono.fromRunnable(() -> Optional.ofNullable(signal.get()).ifPresent(value -> cache.put(key, value))))
-                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to fetch playlists of user with id \"{}\"", userId, t)))
-                .flatMapIterable(Function.identity())
-                .flatMap(playlist -> trackService.findAllByPlaylistId(playlist)
-                        .doOnNext(playlist::setTracks)
-                        .then(Mono.just(playlist)))
-                .collectList();
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to fetch playlists of user with id \"{}\"", userId, t)));
     }
 
     public Mono<Boolean> deleteIndex(String userId, Integer index) {
         return findAllByUserId(userId)
-                .map(playlists -> {
-                    Playlist removedPlaylist = playlists.remove(index - 1);
-                    cache.put(userId, playlists);
-                    return removedPlaylist;
-                })
-                .flatMap(playlist -> {
-                    Mono<Integer> deleteTracks = playlistTrackService.delete(playlist);
-                    Mono<Void> deletePlaylist = repository.delete(playlist);
-                    return deleteTracks.then(deletePlaylist).then(Mono.just(true));
-                })
+                .flatMapIterable(Function.identity())
+                .takeLast(index - 1)
+                .next()
+                .flatMap(repository::delete)
                 .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete playlist and associated tracks", t)));
-    }
-
-    private Mono<Playlist> cache(Playlist playlist) {
-        return findAllByUserId(playlist.getUser().getUserId())
-                .defaultIfEmpty(new ArrayList<>())
-                .doOnNext(playlists -> {
-                    playlists.remove(playlist);
-                    playlists.add(playlist);
-                    cache.put(playlist.getUser().getUserId(), playlists);
-                })
-                .then(Mono.just(playlist));
     }
 }

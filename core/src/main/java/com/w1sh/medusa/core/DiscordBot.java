@@ -2,11 +2,11 @@ package com.w1sh.medusa.core;
 
 import com.w1sh.medusa.dispatchers.MedusaEventDispatcher;
 import discord4j.core.DiscordClient;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.shard.LocalShardCoordinator;
 import discord4j.core.shard.ShardingStrategy;
-import discord4j.gateway.intent.IntentSet;
 import discord4j.rest.http.client.ClientException;
 import discord4j.rest.request.RouteMatcher;
 import discord4j.rest.response.ResponseFunction;
@@ -21,8 +21,6 @@ import reactor.retry.Retry;
 import javax.annotation.PostConstruct;
 import java.time.Duration;
 
-import static discord4j.gateway.intent.Intent.*;
-
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -34,6 +32,7 @@ public final class DiscordBot {
 
     @Value("${discord.token}")
     private String token;
+    private GatewayDiscordClient gateway;
 
     @PostConstruct
     public void init(){
@@ -50,8 +49,8 @@ public final class DiscordBot {
         initializer.registerListeners();
         initializer.registerEvents();
 
-        final var gateway = client.gateway()
-                .setEnabledIntents(IntentSet.of(GUILD_MEMBERS, GUILD_MESSAGES, GUILD_VOICE_STATES))
+        gateway = client.gateway()
+                //.setEnabledIntents(IntentSet.of(GUILD_MEMBERS, GUILD_MESSAGES, GUILD_VOICE_STATES))
                 .setSharding(ShardingStrategy.recommended())
                 .setShardCoordinator(LocalShardCoordinator.create())
                 .setAwaitConnections(true)
@@ -67,6 +66,10 @@ public final class DiscordBot {
 
         executor.startPointDistribution(gateway);
 
+        log.info("Client setup completed");
+    }
+
+    public void start() {
         gateway.onDisconnect().block();
     }
 }

@@ -1,13 +1,13 @@
 package com.w1sh.medusa.api.dice.listeners;
 
 import com.w1sh.medusa.api.dice.events.PointsBoardEvent;
-import com.w1sh.medusa.data.GuildUser;
+import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.rules.NoGamblingRuleEnforcer;
-import com.w1sh.medusa.services.GuildUserService;
+import com.w1sh.medusa.services.UserService;
 import com.w1sh.medusa.utils.Reactive;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Guild;
@@ -24,7 +24,7 @@ import java.util.List;
 public final class PointsBoardEventListener implements EventListener<PointsBoardEvent> {
 
     private final ResponseDispatcher responseDispatcher;
-    private final GuildUserService guildUserService;
+    private final UserService userService;
     private final NoGamblingRuleEnforcer noGamblingRuleEnforcer;
 
     @Override
@@ -36,7 +36,7 @@ public final class PointsBoardEventListener implements EventListener<PointsBoard
     public Mono<Void> execute(PointsBoardEvent event) {
         String guildId = event.getGuildId().map(Snowflake::asString).orElse("");
 
-        Mono<Response> pointsLeaderboardMessage = Mono.defer(() -> guildUserService.findTop5PointsInGuild(guildId)
+        Mono<Response> pointsLeaderboardMessage = Mono.defer(() -> userService.findTop5PointsInGuild(guildId)
                 .collectList()
                 .zipWith(event.getGuild(), this::buildBoard)
                 .flatMap(Flux::collectList)
@@ -59,9 +59,9 @@ public final class PointsBoardEventListener implements EventListener<PointsBoard
         return new TextMessage(channel, stringBuilder.toString(), false);
     }
 
-    private Flux<String> buildBoard(List<GuildUser> users, Guild guild){
+    private Flux<String> buildBoard(List<User> users, Guild guild){
         return Flux.fromIterable(users)
-                .flatMap(user -> guild.getMemberById(Snowflake.of(user.getUser().getUserId()))
+                .flatMap(user -> guild.getMemberById(Snowflake.of(user.getUserId()))
                         .map(member -> String.format("%s - %d", member.getDisplayName(), user.getPoints()))
                         .onErrorResume(throwable -> Mono.empty()));
     }

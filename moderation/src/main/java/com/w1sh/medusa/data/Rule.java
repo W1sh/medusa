@@ -1,15 +1,23 @@
 package com.w1sh.medusa.data;
 
-import lombok.Data;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
+public enum Rule {
+    NO_LINKS("No links"),
+    NO_GAMBLING("No gambling");
 
-@Data
-@Table(value = "core.rules")
-public class Rule {
+    private final String value;
 
-    @Id
-    private Integer id;
+    Rule(String value) {
+        this.value = value;
+    }
 
-    private RuleEnum ruleValue;
+    public static Rule of(String string){
+        for (Rule rule : values()) {
+            if(rule.name().equalsIgnoreCase(string) || rule.value.replaceAll(" ", "").equalsIgnoreCase(string)) return rule;
+        }
+        throw new EnumConstantNotPresentException(Rule.class, string);
+    }
+
+    public String getValue() {
+        return value;
+    }
 }

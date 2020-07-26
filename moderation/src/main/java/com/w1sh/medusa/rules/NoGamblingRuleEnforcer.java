@@ -1,6 +1,6 @@
 package com.w1sh.medusa.rules;
 
-import com.w1sh.medusa.data.RuleEnum;
+import com.w1sh.medusa.data.Rule;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.services.ChannelRuleService;
@@ -20,7 +20,9 @@ public final class NoGamblingRuleEnforcer implements RuleEnforcer<String>{
 
     @Override
     public Mono<Boolean> validate(String channelId) {
-        return channelRuleService.hasRule(channelId, RuleEnum.NO_GAMBLING);
+        return channelRuleService.findByChannel(channelId)
+                .filter(cr -> cr.getRules().contains(Rule.NO_GAMBLING))
+                .hasElement();
     }
 
     @Override

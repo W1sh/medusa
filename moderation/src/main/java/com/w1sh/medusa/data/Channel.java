@@ -8,20 +8,22 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @Document
-public class User {
+public class Channel {
 
     @Id
     private String id;
 
-    private String userId;
+    private String channelId;
 
     private String guildId;
 
-    private Long points;
+    private List<Rule> rules;
 
     @CreatedDate
     private Instant createdOn;
@@ -29,13 +31,9 @@ public class User {
     @LastModifiedDate
     private Instant updatedOn;
 
-    public User(String userId, String guildId) {
-        this.userId = userId;
+    public Channel(String channelId, String guildId) {
+        this.channelId = channelId;
         this.guildId = guildId;
+        this.rules = new ArrayList<>();
     }
-
-    public Long getPoints() {
-        return points != null ? points : 0;
-    }
-
 }

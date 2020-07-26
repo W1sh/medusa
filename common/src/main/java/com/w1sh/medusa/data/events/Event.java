@@ -2,7 +2,6 @@ package com.w1sh.medusa.data.events;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-
 import discord4j.rest.util.Permission;
 
 import java.util.ArrayList;

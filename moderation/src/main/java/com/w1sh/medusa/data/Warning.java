@@ -2,31 +2,32 @@ package com.w1sh.medusa.data;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @NoArgsConstructor
-@Table(value = "core.warnings")
+@Document
 public class Warning {
 
     @Id
-    private Integer id;
+    private String id;
 
-    @Column(value = "fk_user")
-    private User user;
+    private String userId;
 
-    @Column(value = "channel_id")
     private String channelId;
 
-    @Column(value = "created_on")
-    private LocalDateTime createdOn;
+    private String guildId;
 
-    public Warning(User user, String channelId) {
-        this.user = user;
+    @CreatedDate
+    private Instant createdOn;
+
+    public Warning(String userId, String channelId, String guildId) {
+        this.userId = userId;
         this.channelId = channelId;
+        this.guildId = guildId;
     }
 }

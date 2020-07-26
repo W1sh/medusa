@@ -2,40 +2,39 @@ package com.w1sh.medusa.data;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Embedded;
-import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
 @Data
 @NoArgsConstructor
-@Table(value = "core.playlists")
+@Document
 public final class Playlist {
 
     @Id
-    private Integer id;
+    private String id;
 
-    @Column(value = "fk_user")
-    private User user;
+    private String userId;
 
     private String name;
 
-    @Transient
     private List<Track> tracks;
 
-    @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY)
-    private Audit audit;
+    @CreatedDate
+    private Instant createdOn;
+
+    @LastModifiedDate
+    private Instant updatedOn;
 
     public Playlist(String user, String name, List<Track> tracks) {
         this.name = name;
-        this.user = new User();
-        this.user.setUserId(user);
+        this.userId = user;
         this.tracks = tracks;
-        this.audit = new Audit();
     }
 
     public Long getFullDuration(){

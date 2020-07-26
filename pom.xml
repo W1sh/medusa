@@ -20,6 +20,15 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>13</maven.compiler.source>
         <maven.compiler.target>13</maven.compiler.target>
+
+        <spring.boot.version>2.3.0.RELEASE</spring.boot.version>
+        <lavaplayer.version>1.3.49</lavaplayer.version>
+        <discord4j.version>3.1.0-SNAPSHOT</discord4j.version>
+        <reactor.version>3.3.3.RELEASE</reactor.version>
+        <caffeine.version>2.8.4</caffeine.version>
+        <lombok.version>1.18.12</lombok.version>
+        <reflections.version>0.9.12</reflections.version>
+        <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
     </properties>
 
     <repositories>
@@ -42,126 +51,95 @@
             <dependency>
                 <groupId>com.discord4j</groupId>
                 <artifactId>discord4j-core</artifactId>
-                <version>3.1.0-SNAPSHOT</version>
+                <version>${discord4j.version}</version>
             </dependency>
 
             <!-- https://mvnrepository.com/artifact/com.sedmelluq/lavaplayer -->
             <dependency>
                 <groupId>com.sedmelluq</groupId>
                 <artifactId>lavaplayer</artifactId>
-                <version>1.3.49</version>
-            </dependency>
-
-            <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter -->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter</artifactId>
-                <version>2.3.0.RELEASE</version>
+                <version>${lavaplayer.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-test</artifactId>
+                <version>${spring.boot.version}</version>
                 <scope>test</scope>
-                <version>2.3.0.RELEASE</version>
-            </dependency>
-
-            <!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-r2dbc -->
-            <dependency>
-                <groupId>org.springframework.data</groupId>
-                <artifactId>spring-data-r2dbc</artifactId>
-                <version>1.1.0.RELEASE</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.projectreactor</groupId>
-                        <artifactId>reactor-core</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>io.r2dbc</groupId>
-                <artifactId>r2dbc-postgresql</artifactId>
-                <version>0.8.3.RELEASE</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.projectreactor.netty</groupId>
-                        <artifactId>reactor-netty</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.projectreactor</groupId>
-                        <artifactId>reactor-core</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <!-- https://mvnrepository.com/artifact/io.projectreactor.addons/reactor-extra -->
             <dependency>
                 <groupId>io.projectreactor.addons</groupId>
                 <artifactId>reactor-extra</artifactId>
-                <version>3.3.3.RELEASE</version>
+                <version>${reactor.version}</version>
             </dependency>
 
             <!-- https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine -->
             <dependency>
                 <groupId>com.github.ben-manes.caffeine</groupId>
                 <artifactId>caffeine</artifactId>
-                <version>2.8.4</version>
+                <version>${caffeine.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.reflections</groupId>
                 <artifactId>reflections</artifactId>
-                <version>0.9.12</version>
+                <version>${reflections.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.12</version>
+                <version>${lombok.version}</version>
                 <scope>provided</scope>
             </dependency>
 
-            <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
             <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-api</artifactId>
-                <version>5.5.2</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
+                <version>${spring.boot.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.projectreactor</groupId>
+                <artifactId>reactor-test</artifactId>
+                <version>${reactor.version}</version>
                 <scope>test</scope>
             </dependency>
 
             <dependency>
                 <groupId>com.w1sh</groupId>
                 <artifactId>core</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>${version}</version>
                 <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>com.w1sh</groupId>
                 <artifactId>audio</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>${version}</version>
                 <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>com.w1sh</groupId>
                 <artifactId>mtg</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>${version}</version>
                 <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>com.w1sh</groupId>
                 <artifactId>common</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>${version}</version>
                 <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>com.w1sh</groupId>
                 <artifactId>moderation</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>${version}</version>
                 <scope>compile</scope>
             </dependency>
         </dependencies>
@@ -172,10 +150,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
+                <version>${maven.compiler.plugin.version}</version>
                 <configuration>
-                    <source>13</source>
-                    <target>13</target>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
         </plugins>
