@@ -5,6 +5,7 @@ import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.rules.NoLinksRuleEnforcer;
 import com.w1sh.medusa.services.ChannelRuleService;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.channel.GuildChannel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -26,7 +27,8 @@ public final class MessageCreateEventListener implements EventListener<MessageCr
     public Mono<Void> execute(MessageCreateEvent event) {
         return event.getMessage().getChannel()
                 .filter(ignored -> event.getClass().equals(MessageCreateEvent.class))
-                .filterWhen(messageChannel -> channelRuleService.findByChannel(messageChannel.getId().asString())
+                .ofType(GuildChannel.class)
+                .filterWhen(channel -> channelRuleService.findByChannel(channel)
                         .filter(cr -> cr.getRules().contains(Rule.NO_LINKS))
                         .hasElement())
                 .map(ignored -> event.getMessage().getContent())

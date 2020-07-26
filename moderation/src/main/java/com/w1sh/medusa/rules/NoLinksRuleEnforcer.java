@@ -45,7 +45,6 @@ public final class NoLinksRuleEnforcer implements RuleEnforcer<String>{
 
         return warningService.addWarning(warning)
                 .doOnNext(ignored -> event.getMessage().delete().subscribe())
-                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to save warning with id \"{}\"", warning.getId(), t)))
                 .then(warningMessage);
     }
 }

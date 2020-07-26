@@ -5,6 +5,7 @@ import com.w1sh.medusa.rules.NoLinksRuleEnforcer;
 import com.w1sh.medusa.services.ChannelRuleService;
 import discord4j.core.event.domain.message.MessageUpdateEvent;
 import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.channel.GuildChannel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -26,7 +27,8 @@ public final class MessageUpdateEventListener implements EventListener<MessageUp
         return Mono.justOrEmpty(event)
                 .filter(MessageUpdateEvent::isContentChanged)
                 .flatMap(MessageUpdateEvent::getChannel)
-                .filterWhen(messageChannel -> channelRuleService.findByChannel(messageChannel.getId().asString())
+                .ofType(GuildChannel.class)
+                .filterWhen(channel -> channelRuleService.findByChannel(channel)
                         .filter(cr -> cr.getRules().contains(Rule.NO_LINKS))
                         .hasElement())
                 .filterWhen(channelRule -> event.getMessage()

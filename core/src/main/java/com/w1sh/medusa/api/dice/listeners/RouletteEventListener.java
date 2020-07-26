@@ -11,6 +11,7 @@ import com.w1sh.medusa.services.UserService;
 import com.w1sh.medusa.utils.Reactive;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.channel.GuildChannel;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -48,7 +49,8 @@ public final class RouletteEventListener implements EventListener<RouletteEvent>
                 .switchIfEmpty(createErrorMessage(event)));
 
         return event.getMessage().getChannel()
-                .flatMap(chan -> noGamblingRuleEnforcer.validate(chan.getId().asString()))
+                .ofType(GuildChannel.class)
+                .flatMap(noGamblingRuleEnforcer::validate)
                 .transform(Reactive.ifElse(bool -> noGamblingRuleEnforcer.enforce(event), bool -> rouletteMessage))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)

@@ -6,6 +6,7 @@ import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.services.ChannelRuleService;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.channel.GuildChannel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -14,13 +15,13 @@ import reactor.core.publisher.Mono;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public final class NoGamblingRuleEnforcer implements RuleEnforcer<String>{
+public final class NoGamblingRuleEnforcer implements RuleEnforcer<GuildChannel>{
 
     private final ChannelRuleService channelRuleService;
 
     @Override
-    public Mono<Boolean> validate(String channelId) {
-        return channelRuleService.findByChannel(channelId)
+    public Mono<Boolean> validate(GuildChannel channel) {
+        return channelRuleService.findByChannel(channel)
                 .filter(cr -> cr.getRules().contains(Rule.NO_GAMBLING))
                 .hasElement();
     }

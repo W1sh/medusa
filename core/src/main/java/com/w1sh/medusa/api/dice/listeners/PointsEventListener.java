@@ -9,6 +9,7 @@ import com.w1sh.medusa.rules.NoGamblingRuleEnforcer;
 import com.w1sh.medusa.services.UserService;
 import com.w1sh.medusa.utils.Reactive;
 import discord4j.common.util.Snowflake;
+import discord4j.core.object.entity.channel.GuildChannel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -47,7 +48,8 @@ public final class PointsEventListener implements EventListener<PointsEvent> {
                 .then();
 
         return event.getMessage().getChannel()
-                .flatMap(chan -> noGamblingRuleEnforcer.validate(chan.getId().asString()))
+                .ofType(GuildChannel.class)
+                .flatMap(noGamblingRuleEnforcer::validate)
                 .transform(Reactive.ifElse(bool -> noGamblingResponse, bool -> pointsMessage));
     }
 

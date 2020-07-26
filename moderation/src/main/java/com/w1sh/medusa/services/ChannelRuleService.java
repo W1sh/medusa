@@ -6,6 +6,7 @@ import com.mongodb.client.result.DeleteResult;
 import com.w1sh.medusa.data.Channel;
 import com.w1sh.medusa.repos.ChannelRuleRepository;
 import com.w1sh.medusa.utils.Reactive;
+import discord4j.core.object.entity.channel.GuildChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.cache.CacheMono;
@@ -47,14 +48,15 @@ public class ChannelRuleService {
                 .transform(Reactive.ifElse(bool -> deleteMono, bool -> saveMono));
     }
 
-    public Mono<Channel> findByChannel(String channelId) {
-        final Supplier<Mono<Channel>> supplier = () -> repository.findByChannel(channelId)
-                .doOnSuccess(channel -> log.info("Fetched channel rules from database for channel with id {}", channelId));
+    public Mono<Channel> findByChannel(GuildChannel channel) {
+        final Supplier<Mono<Channel>> supplier = () -> repository.findByChannel(channel.getId().asString())
+                .doOnTerminate(() -> log.info("Fetched channel rules from database for channel with id {}", channel.getId().asString()))
+                .defaultIfEmpty(new Channel(channel.getId().asString(), channel.getGuildId().asString()));
 
         return CacheMono.lookup(key -> Mono.justOrEmpty(cache.getIfPresent(key))
-                .map(Signal::next), channelId)
+                .map(Signal::next), channel.getId().asString())
                 .onCacheMissResume(supplier)
                 .andWriteWith((key, signal) -> Mono.fromRunnable(() -> Optional.ofNullable(signal.get()).ifPresent(value -> cache.put(key, value))))
-                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to retrieve channel rules for channel with id \"{}\"", channelId, t)));
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to retrieve channel rules for channel with id \"{}\"", channel.getId().asString(), t)));
     }
 }

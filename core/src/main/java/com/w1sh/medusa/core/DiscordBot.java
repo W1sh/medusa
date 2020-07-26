@@ -68,8 +68,4 @@ public final class DiscordBot {
 
         log.info("Client setup completed");
     }
-
-    public void start() {
-        gateway.onDisconnect().block();
-    }
 }
