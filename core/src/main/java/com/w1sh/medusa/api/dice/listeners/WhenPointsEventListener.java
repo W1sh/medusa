@@ -24,7 +24,7 @@ public final class WhenPointsEventListener implements EventListener<WhenPointsEv
     @Override
     public Mono<Void> execute(WhenPointsEvent event) {
         return event.getMessage().getChannel()
-                .map(chan -> new TextMessage(chan, String.format("**%s minutes** left until next point distribution!", executor.getNextRun().toMinutes()), false))
+                .map(chan -> new TextMessage(chan, String.format("**%s minutes** left until next point distribution!", executor.getNextDistribution().toMinutes()), false))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();

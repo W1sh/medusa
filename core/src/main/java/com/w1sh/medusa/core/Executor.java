@@ -25,7 +25,7 @@ public final class Executor {
     @Value("${points.reward.period}")
     private String rewardPeriod;
 
-    private Instant lastRun;
+    private Instant lastDistribution;
 
     public void startPointDistribution(GatewayDiscordClient gateway) {
         Schedulers.elastic().schedulePeriodically(() -> schedulePointDistribution(gateway),
@@ -36,17 +36,17 @@ public final class Executor {
 
     public void schedulePointDistribution(GatewayDiscordClient gateway) {
         log.info("Sending points to all active members");
-        lastRun = Instant.now();
+        lastDistribution = Instant.now();
 
         gateway.getGuilds()
                 .collectList()
                 .flatMap(pointDistributionService::distribute)
-                .doAfterTerminate(() -> log.info("Finished point distribution - {} ms elapsed", Duration.between(lastRun, Instant.now()).toMillis()))
+                .doAfterTerminate(() -> log.info("Finished point distribution - {} ms elapsed", Duration.between(lastDistribution, Instant.now()).toMillis()))
                 .subscribe();
     }
 
-    public Duration getNextRun() {
-        if (lastRun == null) return Duration.ofMinutes(1);
-        return Duration.between(Instant.now(), lastRun.plus(Duration.ofMinutes(Long.parseLong(rewardPeriod))));
+    public Duration getNextDistribution() {
+        if (lastDistribution == null) return Duration.ofMinutes(1);
+        return Duration.between(Instant.now(), lastDistribution.plus(Duration.ofMinutes(Long.parseLong(rewardPeriod))));
     }
 }
