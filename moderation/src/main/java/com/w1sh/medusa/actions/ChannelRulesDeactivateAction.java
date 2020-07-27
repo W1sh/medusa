@@ -1,4 +1,4 @@
-package com.w1sh.medusa.listeners;
+package com.w1sh.medusa.actions;
 
 import com.w1sh.medusa.data.Rule;
 import com.w1sh.medusa.data.responses.Response;
