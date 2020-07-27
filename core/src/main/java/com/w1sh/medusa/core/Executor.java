@@ -46,6 +46,7 @@ public final class Executor {
     }
 
     public Duration getNextRun() {
+        if (lastRun == null) return Duration.ofMinutes(1);
         return Duration.between(Instant.now(), lastRun.plus(Duration.ofMinutes(Long.parseLong(rewardPeriod))));
     }
 }
