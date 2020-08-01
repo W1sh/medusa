@@ -1,8 +1,6 @@
 package com.w1sh.medusa.core;
 
-import com.w1sh.medusa.data.events.Event;
-import com.w1sh.medusa.data.events.InlineEvent;
-import com.w1sh.medusa.data.events.MultipleInlineEvent;
+import com.w1sh.medusa.data.events.*;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -49,9 +48,20 @@ public class EventPublisher<T extends Event> {
         listenerMap.put(listener.getEventType(), listener);
     }
 
-    public void removeListener(final Event event) {
-        log.info("Removing event listener for type <{}>", event.getClass().getSimpleName());
-        listenerMap.remove(event.getClass());
+    public boolean removeListener(final Class<?> clazz) {
+        log.info("Removing event listener for type <{}>", clazz.getSimpleName());
+        final var listener= listenerMap.remove(clazz);
+        return listener != null;
+    }
+
+    public boolean removeListener(final EventType eventType) {
+        log.info("Removing all event listener of type <{}>", eventType.name());
+        final var matches = listenerMap.keySet().stream()
+                .filter(clazz -> clazz.getAnnotation(Type.class).eventType().equals(eventType))
+                .collect(Collectors.toSet());
+
+        matches.forEach(listenerMap::remove);
+        return !matches.isEmpty();
     }
 
     private Mono<Void> publishMulti(final List<InlineEvent> events) {
@@ -65,6 +75,7 @@ public class EventPublisher<T extends Event> {
         final EventListener<T> listener = listenerMap.get(event.getClass());
 
         return Mono.justOrEmpty(event)
+                .filter(e -> listener != null)
                 .ofType(listener.getEventType())
                 .flatMap(listener::execute);
     }
@@ -73,6 +84,7 @@ public class EventPublisher<T extends Event> {
         final EventListener<T> listener = listenerMap.get(event.getClass());
 
         return Mono.justOrEmpty(event)
+                .filter(e -> listener != null)
                 .ofType(listener.getEventType())
                 .flatMap(listener::execute);
     }
