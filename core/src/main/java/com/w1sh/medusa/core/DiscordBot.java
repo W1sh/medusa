@@ -1,8 +1,8 @@
 package com.w1sh.medusa.core;
 
-import com.w1sh.medusa.dispatchers.MedusaEventDispatcher;
 import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
+import discord4j.core.event.EventDispatcher;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.shard.LocalShardCoordinator;
@@ -27,12 +27,10 @@ import java.time.Duration;
 public final class DiscordBot {
 
     private final Initializer initializer;
-    private final MedusaEventDispatcher medusaEventDispatcher;
     private final Executor executor;
 
     @Value("${discord.token}")
     private String token;
-    private GatewayDiscordClient gateway;
 
     @PostConstruct
     public void init(){
@@ -46,16 +44,16 @@ public final class DiscordBot {
                 .onClientResponse(ResponseFunction.retryOnceOnErrorStatus(500))
                 .build();
 
-        initializer.registerListeners();
         initializer.registerEvents();
 
-        gateway = client.gateway()
+        //.setEnabledIntents(IntentSet.of(GUILD_MEMBERS, GUILD_MESSAGES, GUILD_VOICE_STATES))
+        final GatewayDiscordClient gateway = client.gateway()
                 //.setEnabledIntents(IntentSet.of(GUILD_MEMBERS, GUILD_MESSAGES, GUILD_VOICE_STATES))
                 .setSharding(ShardingStrategy.recommended())
                 .setShardCoordinator(LocalShardCoordinator.create())
                 .setAwaitConnections(true)
                 .setStoreService(new JdkStoreService())
-                .setEventDispatcher(medusaEventDispatcher)
+                .setEventDispatcher(EventDispatcher.buffering())
                 .setInitialStatus(shardInfo -> Presence.online(Activity.watching("you turn to stone")))
                 .login()
                 .block();
