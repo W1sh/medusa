@@ -6,7 +6,6 @@ import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -38,20 +37,20 @@ public final class EventFactory {
         this.prefix = "!";
     }
 
-    public Mono<Event> extractEvents(final MessageCreateEvent event){
+    public Event extractEvents(final MessageCreateEvent event){
         final String message = event.getMessage().getContent();
 
         if (message.startsWith(prefix)){
             final String eventKeyword = message.split(ARGUMENT_DELIMITER)[0].substring(1);
             final Event e = createInstance(eventKeyword, event);
             if(e != null){
-                return Mono.justOrEmpty(extractArguments(e));
-            } else return Mono.empty();
+                return extractArguments(e);
+            } else return null;
         } else {
             final List<String> matches = INLINE_EVENT_PATTERN.matcher(message).results()
                     .map(MatchResult::group)
                     .collect(Collectors.toList());
-            return Mono.justOrEmpty(extractInlineEvents(event, matches));
+            return extractInlineEvents(event, matches);
         }
     }
 
