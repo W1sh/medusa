@@ -26,7 +26,7 @@ public final class Initializer {
 
     private final Reflections reflections;
     private final EventFactory eventFactory;
-    private final EventPublisher<Event> eventPublisher;
+    private final EventPublisher eventPublisher;
     private final List<Validator> validators;
 
     private Set<Class<? extends Event>> events;

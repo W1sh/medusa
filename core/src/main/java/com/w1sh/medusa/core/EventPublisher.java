@@ -1,15 +1,21 @@
 package com.w1sh.medusa.core;
 
-import com.w1sh.medusa.data.events.*;
+import com.w1sh.medusa.data.events.EventType;
+import com.w1sh.medusa.data.events.InlineEvent;
+import com.w1sh.medusa.data.events.MultipleInlineEvent;
+import com.w1sh.medusa.data.events.Type;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
+import discord4j.core.event.domain.Event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
+import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,33 +25,39 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class EventPublisher<T extends Event> {
+public class EventPublisher {
 
-    private final Map<Class<T>, EventListener<T>> listenerMap = new HashMap<>();
-    private final List<EventListener<T>> listeners;
+    private final Map<Class<? extends Event>, EventListener<? extends Event>> listenerMap = new HashMap<>();
+    private final ApplicationContext applicationContext;
     private final ResponseDispatcher responseDispatcher;
 
     @PostConstruct
-    private void init(){
-        listeners.forEach(this::registerListener);
+    @SuppressWarnings("unchecked")
+    private void init() {
+        final var listeners = applicationContext.getBeansOfType(EventListener.class);
+
+        listeners.forEach((name, listener) -> {
+            final var listenerTypeClazz = (Class<? extends Event>) ((ParameterizedType)
+                    listener.getClass().getGenericInterfaces()[0]).getActualTypeArguments()[0];
+            registerListener(listenerTypeClazz, listener);
+        });
         log.info("Found and registered {} event listeners", listeners.size());
     }
 
-    public Mono<Void> publishEvent(final T event) {
+    public <T extends Event> Mono<Void> publishEvent(final T event) {
         Objects.requireNonNull(event);
         log.info("Received new event of type <{}>", event.getClass().getSimpleName());
 
         if (event.getClass().equals(MultipleInlineEvent.class)) {
-            MultipleInlineEvent multipleInlineEvent = (MultipleInlineEvent) event;
-            return publishMulti(multipleInlineEvent.getEvents());
+            return publishMulti(((MultipleInlineEvent) event).getEvents());
         } else {
             return publish(event);
         }
     }
 
-    public void registerListener(final EventListener<T> listener) {
+    public <T extends Event> void registerListener(final Class<? extends Event> clazz, final EventListener<T> listener) {
         log.info("Registering event listener of type <{}>", listener.getClass().getSimpleName());
-        listenerMap.put(listener.getEventType(), listener);
+        listenerMap.put(clazz, listener);
     }
 
     public boolean removeListener(final Class<?> clazz) {
@@ -71,21 +83,11 @@ public class EventPublisher<T extends Event> {
                 .then();
     }
 
-    private Mono<Void> publish(final T event) {
-        final EventListener<T> listener = listenerMap.get(event.getClass());
+    private <T extends Event> Mono<Void> publish(final T event) {
+        final var listener = listenerMap.get(event.getClass());
 
         return Mono.justOrEmpty(event)
                 .filter(e -> listener != null)
-                .ofType(listener.getEventType())
-                .flatMap(listener::execute);
-    }
-
-    private Mono<Void> publish(final InlineEvent event) {
-        final EventListener<T> listener = listenerMap.get(event.getClass());
-
-        return Mono.justOrEmpty(event)
-                .filter(e -> listener != null)
-                .ofType(listener.getEventType())
-                .flatMap(listener::execute);
+                .flatMap(listener::executeIfAssignable);
     }
 }

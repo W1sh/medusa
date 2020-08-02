@@ -2,7 +2,6 @@ package com.w1sh.medusa.api.misc.listeners;
 
 import com.w1sh.medusa.api.misc.events.DisableEvent;
 import com.w1sh.medusa.core.EventPublisher;
-import com.w1sh.medusa.data.events.Event;
 import com.w1sh.medusa.data.events.EventType;
 import com.w1sh.medusa.data.events.Type;
 import com.w1sh.medusa.data.responses.TextMessage;
@@ -11,7 +10,6 @@ import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.utils.Reactive;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -21,11 +19,11 @@ import java.util.Set;
 @Component
 public final class DisableEventListener implements EventListener<DisableEvent> {
 
-    private final EventPublisher<Event> eventPublisher;
+    private final EventPublisher eventPublisher;
     private final ResponseDispatcher responseDispatcher;
     private final Set<Class<?>> classes;
 
-    public DisableEventListener(@Lazy EventPublisher<Event> eventPublisher, ResponseDispatcher responseDispatcher, Reflections reflections) {
+    public DisableEventListener(EventPublisher eventPublisher, ResponseDispatcher responseDispatcher, Reflections reflections) {
         this.eventPublisher = eventPublisher;
         this.responseDispatcher = responseDispatcher;
         this.classes = reflections.getTypesAnnotatedWith(Type.class);
