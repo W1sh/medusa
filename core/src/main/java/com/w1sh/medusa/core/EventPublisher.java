@@ -19,14 +19,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class EventPublisher {
+public final class EventPublisher {
 
-    private final Map<Class<? extends Event>, EventListener<? extends Event>> listenerMap = new HashMap<>();
+    private final Map<Class<? extends Event>, EventListener<? extends Event>> listenerMap = new ConcurrentHashMap<>();
     private final ApplicationContext applicationContext;
     private final ResponseDispatcher responseDispatcher;
 
