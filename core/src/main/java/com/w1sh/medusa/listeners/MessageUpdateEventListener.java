@@ -18,11 +18,6 @@ public final class MessageUpdateEventListener implements EventListener<MessageUp
     private final ChannelRuleService channelRuleService;
 
     @Override
-    public Class<MessageUpdateEvent> getEventType() {
-        return MessageUpdateEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(MessageUpdateEvent event) {
         return Mono.justOrEmpty(event)
                 .filter(MessageUpdateEvent::isContentChanged)

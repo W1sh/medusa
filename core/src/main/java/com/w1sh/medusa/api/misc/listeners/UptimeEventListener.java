@@ -16,11 +16,6 @@ public final class UptimeEventListener implements EventListener<UptimeEvent> {
     private final ResponseDispatcher responseDispatcher;
 
     @Override
-    public Class<UptimeEvent> getEventType() {
-        return UptimeEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(UptimeEvent event) {
         return event.getMessage().getChannel()
                 .map(chan -> new TextMessage(chan,

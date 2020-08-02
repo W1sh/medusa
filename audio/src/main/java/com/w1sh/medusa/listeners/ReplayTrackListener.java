@@ -13,11 +13,6 @@ public final class ReplayTrackListener implements EventListener<ReplayTrackEvent
     private final AudioConnectionManager audioConnectionManager;
 
     @Override
-    public Class<ReplayTrackEvent> getEventType() {
-        return ReplayTrackEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(ReplayTrackEvent event) {
         return audioConnectionManager.getAudioConnection(event)
                 .doOnNext(audioConnection -> audioConnection.getTrackScheduler().replay())

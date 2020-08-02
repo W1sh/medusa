@@ -20,11 +20,6 @@ public final class ChangePrefixEventListener implements EventListener<ChangePref
     private final EventFactory eventFactory;
 
     @Override
-    public Class<ChangePrefixEvent> getEventType() {
-        return ChangePrefixEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(ChangePrefixEvent event) {
         return Mono.just(event)
                 .map(ev -> ev.getArguments().get(0))

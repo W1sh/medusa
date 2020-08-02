@@ -19,11 +19,6 @@ public final class MessageCreateEventListener implements EventListener<MessageCr
     private final ChannelRuleService channelRuleService;
 
     @Override
-    public Class<MessageCreateEvent> getEventType() {
-        return MessageCreateEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(MessageCreateEvent event) {
         return event.getMessage().getChannel()
                 .filter(ignored -> event.getClass().equals(MessageCreateEvent.class))

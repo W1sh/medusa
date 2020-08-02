@@ -15,11 +15,6 @@ public final class PlayTrackListener implements EventListener<PlayTrackEvent> {
     private final AudioConnectionManager audioConnectionManager;
 
     @Override
-    public Class<PlayTrackEvent> getEventType() {
-        return PlayTrackEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(PlayTrackEvent event) {
         return Mono.justOrEmpty(event)
                 .flatMap(tuple -> audioConnectionManager.requestTrack(event))

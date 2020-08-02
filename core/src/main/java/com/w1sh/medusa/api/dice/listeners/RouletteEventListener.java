@@ -29,11 +29,6 @@ public final class RouletteEventListener implements EventListener<RouletteEvent>
     private final Random random;
 
     @Override
-    public Class<RouletteEvent> getEventType() {
-        return RouletteEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(RouletteEvent event) {
         final String guildId = event.getGuildId().map(Snowflake::asString).orElse("");
         final String userId = event.getMember().map(member -> member.getId().asString()).orElse("");

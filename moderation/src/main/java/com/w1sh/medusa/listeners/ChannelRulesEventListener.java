@@ -20,11 +20,6 @@ public final class ChannelRulesEventListener implements EventListener<ChannelRul
     private final ResponseDispatcher responseDispatcher;
 
     @Override
-    public Class<ChannelRulesEvent> getEventType() {
-        return ChannelRulesEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(ChannelRulesEvent event) {
         return applyAction(event)
                 .doOnNext(responseDispatcher::queue)

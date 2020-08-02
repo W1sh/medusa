@@ -29,11 +29,6 @@ public final class PointsBoardEventListener implements EventListener<PointsBoard
     private final NoGamblingRuleEnforcer noGamblingRuleEnforcer;
 
     @Override
-    public Class<PointsBoardEvent> getEventType() {
-        return PointsBoardEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(PointsBoardEvent event) {
         String guildId = event.getGuildId().map(Snowflake::asString).orElse("");
 

@@ -21,11 +21,6 @@ public final class PlaylistEventListener implements EventListener<PlaylistEvent>
     private final ResponseDispatcher responseDispatcher;
 
     @Override
-    public Class<PlaylistEvent> getEventType() {
-        return PlaylistEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(PlaylistEvent event) {
         return applyAction(event)
                 .doOnNext(responseDispatcher::queue)

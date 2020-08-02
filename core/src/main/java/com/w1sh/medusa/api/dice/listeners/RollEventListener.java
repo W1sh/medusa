@@ -25,11 +25,6 @@ public final class RollEventListener implements EventListener<RollEvent> {
     private String rollResult;
 
     @Override
-    public Class<RollEvent> getEventType() {
-        return RollEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(RollEvent event) {
         return Mono.just(event)
                 .filterWhen(dice::validateRollArgument)

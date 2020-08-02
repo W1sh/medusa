@@ -30,11 +30,6 @@ public final class DisableEventListener implements EventListener<DisableEvent> {
     }
 
     @Override
-    public Class<DisableEvent> getEventType() {
-        return DisableEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(DisableEvent event) {
         final var disableType = DisableType.of(event.getArguments().get(0));
         final var argument = event.getArguments().get(1);

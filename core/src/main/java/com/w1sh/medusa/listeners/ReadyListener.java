@@ -11,11 +11,6 @@ import reactor.core.publisher.Mono;
 public final class ReadyListener implements EventListener<ReadyEvent> {
 
     @Override
-    public Class<ReadyEvent> getEventType() {
-        return ReadyEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(ReadyEvent event) {
         return Mono.justOrEmpty(event.getGuilds().size())
                 .flatMap(size -> event.getClient().getEventDispatcher()

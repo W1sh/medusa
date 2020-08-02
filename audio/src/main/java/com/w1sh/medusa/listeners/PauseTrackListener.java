@@ -13,11 +13,6 @@ public final class PauseTrackListener implements EventListener<PauseTrackEvent> 
     private final AudioConnectionManager audioConnectionManager;
 
     @Override
-    public Class<PauseTrackEvent> getEventType() {
-        return PauseTrackEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(PauseTrackEvent event) {
         return audioConnectionManager.getAudioConnection(event)
                 .doOnNext(con -> con.getTrackScheduler().pause())

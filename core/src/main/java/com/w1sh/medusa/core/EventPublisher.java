@@ -15,7 +15,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
-import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,15 +31,9 @@ public class EventPublisher {
     private final ResponseDispatcher responseDispatcher;
 
     @PostConstruct
-    @SuppressWarnings("unchecked")
     private void init() {
         final var listeners = applicationContext.getBeansOfType(EventListener.class);
-
-        listeners.forEach((name, listener) -> {
-            final var listenerTypeClazz = (Class<? extends Event>) ((ParameterizedType)
-                    listener.getClass().getGenericInterfaces()[0]).getActualTypeArguments()[0];
-            registerListener(listenerTypeClazz, listener);
-        });
+        listeners.values().forEach(this::registerListener);
         log.info("Found and registered {} event listeners", listeners.size());
     }
 
@@ -55,9 +48,9 @@ public class EventPublisher {
         }
     }
 
-    public <T extends Event> void registerListener(final Class<? extends Event> clazz, final EventListener<T> listener) {
+    public <T extends Event> void registerListener(final EventListener<T> listener) {
         log.info("Registering event listener of type <{}>", listener.getClass().getSimpleName());
-        listenerMap.put(clazz, listener);
+        listenerMap.put(listener.getEventType(), listener);
     }
 
     public boolean removeListener(final Class<?> clazz) {
@@ -67,7 +60,7 @@ public class EventPublisher {
     }
 
     public boolean removeListener(final EventType eventType) {
-        log.info("Removing all event listener of type <{}>", eventType.name());
+        log.info("Removing all event listeners of type <{}>", eventType.name());
         final var matches = listenerMap.keySet().stream()
                 .filter(clazz -> clazz.getAnnotation(Type.class).eventType().equals(eventType))
                 .collect(Collectors.toSet());

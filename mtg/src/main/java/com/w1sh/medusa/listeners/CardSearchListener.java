@@ -22,11 +22,6 @@ public final class CardSearchListener implements EventListener<CardSearchEvent> 
     private final ResponseDispatcher responseDispatcher;
 
     @Override
-    public Class<CardSearchEvent> getEventType() {
-        return CardSearchEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(CardSearchEvent event) {
         return Mono.just(event)
                 .filter(InlineEvent::hasArgument)

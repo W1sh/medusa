@@ -23,11 +23,6 @@ public final class LeaveVoiceChannelListener implements EventListener<LeaveVoice
     private final AudioConnectionManager audioConnectionManager;
 
     @Override
-    public Class<LeaveVoiceChannelEvent> getEventType() {
-        return LeaveVoiceChannelEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(LeaveVoiceChannelEvent event) {
         return Mono.justOrEmpty(event.getGuildId())
                 .flatMap(audioConnectionManager::leaveVoiceChannel)
