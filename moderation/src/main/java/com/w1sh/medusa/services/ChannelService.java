@@ -48,6 +48,13 @@ public class ChannelService {
                 .transform(Reactive.ifElse(bool -> deleteMono, bool -> saveMono));
     }
 
+    public Mono<Boolean> deleteByChannelId(String channelId) {
+        return repository.findByChannel(channelId)
+                .doOnNext(channel -> cache.invalidate(channel.getChannelId()))
+                .flatMap(repository::remove)
+                .map(DeleteResult::wasAcknowledged);
+    }
+
     public Mono<Channel> findByChannel(GuildChannel channel) {
         final Supplier<Mono<Channel>> supplier = () -> repository.findByChannel(channel.getId().asString())
                 .doOnTerminate(() -> log.info("Fetched channel rules from database for channel with id {}", channel.getId().asString()))

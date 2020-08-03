@@ -6,6 +6,7 @@ import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.EventDispatcher;
 import discord4j.core.event.domain.channel.TextChannelCreateEvent;
+import discord4j.core.event.domain.channel.TextChannelDeleteEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.event.domain.message.MessageUpdateEvent;
@@ -99,6 +100,8 @@ public final class Instance {
 
         final Publisher<?> onTextChannelCreate = gateway.on(TextChannelCreateEvent.class, eventPublisher::publishEvent);
 
+        final Publisher<?> onTextChannelDelete = gateway.on(TextChannelDeleteEvent.class, eventPublisher::publishEvent);
+
         final Publisher<?> onMessageUpdate = gateway.on(MessageUpdateEvent.class, eventPublisher::publishEvent);
 
         final Publisher<?> onMessageCreate = gateway.on(MessageCreateEvent.class)
@@ -114,7 +117,7 @@ public final class Instance {
         final Publisher<?> onDisconnect = gateway.onDisconnect()
                 .doOnTerminate(() -> log.info("Client disconnected"));
 
-        Mono.when(onReady, onTextChannelCreate, onMessageUpdate, onMessageCreate, onDisconnect)
+        Mono.when(onReady, onTextChannelCreate, onTextChannelDelete, onMessageUpdate, onMessageCreate, onDisconnect)
                 .subscribe(null, t -> log.error("An unknown error occurred", t));
     }
 
