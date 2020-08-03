@@ -3,7 +3,7 @@ package com.w1sh.medusa.rules;
 import com.w1sh.medusa.data.Rule;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.services.ChannelRuleService;
+import com.w1sh.medusa.services.ChannelService;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.channel.GuildChannel;
@@ -17,11 +17,11 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public final class NoGamblingRuleEnforcer implements RuleEnforcer<GuildChannel>{
 
-    private final ChannelRuleService channelRuleService;
+    private final ChannelService channelService;
 
     @Override
     public Mono<Boolean> validate(GuildChannel channel) {
-        return channelRuleService.findByChannel(channel)
+        return channelService.findByChannel(channel)
                 .filter(cr -> cr.getRules().contains(Rule.NO_GAMBLING))
                 .hasElement();
     }

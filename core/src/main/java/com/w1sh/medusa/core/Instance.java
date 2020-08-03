@@ -5,6 +5,7 @@ import com.w1sh.medusa.validators.Validator;
 import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.EventDispatcher;
+import discord4j.core.event.domain.channel.TextChannelCreateEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.event.domain.message.MessageUpdateEvent;
@@ -12,6 +13,7 @@ import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.shard.LocalShardCoordinator;
 import discord4j.core.shard.ShardingStrategy;
+import discord4j.gateway.intent.Intent;
 import discord4j.rest.http.client.ClientException;
 import discord4j.rest.request.RouteMatcher;
 import discord4j.rest.response.ResponseFunction;
@@ -95,6 +97,8 @@ public final class Instance {
     private void initDispatcher(GatewayDiscordClient gateway) {
         final Publisher<?> onReady = gateway.on(ReadyEvent.class, eventPublisher::publishEvent);
 
+        final Publisher<?> onTextChannelCreate = gateway.on(TextChannelCreateEvent.class, eventPublisher::publishEvent);
+
         final Publisher<?> onMessageUpdate = gateway.on(MessageUpdateEvent.class, eventPublisher::publishEvent);
 
         final Publisher<?> onMessageCreate = gateway.on(MessageCreateEvent.class)
@@ -110,7 +114,7 @@ public final class Instance {
         final Publisher<?> onDisconnect = gateway.onDisconnect()
                 .doOnTerminate(() -> log.info("Client disconnected"));
 
-        Mono.when(onReady, onMessageUpdate, onMessageCreate, onDisconnect)
+        Mono.when(onReady, onTextChannelCreate, onMessageUpdate, onMessageCreate, onDisconnect)
                 .subscribe(null, t -> log.error("An unknown error occurred", t));
     }
 

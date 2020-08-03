@@ -5,7 +5,7 @@ import com.w1sh.medusa.data.Rule;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.events.ChannelRulesEvent;
-import com.w1sh.medusa.services.ChannelRuleService;
+import com.w1sh.medusa.services.ChannelService;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.channel.GuildChannel;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public final class ChannelRulesActivateAction implements Function<ChannelRulesEvent, Mono<? extends Response>> {
 
-    private final ChannelRuleService channelRuleService;
+    private final ChannelService channelService;
 
     @Override
     public Mono<? extends Response> apply(ChannelRulesEvent event) {
@@ -30,11 +30,11 @@ public final class ChannelRulesActivateAction implements Function<ChannelRulesEv
 
         return event.getMessage().getChannel()
                 .ofType(GuildChannel.class)
-                .flatMap(channelRuleService::findByChannel)
+                .flatMap(channelService::findByChannel)
                 .switchIfEmpty(createChannelMono)
                 .filter(channel -> !channel.getRules().contains(rule))
                 .doOnNext(channel -> channel.getRules().add(rule))
-                .flatMap(channelRuleService::save)
+                .flatMap(channelService::save)
                 .flatMap(channel -> createRuleActivatedMessage(rule, event));
     }
 

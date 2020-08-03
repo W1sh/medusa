@@ -12,11 +12,11 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
 @Repository
-public class ChannelRuleRepository {
+public class ChannelRepository {
 
     private final ReactiveMongoTemplate template;
 
-    public ChannelRuleRepository(ReactiveMongoTemplate reactiveMongoTemplate) {
+    public ChannelRepository(ReactiveMongoTemplate reactiveMongoTemplate) {
         this.template = reactiveMongoTemplate;
     }
 

@@ -4,7 +4,7 @@ import com.w1sh.medusa.data.Rule;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.events.ChannelRulesEvent;
-import com.w1sh.medusa.services.ChannelRuleService;
+import com.w1sh.medusa.services.ChannelService;
 import discord4j.core.object.entity.channel.GuildChannel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -16,7 +16,7 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public final class ChannelRulesDeactivateAction implements Function<ChannelRulesEvent, Mono<? extends Response>> {
 
-    private final ChannelRuleService channelRuleService;
+    private final ChannelService channelService;
 
     @Override
     public Mono<? extends Response> apply(ChannelRulesEvent event) {
@@ -24,9 +24,9 @@ public final class ChannelRulesDeactivateAction implements Function<ChannelRules
 
         return event.getMessage().getChannel()
                 .ofType(GuildChannel.class)
-                .flatMap(channelRuleService::findByChannel)
+                .flatMap(channelService::findByChannel)
                 .doOnNext(channelRule -> channelRule.getRules().remove(rule))
-                .flatMap(channelRuleService::delete)
+                .flatMap(channelService::delete)
                 .flatMap(ruleEnum -> createRuleDeactivatedMessage(rule, event));
     }
 
