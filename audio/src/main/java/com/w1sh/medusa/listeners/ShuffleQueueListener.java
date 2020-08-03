@@ -13,11 +13,6 @@ public final class ShuffleQueueListener implements EventListener<ShuffleQueueEve
     private final AudioConnectionManager audioConnectionManager;
 
     @Override
-    public Class<ShuffleQueueEvent> getEventType() {
-        return ShuffleQueueEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(ShuffleQueueEvent event) {
         return audioConnectionManager.getAudioConnection(event)
                 .doOnNext(con -> con.getTrackScheduler().shuffle())

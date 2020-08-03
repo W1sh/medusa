@@ -1,10 +1,11 @@
-package com.w1sh.medusa.listeners;
+package com.w1sh.medusa.actions;
 
 import com.w1sh.medusa.data.Rule;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.events.ChannelRulesEvent;
 import com.w1sh.medusa.services.ChannelRuleService;
+import discord4j.core.object.entity.channel.GuildChannel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -22,7 +23,8 @@ public final class ChannelRulesDeactivateAction implements Function<ChannelRules
         final Rule rule = Rule.of(event.getArguments().get(0));
 
         return event.getMessage().getChannel()
-                .flatMap(chan -> channelRuleService.findByChannel(chan.getId().asString()))
+                .ofType(GuildChannel.class)
+                .flatMap(channelRuleService::findByChannel)
                 .doOnNext(channelRule -> channelRule.getRules().remove(rule))
                 .flatMap(channelRuleService::delete)
                 .flatMap(ruleEnum -> createRuleDeactivatedMessage(rule, event));

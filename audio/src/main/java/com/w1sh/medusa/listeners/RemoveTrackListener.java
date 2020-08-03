@@ -15,11 +15,6 @@ public class RemoveTrackListener implements EventListener<RemoveTrackEvent> {
     private final AudioConnectionManager audioConnectionManager;
 
     @Override
-    public Class<RemoveTrackEvent> getEventType() {
-        return RemoveTrackEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(RemoveTrackEvent event) {
         return Mono.justOrEmpty(event.getArguments().get(0))
                 .map(Integer::parseInt)

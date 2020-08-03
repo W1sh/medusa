@@ -13,11 +13,6 @@ public final class ClearQueueListener implements EventListener<ClearQueueEvent> 
     private final AudioConnectionManager audioConnectionManager;
 
     @Override
-    public Class<ClearQueueEvent> getEventType() {
-        return ClearQueueEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(ClearQueueEvent event) {
         return audioConnectionManager.getAudioConnection(event)
                 .doOnNext(con -> con.getTrackScheduler().clear())

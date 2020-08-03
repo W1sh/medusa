@@ -24,11 +24,6 @@ public final class StatusEventListener implements EventListener<StatusEvent> {
     private final ResponseDispatcher responseDispatcher;
 
     @Override
-    public Class<StatusEvent> getEventType() {
-        return StatusEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(StatusEvent event) {
         return event.getMessage().getChannel()
                 .flatMap(messageChannel -> createStatusEmbed(messageChannel, event))

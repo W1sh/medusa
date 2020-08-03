@@ -1,7 +1,7 @@
 package com.w1sh.medusa.api.misc.listeners;
 
 import com.w1sh.medusa.api.misc.events.ChangePrefixEvent;
-import com.w1sh.medusa.data.events.EventFactory;
+import com.w1sh.medusa.core.EventFactory;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.EventListener;
@@ -18,11 +18,6 @@ public final class ChangePrefixEventListener implements EventListener<ChangePref
 
     private final ResponseDispatcher responseDispatcher;
     private final EventFactory eventFactory;
-
-    @Override
-    public Class<ChangePrefixEvent> getEventType() {
-        return ChangePrefixEvent.class;
-    }
 
     @Override
     public Mono<Void> execute(ChangePrefixEvent event) {

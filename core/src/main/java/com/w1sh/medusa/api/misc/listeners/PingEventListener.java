@@ -20,11 +20,6 @@ public final class PingEventListener implements EventListener<PingEvent> {
     private final ResponseDispatcher responseDispatcher;
 
     @Override
-    public Class<PingEvent> getEventType() {
-        return PingEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(PingEvent event) {
         return event.getMessage().getChannel()
                 .doOnNext(channel -> {

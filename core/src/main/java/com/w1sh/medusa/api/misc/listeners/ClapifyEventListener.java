@@ -19,11 +19,6 @@ public final class ClapifyEventListener implements EventListener<ClapifyEvent> {
     private final ResponseDispatcher responseDispatcher;
 
     @Override
-    public Class<ClapifyEvent> getEventType() {
-        return ClapifyEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(ClapifyEvent event) {
         return Mono.just(event)
                 .map(ev -> ev.getArguments().values())

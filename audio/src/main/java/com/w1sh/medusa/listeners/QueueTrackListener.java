@@ -21,11 +21,6 @@ public final class QueueTrackListener implements EventListener<QueueTrackEvent> 
     private final ResponseDispatcher responseDispatcher;
 
     @Override
-    public Class<QueueTrackEvent> getEventType() {
-        return QueueTrackEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(QueueTrackEvent event) {
         return audioConnectionManager.getAudioConnection(event)
                 .map(con -> con.getTrackScheduler().getFullQueue())

@@ -17,11 +17,6 @@ public final class LoopEventListener implements EventListener<LoopEvent> {
     private final ResponseDispatcher responseDispatcher;
 
     @Override
-    public Class<LoopEvent> getEventType() {
-        return LoopEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(LoopEvent event) {
         LoopAction loopAction = LoopAction.of(event.getArguments().get(0));
 

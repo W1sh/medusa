@@ -32,11 +32,6 @@ public final class RewindTrackListener implements EventListener<RewindTrackEvent
     }
 
     @Override
-    public Class<RewindTrackEvent> getEventType() {
-        return RewindTrackEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(RewindTrackEvent event) {
         return Mono.justOrEmpty(event.getArguments().get(0))
                 .handle(this::parseTime)

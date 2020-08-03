@@ -1,4 +1,4 @@
-package com.w1sh.medusa.listeners;
+package com.w1sh.medusa.actions;
 
 import com.w1sh.medusa.data.Channel;
 import com.w1sh.medusa.data.Rule;
@@ -7,6 +7,7 @@ import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.events.ChannelRulesEvent;
 import com.w1sh.medusa.services.ChannelRuleService;
 import discord4j.common.util.Snowflake;
+import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.rest.util.Color;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -28,7 +29,8 @@ public final class ChannelRulesShowAction implements Function<ChannelRulesEvent,
                 .map(chan -> new Channel(chan.getId().asString(), guildId)));
 
         return event.getMessage().getChannel()
-                .flatMap(messageChannel -> channelRuleService.findByChannel(messageChannel.getId().asString()))
+                .ofType(GuildChannel.class)
+                .flatMap(channelRuleService::findByChannel)
                 .switchIfEmpty(createChannelMono)
                 .flatMap(channelRules -> channelRulesEmbed(channelRules, event));
     }

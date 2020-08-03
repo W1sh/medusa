@@ -21,11 +21,6 @@ public final class CardDetailListener implements EventListener<CardDetailEvent> 
     private final ResponseDispatcher responseDispatcher;
 
     @Override
-    public Class<CardDetailEvent> getEventType() {
-        return CardDetailEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(CardDetailEvent event) {
         return Mono.just(event)
                 .filter(InlineEvent::hasArgument)

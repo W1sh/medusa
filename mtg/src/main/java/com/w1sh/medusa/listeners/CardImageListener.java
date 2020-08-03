@@ -20,11 +20,6 @@ public final class CardImageListener implements EventListener<CardImageEvent> {
     private final ResponseDispatcher responseDispatcher;
 
     @Override
-    public Class<CardImageEvent> getEventType() {
-        return CardImageEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(CardImageEvent event) {
         return Mono.just(event)
                 .filter(InlineEvent::hasArgument)

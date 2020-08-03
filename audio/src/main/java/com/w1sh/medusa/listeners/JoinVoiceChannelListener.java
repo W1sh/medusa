@@ -21,11 +21,6 @@ public final class JoinVoiceChannelListener implements EventListener<JoinVoiceCh
     private final AudioConnectionManager audioConnectionManager;
 
     @Override
-    public Class<JoinVoiceChannelEvent> getEventType() {
-        return JoinVoiceChannelEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(JoinVoiceChannelEvent event) {
         return Mono.justOrEmpty(event)
                 .filterWhen(ev -> Mono.justOrEmpty(ev.getMember())

@@ -11,6 +11,7 @@ import com.w1sh.medusa.services.UserService;
 import com.w1sh.medusa.utils.Reactive;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -28,11 +29,6 @@ public final class PointsBoardEventListener implements EventListener<PointsBoard
     private final NoGamblingRuleEnforcer noGamblingRuleEnforcer;
 
     @Override
-    public Class<PointsBoardEvent> getEventType() {
-        return PointsBoardEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(PointsBoardEvent event) {
         String guildId = event.getGuildId().map(Snowflake::asString).orElse("");
 
@@ -43,7 +39,8 @@ public final class PointsBoardEventListener implements EventListener<PointsBoard
                 .zipWith(event.getMessage().getChannel(), this::listUsers));
 
         return event.getMessage().getChannel()
-                .flatMap(chan -> noGamblingRuleEnforcer.validate(chan.getId().asString()))
+                .ofType(GuildChannel.class)
+                .flatMap(noGamblingRuleEnforcer::validate)
                 .transform(Reactive.ifElse(bool -> noGamblingRuleEnforcer.enforce(event), bool -> pointsLeaderboardMessage))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)

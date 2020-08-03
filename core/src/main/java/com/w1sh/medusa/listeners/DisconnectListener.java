@@ -10,11 +10,6 @@ import reactor.core.publisher.Mono;
 public final class DisconnectListener implements EventListener<DisconnectEvent> {
 
     @Override
-    public Class<DisconnectEvent> getEventType() {
-        return DisconnectEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(DisconnectEvent event) {
         return Mono.justOrEmpty(event)
                 .doOnNext(e -> log.info("Disconnected from gateway"))

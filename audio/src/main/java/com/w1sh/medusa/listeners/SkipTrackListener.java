@@ -13,11 +13,6 @@ public final class SkipTrackListener implements EventListener<SkipTrackEvent> {
     private final AudioConnectionManager audioConnectionManager;
 
     @Override
-    public Class<SkipTrackEvent> getEventType() {
-        return SkipTrackEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(SkipTrackEvent event) {
         return audioConnectionManager.getAudioConnection(event)
                 .doOnNext(con -> con.getTrackScheduler().skip())

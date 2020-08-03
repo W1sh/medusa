@@ -13,11 +13,6 @@ public final class StopQueueListener implements EventListener<StopQueueEvent> {
     private final AudioConnectionManager audioConnectionManager;
 
     @Override
-    public Class<StopQueueEvent> getEventType() {
-        return StopQueueEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(StopQueueEvent event) {
         return Mono.justOrEmpty(event)
                 .flatMap(audioConnectionManager::scheduleLeave)

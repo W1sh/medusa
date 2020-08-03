@@ -1,5 +1,8 @@
 package com.w1sh.medusa.listeners;
 
+import com.w1sh.medusa.actions.ChannelRulesActivateAction;
+import com.w1sh.medusa.actions.ChannelRulesDeactivateAction;
+import com.w1sh.medusa.actions.ChannelRulesShowAction;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.ChannelRulesEvent;
@@ -15,11 +18,6 @@ public final class ChannelRulesEventListener implements EventListener<ChannelRul
     private final ChannelRulesActivateAction channelRulesActivateAction;
     private final ChannelRulesDeactivateAction channelRulesDeactivateAction;
     private final ResponseDispatcher responseDispatcher;
-
-    @Override
-    public Class<ChannelRulesEvent> getEventType() {
-        return ChannelRulesEvent.class;
-    }
 
     @Override
     public Mono<Void> execute(ChannelRulesEvent event) {

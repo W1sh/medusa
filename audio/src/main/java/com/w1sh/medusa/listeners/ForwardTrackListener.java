@@ -32,11 +32,6 @@ public final class ForwardTrackListener implements EventListener<ForwardTrackEve
     }
 
     @Override
-    public Class<ForwardTrackEvent> getEventType() {
-        return ForwardTrackEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(ForwardTrackEvent event) {
         return Mono.justOrEmpty(event.getArguments().get(0))
                 .handle(this::parseTime)

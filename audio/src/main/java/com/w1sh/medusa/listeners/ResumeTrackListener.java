@@ -13,11 +13,6 @@ public final class ResumeTrackListener implements EventListener<ResumeTrackEvent
     private final AudioConnectionManager audioConnectionManager;
 
     @Override
-    public Class<ResumeTrackEvent> getEventType() {
-        return ResumeTrackEvent.class;
-    }
-
-    @Override
     public Mono<Void> execute(ResumeTrackEvent event) {
         return audioConnectionManager.getAudioConnection(event)
                 .doOnNext(con -> con.getTrackScheduler().resume())
