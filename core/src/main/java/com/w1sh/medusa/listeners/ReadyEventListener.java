@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @Slf4j
-public final class ReadyListener implements EventListener<ReadyEvent> {
+public final class ReadyEventListener implements EventListener<ReadyEvent> {
 
     @Override
     public Mono<Void> execute(ReadyEvent event) {
