@@ -1,5 +1,6 @@
 package com.w1sh.medusa.repos;
 
+import com.mongodb.client.result.DeleteResult;
 import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.utils.Reactive;
 import org.springframework.data.domain.Sort;
@@ -39,6 +40,10 @@ public class UserRepository {
     public Mono<List<User>> findAllByGuildId(String guildId) {
         final Query query = new Query(Criteria.where("guildId").is(guildId));
         return template.find(query, User.class).collectList();
+    }
+
+    public Mono<DeleteResult> remove(User user) {
+        return template.remove(user);
     }
 
     public Flux<User> findTop5ByGuildIdOrderByPoints(String guildId) {

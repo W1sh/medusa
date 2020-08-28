@@ -2,6 +2,7 @@ package com.w1sh.medusa.services;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.mongodb.client.result.DeleteResult;
 import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.mappers.Member2UserMapper;
 import com.w1sh.medusa.repos.UserRepository;
@@ -66,6 +67,13 @@ public class UserService {
                 .doOnNext(u -> u.setPoints(u.getPoints() + Integer.parseInt(rewardAmount)))
                 .concatMap(this::save)
                 .count();
+    }
+
+    public Mono<Boolean> deleteByUserIdAndGuildId(String userId, String guildId) {
+        return findByUserIdAndGuildId(userId, guildId)
+                .doOnNext(channel -> cache.invalidate(guildId))
+                .flatMap(repository::remove)
+                .map(DeleteResult::wasAcknowledged);
     }
 
     public Flux<User> findTop5PointsInGuild(String guildId){

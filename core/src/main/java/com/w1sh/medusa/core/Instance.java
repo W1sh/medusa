@@ -7,6 +7,7 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.EventDispatcher;
 import discord4j.core.event.domain.channel.TextChannelCreateEvent;
 import discord4j.core.event.domain.channel.TextChannelDeleteEvent;
+import discord4j.core.event.domain.guild.MemberLeaveEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.event.domain.message.MessageUpdateEvent;
@@ -14,6 +15,7 @@ import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.shard.LocalShardCoordinator;
 import discord4j.core.shard.ShardingStrategy;
+import discord4j.discordjson.json.gateway.GuildMemberRemove;
 import discord4j.gateway.intent.Intent;
 import discord4j.rest.http.client.ClientException;
 import discord4j.rest.request.RouteMatcher;
@@ -98,6 +100,8 @@ public final class Instance {
     private void initDispatcher(GatewayDiscordClient gateway) {
         final Publisher<?> onReady = gateway.on(ReadyEvent.class, eventPublisher::publishEvent);
 
+        final Publisher<?> onMemberLeave = gateway.on(MemberLeaveEvent.class, eventPublisher::publishEvent);
+
         final Publisher<?> onTextChannelCreate = gateway.on(TextChannelCreateEvent.class, eventPublisher::publishEvent);
 
         final Publisher<?> onTextChannelDelete = gateway.on(TextChannelDeleteEvent.class, eventPublisher::publishEvent);
@@ -117,7 +121,7 @@ public final class Instance {
         final Publisher<?> onDisconnect = gateway.onDisconnect()
                 .doOnTerminate(() -> log.info("Client disconnected"));
 
-        Mono.when(onReady, onTextChannelCreate, onTextChannelDelete, onMessageUpdate, onMessageCreate, onDisconnect)
+        Mono.when(onReady, onMemberLeave, onTextChannelCreate, onTextChannelDelete, onMessageUpdate, onMessageCreate, onDisconnect)
                 .subscribe(null, t -> log.error("An unknown error occurred", t));
     }
 
