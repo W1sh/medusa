@@ -32,7 +32,12 @@ public class ChannelRepository {
 
     public Mono<DeleteResult> removeByChannelId(String channelId) {
         final Query query = new Query(Criteria.where("channelId").is(channelId));
-        return template.remove(query, channelId);
+        return template.remove(query);
+    }
+
+    public Mono<DeleteResult> removeByGuildId(String guildId) {
+        final Query query = new Query(Criteria.where("guildId").is(guildId));
+        return template.remove(query);
     }
 
     public Mono<DeleteResult> remove(Channel channel) {
@@ -41,9 +46,5 @@ public class ChannelRepository {
 
     public Mono<Channel> findByChannel(String channel) {
         return template.findOne(Query.query(Criteria.where("channelId").is(channel)), Channel.class);
-    }
-
-    private Mono<DeleteResult> remove(Query query) {
-        return template.remove(query);
     }
 }

@@ -76,6 +76,12 @@ public class UserService {
                 .map(DeleteResult::wasAcknowledged);
     }
 
+    public Mono<Boolean> deleteByGuildId(String guildId) {
+        return repository.removeByGuildId(guildId)
+                .doOnNext(channel -> cache.invalidate(guildId))
+                .map(DeleteResult::wasAcknowledged);
+    }
+
     public Flux<User> findTop5PointsInGuild(String guildId){
         return repository.findTop5ByGuildIdOrderByPoints(guildId);
     }
