@@ -3,6 +3,7 @@ package com.w1sh.medusa.repos;
 import com.mongodb.client.result.DeleteResult;
 import com.w1sh.medusa.data.Channel;
 import com.w1sh.medusa.utils.Reactive;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -12,13 +13,10 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
 @Repository
+@RequiredArgsConstructor
 public class ChannelRepository {
 
     private final ReactiveMongoTemplate template;
-
-    public ChannelRepository(ReactiveMongoTemplate reactiveMongoTemplate) {
-        this.template = reactiveMongoTemplate;
-    }
 
     public Mono<Channel> save(Channel channel) {
         final Query query = new Query(Criteria.where("channelId").is(channel.getChannelId()));
@@ -32,6 +30,11 @@ public class ChannelRepository {
         return template.findAndModify(query, update, modifyOptions, Channel.class);
     }
 
+    public Mono<DeleteResult> removeByChannelId(String channelId) {
+        final Query query = new Query(Criteria.where("channelId").is(channelId));
+        return template.remove(query, channelId);
+    }
+
     public Mono<DeleteResult> remove(Channel channel) {
         return template.remove(channel);
     }
@@ -40,4 +43,7 @@ public class ChannelRepository {
         return template.findOne(Query.query(Criteria.where("channelId").is(channel)), Channel.class);
     }
 
+    private Mono<DeleteResult> remove(Query query) {
+        return template.remove(query);
+    }
 }

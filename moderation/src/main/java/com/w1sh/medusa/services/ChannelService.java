@@ -49,9 +49,8 @@ public class ChannelService {
     }
 
     public Mono<Boolean> deleteByChannelId(String channelId) {
-        return repository.findByChannel(channelId)
-                .doOnNext(channel -> cache.invalidate(channel.getChannelId()))
-                .flatMap(repository::remove)
+        return repository.removeByChannelId(channelId)
+                .doOnNext(ignored -> cache.invalidate(channelId))
                 .map(DeleteResult::wasAcknowledged);
     }
 
