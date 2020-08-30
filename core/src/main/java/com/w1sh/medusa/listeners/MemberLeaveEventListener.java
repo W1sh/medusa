@@ -30,10 +30,10 @@ public final class MemberLeaveEventListener implements EventListener<MemberLeave
                         bool -> Mono.fromRunnable(() -> log.info("User with id <{}> left guild with id <{}>, all data associated was deleted", userId, guildId)),
                         bool -> Mono.fromRunnable(() -> log.warn("Could not delete data associated with user with id <{}> of guild with id <{}>", userId, guildId))));
 
-        final Publisher<?> warningsPublisher = warningService.deleteByUserId(userId)
+        final Publisher<?> warningsPublisher = warningService.deleteByUserIdAndGuildId(userId, guildId)
                 .transform(Reactive.ifElse(
-                        bool -> Mono.fromRunnable(() -> log.info("Deleted all warnings from user with id <{}>", userId)),
-                        bool -> Mono.fromRunnable(() -> log.warn("Warnings from user with id <{}> could not be deleted", userId))));
+                        bool -> Mono.fromRunnable(() -> log.info("Deleted all warnings from user with id <{}> in guild with id <{}>", userId, guildId)),
+                        bool -> Mono.fromRunnable(() -> log.warn("Warnings from user with id <{}> in guild with id <{}> could not be deleted", userId, guildId))));
 
         return Mono.when(userPublisher, warningsPublisher)
                 .doAfterTerminate(() -> log.info("Data deletion process for user with id <{}> on guild with <{}> has concluded", userId, guildId));

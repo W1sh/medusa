@@ -49,6 +49,12 @@ public class WarningService {
                 .transform(Reactive.ifElse(bool -> save(warning), bool -> saveTemporary(warning)));
     }
 
+    public Mono<Boolean> deleteByUserIdAndGuildId(String userId, String guildId) {
+        return repository.removeByUserIdAndGuildId(userId, guildId)
+                .doOnNext(ignored -> warnings.invalidate(userId))
+                .map(DeleteResult::wasAcknowledged);
+    }
+
     public Mono<Boolean> deleteByUserId(String userId) {
         return repository.removeByUserId(userId)
                 .doOnNext(ignored -> warnings.invalidate(userId))

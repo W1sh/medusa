@@ -19,6 +19,12 @@ public class WarningRepository {
         return template.save(warning);
     }
 
+    public Mono<DeleteResult> removeByUserIdAndGuildId(String userId, String guildId) {
+        final Query query = new Query(Criteria.where("userId").is(userId))
+                .addCriteria(Criteria.where("guildId").is(guildId));
+        return remove(query);
+    }
+
     public Mono<DeleteResult> removeByChannelId(String channelId) {
         final Query query = new Query(Criteria.where("channelId").is(channelId));
         return remove(query);
