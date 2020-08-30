@@ -42,6 +42,11 @@ public class UserRepository {
         return template.find(query, User.class).collectList();
     }
 
+    public Mono<DeleteResult> removeByUserId(String userId) {
+        final Query query = new Query(Criteria.where("userId").is(userId));
+        return template.remove(query);
+    }
+
     public Mono<DeleteResult> removeByGuildId(String guildId) {
         final Query query = new Query(Criteria.where("guildId").is(guildId));
         return template.remove(query);

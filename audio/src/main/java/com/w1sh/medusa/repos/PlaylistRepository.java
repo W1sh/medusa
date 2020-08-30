@@ -34,8 +34,13 @@ public class PlaylistRepository {
         return template.findAndModify(query, update, modifyOptions, Playlist.class);
     }
 
-    public Mono<Boolean> delete(Playlist playlist) {
-        return template.remove(playlist).map(DeleteResult::wasAcknowledged);
+    public Mono<DeleteResult> removeByUserId(String userId) {
+        final Query query = new Query(Criteria.where("userId").is(userId));
+        return template.remove(query);
+    }
+
+    public Mono<DeleteResult> remove(Playlist playlist) {
+        return template.remove(playlist);
     }
 
     public Mono<List<Playlist>> findAllByUserId(String userId){

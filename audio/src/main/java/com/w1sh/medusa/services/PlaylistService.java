@@ -2,6 +2,7 @@ package com.w1sh.medusa.services;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.mongodb.client.result.DeleteResult;
 import com.w1sh.medusa.data.Playlist;
 import com.w1sh.medusa.repos.PlaylistRepository;
 import com.w1sh.medusa.utils.Caches;
@@ -50,12 +51,19 @@ public class PlaylistService {
                 .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to fetch playlists of user with id \"{}\"", userId, t)));
     }
 
+    public Mono<Boolean> deleteByUserId(String userId) {
+        return repository.removeByUserId(userId)
+                .doOnNext(ignored -> cache.invalidate(userId))
+                .map(DeleteResult::wasAcknowledged);
+    }
+
     public Mono<Boolean> deleteIndex(String userId, Integer index) {
         return findAllByUserId(userId)
                 .flatMapIterable(Function.identity())
                 .takeLast(index - 1)
                 .next()
-                .flatMap(repository::delete)
+                .flatMap(repository::remove)
+                .map(DeleteResult::wasAcknowledged)
                 .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete playlist and associated tracks", t)));
     }
 }

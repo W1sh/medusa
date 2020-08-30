@@ -71,14 +71,20 @@ public class UserService {
 
     public Mono<Boolean> deleteByUserIdAndGuildId(String userId, String guildId) {
         return findByUserIdAndGuildId(userId, guildId)
-                .doOnNext(channel -> cache.invalidate(guildId))
+                .doOnNext(ignored -> cache.invalidate(guildId))
                 .flatMap(repository::remove)
+                .map(DeleteResult::wasAcknowledged);
+    }
+
+    public Mono<Boolean> deleteByUserId(String userId) {
+        return repository.removeByUserId(userId)
+                .doOnNext(ignored -> cache.invalidateAll())
                 .map(DeleteResult::wasAcknowledged);
     }
 
     public Mono<Boolean> deleteByGuildId(String guildId) {
         return repository.removeByGuildId(guildId)
-                .doOnNext(channel -> cache.invalidate(guildId))
+                .doOnNext(ignored -> cache.invalidate(guildId))
                 .map(DeleteResult::wasAcknowledged);
     }
 
