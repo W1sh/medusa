@@ -1,12 +1,11 @@
 package com.w1sh.medusa.api.misc.listeners;
 
-import com.w1sh.medusa.api.misc.events.PingEvent;
+import com.w1sh.medusa.api.misc.events.PurgeEvent;
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.services.PlaylistService;
 import com.w1sh.medusa.services.UserService;
 import com.w1sh.medusa.services.WarningService;
 import com.w1sh.medusa.utils.Reactive;
-import discord4j.rest.util.Permission;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
@@ -16,14 +15,14 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public final class PurgeEventListener implements EventListener<PingEvent> {
+public final class PurgeEventListener implements EventListener<PurgeEvent> {
 
     private final UserService userService;
     private final WarningService warningService;
     private final PlaylistService playlistService;
 
     @Override
-    public Mono<Void> execute(PingEvent event) {
+    public Mono<Void> execute(PurgeEvent event) {
         final var userId = event.getMessage().getAuthor().map(user -> user.getId().asString()).orElse("");
         if (userId.isEmpty()) return Mono.empty();
 
