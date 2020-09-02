@@ -3,12 +3,14 @@ package com.w1sh.medusa.repos;
 import com.mongodb.client.result.DeleteResult;
 import com.w1sh.medusa.data.Warning;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class WarningRepository {
@@ -41,6 +43,7 @@ public class WarningRepository {
     }
 
     private Mono<DeleteResult> remove(Query query) {
-        return template.remove(query, Warning.class);
+        return template.remove(query, Warning.class)
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete warning", t)));
     }
 }

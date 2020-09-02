@@ -55,7 +55,7 @@ public class ChannelService {
     }
 
     public Mono<Boolean> deleteByGuildId(String guildId) {
-        return repository.removeByChannelId(guildId)
+        return repository.removeByGuildId(guildId)
                 .doOnNext(ignored -> cache.invalidateAll())
                 .map(DeleteResult::wasAcknowledged);
     }

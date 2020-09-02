@@ -3,6 +3,8 @@ package com.w1sh.medusa.repos;
 import com.mongodb.client.result.DeleteResult;
 import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.utils.Reactive;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
@@ -15,14 +17,12 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+@Slf4j
 @Repository
+@RequiredArgsConstructor
 public class UserRepository {
 
     private final ReactiveMongoTemplate template;
-
-    public UserRepository(ReactiveMongoTemplate reactiveMongoTemplate) {
-        this.template = reactiveMongoTemplate;
-    }
 
     public Mono<User> save(User user) {
         final Query query = new Query(Criteria.where("userId").is(user.getUserId()))
@@ -44,16 +44,19 @@ public class UserRepository {
 
     public Mono<DeleteResult> removeByUserId(String userId) {
         final Query query = new Query(Criteria.where("userId").is(userId));
-        return template.remove(query);
+        return template.remove(query, User.class)
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete user with id \"{}\"", userId, t)));
     }
 
     public Mono<DeleteResult> removeByGuildId(String guildId) {
         final Query query = new Query(Criteria.where("guildId").is(guildId));
-        return template.remove(query);
+        return template.remove(query, User.class)
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete all users in guild with id \"{}\"", guildId, t)));
     }
 
     public Mono<DeleteResult> remove(User user) {
-        return template.remove(user);
+        return template.remove(user)
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete user with id \"{}\"", user.getUserId(), t)));
     }
 
     public Flux<User> findTop5ByGuildIdOrderByPoints(String guildId) {
