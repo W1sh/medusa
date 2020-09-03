@@ -4,7 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.mongodb.client.result.DeleteResult;
 import com.w1sh.medusa.data.Channel;
-import com.w1sh.medusa.repos.ChannelRuleRepository;
+import com.w1sh.medusa.repos.ChannelRepository;
 import com.w1sh.medusa.utils.Reactive;
 import discord4j.core.object.entity.channel.GuildChannel;
 import lombok.extern.slf4j.Slf4j;
@@ -18,12 +18,12 @@ import java.util.function.Supplier;
 
 @Service
 @Slf4j
-public class ChannelRuleService {
+public class ChannelService {
 
-    private final ChannelRuleRepository repository;
+    private final ChannelRepository repository;
     private final Cache<String, Channel> cache;
 
-    public ChannelRuleService(ChannelRuleRepository repository) {
+    public ChannelService(ChannelRepository repository) {
         this.repository = repository;
         this.cache = Caffeine.newBuilder().build();
     }
@@ -46,6 +46,18 @@ public class ChannelRuleService {
                 .filter(chan -> chan.getRules().isEmpty())
                 .hasElement()
                 .transform(Reactive.ifElse(bool -> deleteMono, bool -> saveMono));
+    }
+
+    public Mono<Boolean> deleteByChannelId(String channelId) {
+        return repository.removeByChannelId(channelId)
+                .doOnNext(ignored -> cache.invalidate(channelId))
+                .map(DeleteResult::wasAcknowledged);
+    }
+
+    public Mono<Boolean> deleteByGuildId(String guildId) {
+        return repository.removeByGuildId(guildId)
+                .doOnNext(ignored -> cache.invalidateAll())
+                .map(DeleteResult::wasAcknowledged);
     }
 
     public Mono<Channel> findByChannel(GuildChannel channel) {

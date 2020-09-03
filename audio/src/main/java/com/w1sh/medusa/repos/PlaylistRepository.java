@@ -3,6 +3,8 @@ package com.w1sh.medusa.repos;
 import com.mongodb.client.result.DeleteResult;
 import com.w1sh.medusa.data.Playlist;
 import com.w1sh.medusa.utils.Reactive;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -13,14 +15,12 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+@Slf4j
 @Repository
+@RequiredArgsConstructor
 public class PlaylistRepository {
 
     private final ReactiveMongoTemplate template;
-
-    public PlaylistRepository(ReactiveMongoTemplate reactiveMongoTemplate) {
-        this.template = reactiveMongoTemplate;
-    }
 
     public Mono<Playlist> save(Playlist playlist) {
         final Query query = new Query(Criteria.where("userId").is(playlist.getUserId()));
@@ -34,8 +34,15 @@ public class PlaylistRepository {
         return template.findAndModify(query, update, modifyOptions, Playlist.class);
     }
 
-    public Mono<Boolean> delete(Playlist playlist) {
-        return template.remove(playlist).map(DeleteResult::wasAcknowledged);
+    public Mono<DeleteResult> removeByUserId(String userId) {
+        final Query query = new Query(Criteria.where("userId").is(userId));
+        return template.remove(query, Playlist.class)
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete playlist from user with id \"{}\"", userId, t)));
+    }
+
+    public Mono<DeleteResult> remove(Playlist playlist) {
+        return template.remove(playlist)
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete playlist with id \"{}\"", playlist.getId(), t)));
     }
 
     public Mono<List<Playlist>> findAllByUserId(String userId){

@@ -2,11 +2,12 @@ package com.w1sh.medusa.services;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.mongodb.client.result.DeleteResult;
 import com.w1sh.medusa.data.Warning;
+import com.w1sh.medusa.repos.WarningRepository;
 import com.w1sh.medusa.utils.Caches;
 import com.w1sh.medusa.utils.Reactive;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -18,12 +19,12 @@ import java.util.Set;
 @Slf4j
 public class WarningService {
 
-    private final ReactiveMongoTemplate template;
+    private final WarningRepository repository;
     private final Cache<String, Set<Warning>> warnings;
     private final Cache<String, Warning> temporaryWarnings;
 
-    public WarningService(ReactiveMongoTemplate reactiveMongoTemplate){
-        this.template = reactiveMongoTemplate;
+    public WarningService(WarningRepository repository){
+        this.repository = repository;
         this.warnings = Caffeine.newBuilder().build();
         this.temporaryWarnings = Caffeine.newBuilder()
                 .expireAfterAccess(Duration.ofMinutes(30))
@@ -31,7 +32,7 @@ public class WarningService {
     }
 
     public Mono<Warning> save(Warning warning) {
-        return template.save(warning)
+        return repository.save(warning)
                 .doOnNext(w -> Caches.storeMultivalue(w.getUserId(), w, warnings.asMap().getOrDefault(w.getUserId(), new HashSet<>()), warnings))
                 .flatMap(this::saveTemporary)
                 .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to save warning with id \"{}\"", warning.getId(), t)));
@@ -46,5 +47,29 @@ public class WarningService {
         return Mono.justOrEmpty(temporaryWarnings.getIfPresent(warning.getUserId()))
                 .hasElement()
                 .transform(Reactive.ifElse(bool -> save(warning), bool -> saveTemporary(warning)));
+    }
+
+    public Mono<Boolean> deleteByUserIdAndGuildId(String userId, String guildId) {
+        return repository.removeByUserIdAndGuildId(userId, guildId)
+                .doOnNext(ignored -> warnings.invalidate(userId))
+                .map(DeleteResult::wasAcknowledged);
+    }
+
+    public Mono<Boolean> deleteByUserId(String userId) {
+        return repository.removeByUserId(userId)
+                .doOnNext(ignored -> warnings.invalidate(userId))
+                .map(DeleteResult::wasAcknowledged);
+    }
+
+    public Mono<Boolean> deleteByChannelId(String channelId) {
+        return repository.removeByChannelId(channelId)
+                .doOnNext(ignored -> warnings.invalidateAll())
+                .map(DeleteResult::wasAcknowledged);
+    }
+
+    public Mono<Boolean> deleteByGuildId(String guildId) {
+        return repository.removeByGuildId(guildId)
+                .doOnNext(ignored -> warnings.invalidateAll())
+                .map(DeleteResult::wasAcknowledged);
     }
 }

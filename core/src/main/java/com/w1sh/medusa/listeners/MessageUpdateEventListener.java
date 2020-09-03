@@ -2,7 +2,7 @@ package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.data.Rule;
 import com.w1sh.medusa.rules.NoLinksRuleEnforcer;
-import com.w1sh.medusa.services.ChannelRuleService;
+import com.w1sh.medusa.services.ChannelService;
 import discord4j.core.event.domain.message.MessageUpdateEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.GuildChannel;
@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
 public final class MessageUpdateEventListener implements EventListener<MessageUpdateEvent> {
 
     private final NoLinksRuleEnforcer noLinksRuleEnforcer;
-    private final ChannelRuleService channelRuleService;
+    private final ChannelService channelService;
 
     @Override
     public Mono<Void> execute(MessageUpdateEvent event) {
@@ -23,7 +23,7 @@ public final class MessageUpdateEventListener implements EventListener<MessageUp
                 .filter(MessageUpdateEvent::isContentChanged)
                 .flatMap(MessageUpdateEvent::getChannel)
                 .ofType(GuildChannel.class)
-                .filterWhen(channel -> channelRuleService.findByChannel(channel)
+                .filterWhen(channel -> channelService.findByChannel(channel)
                         .filter(cr -> cr.getRules().contains(Rule.NO_LINKS))
                         .hasElement())
                 .filterWhen(channelRule -> event.getMessage()

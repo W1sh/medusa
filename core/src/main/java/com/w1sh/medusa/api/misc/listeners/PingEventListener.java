@@ -12,9 +12,9 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 import java.time.Instant;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public final class PingEventListener implements EventListener<PingEvent> {
 
     private final ResponseDispatcher responseDispatcher;
