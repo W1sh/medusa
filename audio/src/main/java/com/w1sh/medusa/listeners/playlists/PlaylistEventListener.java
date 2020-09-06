@@ -1,6 +1,5 @@
 package com.w1sh.medusa.listeners.playlists;
 
-import com.w1sh.medusa.data.PlaylistAction;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
@@ -40,4 +39,16 @@ public final class PlaylistEventListener implements EventListener<PlaylistEvent>
                             "Unknown playlist action, try one of the following: **SHOW**, **SAVE**, **LOAD**, **DELETE**", false));
         }
     }
+
+    private enum PlaylistAction {
+        SAVE, SHOW, DELETE, LOAD, UNKNOWN;
+
+        public static PlaylistAction of(String string){
+            for (PlaylistAction value : values()) {
+                if(value.name().equalsIgnoreCase(string)) return value;
+            }
+            return UNKNOWN;
+        }
+    }
+
 }
