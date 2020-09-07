@@ -27,7 +27,8 @@ public class ChannelRepository {
     }
 
     public Mono<Channel> update(Query query, Channel channel) {
-        final Update update = new Update().set("rules", channel.getRules());
+        final Update update = new Update().set("rules", channel.getRules())
+                .set("blocklist", channel.getBlocklist());
         final FindAndModifyOptions modifyOptions = FindAndModifyOptions.options().returnNew(true);
         return template.findAndModify(query, update, modifyOptions, Channel.class);
     }
