@@ -44,7 +44,10 @@ public final class NoLinksRuleEnforcer implements RuleEnforcer<String>{
                         event.getMember().map(Member::getDisplayName).orElse("")), false));
 
         return warningService.addWarning(warning)
-                .doOnNext(ignored -> event.getMessage().delete().subscribe())
+                .doOnNext(ignored -> event.getMessage()
+                        .delete()
+                        .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete message", t)))
+                        .subscribe())
                 .then(warningMessage);
     }
 }

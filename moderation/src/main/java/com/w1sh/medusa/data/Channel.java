@@ -25,6 +25,8 @@ public class Channel {
 
     private List<Rule> rules;
 
+    private List<String> blocklist;
+
     @CreatedDate
     private Instant createdOn;
 
@@ -35,5 +37,6 @@ public class Channel {
         this.channelId = channelId;
         this.guildId = guildId;
         this.rules = new ArrayList<>();
+        this.blocklist = new ArrayList<>();
     }
 }

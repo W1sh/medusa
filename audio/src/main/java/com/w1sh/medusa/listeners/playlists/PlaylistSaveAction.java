@@ -49,13 +49,13 @@ public final class PlaylistSaveAction implements Function<PlaylistEvent, Mono<? 
     private Mono<TextMessage> createFailedSaveErrorMessage(PlaylistEvent event){
         return event.getMessage().getChannel()
                 .map(channel -> new TextMessage(channel, String.format("**%s**, could not save your playlist, try again later!",
-                        event.getMember().flatMap(Member::getNickname).orElse("")), false));
+                        getMemberName(event.getMember().orElse(null))), false));
     }
 
     private Mono<TextMessage> createSavePlaylistSuccessMessage(PlaylistEvent event, Playlist playlist){
         return event.getMessage().getChannel()
                 .map(channel -> new TextMessage(channel, String.format("**%s**, saved your playlist with %d tracks!",
-                        event.getMember().flatMap(Member::getNickname).orElse(""),
+                        getMemberName(event.getMember().orElse(null)),
                         playlist.getTracks().size()), false));
     }
 
@@ -63,5 +63,10 @@ public final class PlaylistSaveAction implements Function<PlaylistEvent, Mono<? 
         return Flux.fromIterable(audioConnection.getTrackScheduler().getFullQueue())
                 .map(audioTrack2TrackMapper::map)
                 .collectList();
+    }
+
+    private String getMemberName(Member member) {
+        if (member == null) return "";
+        return member.getNickname().orElse(member.getDisplayName());
     }
 }
