@@ -18,29 +18,34 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class ChannelRepository {
 
+    private static final String CHANNEL_ID_FIELD = "channelId";
+    private static final String BLOCKLIST_FIELD = "blocklist";
+    private static final String RULES_FIELD = "rules";
+    private static final String GUILD_ID_FIELD = "guildId";
+
     private final ReactiveMongoTemplate template;
 
     public Mono<Channel> save(Channel channel) {
-        final Query query = new Query(Criteria.where("channelId").is(channel.getChannelId()));
+        final Query query = new Query(Criteria.where(CHANNEL_ID_FIELD).is(channel.getChannelId()));
         return template.exists(query, Channel.class)
                 .transform(Reactive.ifElse(bool -> update(query, channel), bool -> template.save(channel)));
     }
 
     public Mono<Channel> update(Query query, Channel channel) {
-        final Update update = new Update().set("rules", channel.getRules())
-                .set("blocklist", channel.getBlocklist());
+        final Update update = new Update().set(RULES_FIELD, channel.getRules())
+                .set(BLOCKLIST_FIELD, channel.getBlocklist());
         final FindAndModifyOptions modifyOptions = FindAndModifyOptions.options().returnNew(true);
         return template.findAndModify(query, update, modifyOptions, Channel.class);
     }
 
     public Mono<DeleteResult> removeByChannelId(String channelId) {
-        final Query query = new Query(Criteria.where("channelId").is(channelId));
+        final Query query = new Query(Criteria.where(CHANNEL_ID_FIELD).is(channelId));
         return template.remove(query, Channel.class)
                 .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete channel with id \"{}\"", channelId, t)));
     }
 
     public Mono<DeleteResult> removeByGuildId(String guildId) {
-        final Query query = new Query(Criteria.where("guildId").is(guildId));
+        final Query query = new Query(Criteria.where(GUILD_ID_FIELD).is(guildId));
         return template.remove(query, Channel.class)
                 .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete all channels from guild with id \"{}\"", guildId, t)));
     }
@@ -51,6 +56,6 @@ public class ChannelRepository {
     }
 
     public Mono<Channel> findByChannel(String channel) {
-        return template.findOne(Query.query(Criteria.where("channelId").is(channel)), Channel.class);
+        return template.findOne(Query.query(Criteria.where(CHANNEL_ID_FIELD).is(channel)), Channel.class);
     }
 }

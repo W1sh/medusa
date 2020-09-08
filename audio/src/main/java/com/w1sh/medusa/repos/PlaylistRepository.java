@@ -20,22 +20,25 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PlaylistRepository {
 
+    private static final String TRACKS_FIELD = "tracks";
+    private static final String USER_ID_FIELD = "userId";
+
     private final ReactiveMongoTemplate template;
 
     public Mono<Playlist> save(Playlist playlist) {
-        final Query query = new Query(Criteria.where("userId").is(playlist.getUserId()));
+        final Query query = new Query(Criteria.where(USER_ID_FIELD).is(playlist.getUserId()));
         return template.exists(query, Playlist.class)
                 .transform(Reactive.ifElse(bool -> update(query, playlist), bool -> template.save(playlist)));
     }
 
     public Mono<Playlist> update(Query query, Playlist playlist) {
-        final Update update = new Update().set("tracks", playlist.getTracks());
+        final Update update = new Update().set(TRACKS_FIELD, playlist.getTracks());
         final FindAndModifyOptions modifyOptions = FindAndModifyOptions.options().returnNew(true);
         return template.findAndModify(query, update, modifyOptions, Playlist.class);
     }
 
     public Mono<DeleteResult> removeByUserId(String userId) {
-        final Query query = new Query(Criteria.where("userId").is(userId));
+        final Query query = new Query(Criteria.where(USER_ID_FIELD).is(userId));
         return template.remove(query, Playlist.class)
                 .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete playlist from user with id \"{}\"", userId, t)));
     }
@@ -46,7 +49,7 @@ public class PlaylistRepository {
     }
 
     public Mono<List<Playlist>> findAllByUserId(String userId){
-        final Query query = new Query(Criteria.where("userId").is(userId));
+        final Query query = new Query(Criteria.where(USER_ID_FIELD).is(userId));
         return template.find(query, Playlist.class).collectList();
     }
 }
