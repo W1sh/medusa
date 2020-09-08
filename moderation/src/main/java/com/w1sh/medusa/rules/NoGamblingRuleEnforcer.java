@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public final class NoGamblingRuleEnforcer implements RuleEnforcer<GuildChannel>{
+public final class NoGamblingRuleEnforcer implements RuleEnforcer<GuildChannel> {
 
     private final ChannelService channelService;
 
