@@ -2,6 +2,7 @@ package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.data.events.InlineEvent;
 import com.w1sh.medusa.data.responses.Embed;
+import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.CardDetailEvent;
 import com.w1sh.medusa.resources.Card;
@@ -26,12 +27,13 @@ public final class CardDetailListener implements EventListener<CardDetailEvent> 
                 .filter(InlineEvent::hasArgument)
                 .flatMap(ev -> cardService.getCardByName(ev.getInlineArgument()))
                 .flatMap(tuple -> this.createEmbed(tuple, event))
+                .switchIfEmpty(notFoundMessage(event))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
                 .then();
     }
 
-    private Mono<Embed> createEmbed(Card card, CardDetailEvent event){
+    private Mono<Response> createEmbed(Card card, CardDetailEvent event){
         return event.getMessage().getChannel()
                 .map(channel -> {
                     if(card.isEmpty() || card.getImage() == null || card.getImage().getSmall() == null || card.getUri() == null
@@ -57,5 +59,10 @@ public final class CardDetailListener implements EventListener<CardDetailEvent> 
                         }
                     }, event.isFragment(), event.getInlineOrder());
                 });
+    }
+
+    private Mono<Response> notFoundMessage(CardDetailEvent event) {
+        return event.getMessage().getChannel()
+                .map(channel -> CardUtils.createErrorEmbed(channel, event));
     }
 }

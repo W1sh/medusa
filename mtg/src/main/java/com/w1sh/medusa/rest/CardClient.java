@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.resources.ListResponse;
+import com.w1sh.medusa.resources.ScryfallException;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -55,7 +56,11 @@ public final class CardClient {
             return byteBufMono.asString()
                     .map(json -> parse(json, typeReference))
                     .map(Optional::get);
-        }else return Mono.error(new Exception("Failed to retrieve cards from Scryfall API"));
+        } else {
+            final String exceptionMessage = String.format("Failed to retrieve cards from Scryfall API with reason \"%s\"",
+                    httpClientResponse.status().toString());
+            return Mono.error(new ScryfallException(exceptionMessage));
+        }
     }
 
     private <T> Optional<T> parse(String json, TypeReference<T> typeReference){

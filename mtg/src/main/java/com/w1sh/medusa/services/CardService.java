@@ -2,6 +2,7 @@ package com.w1sh.medusa.services;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Expiry;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.resources.ListResponse;
 import com.w1sh.medusa.rest.CardClient;
@@ -27,6 +28,7 @@ public final class CardService {
         this.cardClient = cardClient;
         this.cache = Caffeine.newBuilder()
                 .expireAfterAccess(Duration.ofHours(6))
+                .expireAfterWrite(Duration.ofDays(1))
                 .build();
     }
 
