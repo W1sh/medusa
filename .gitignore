@@ -33,3 +33,4 @@ application.properties
 config.properties
 persistence.xml
 sql/
+notes.md
