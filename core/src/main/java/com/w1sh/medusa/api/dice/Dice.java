@@ -1,6 +1,6 @@
 package com.w1sh.medusa.api.dice;
 
-import com.w1sh.medusa.data.events.Event;
+import com.w1sh.medusa.data.Event;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import lombok.RequiredArgsConstructor;

@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public final class TextChannelCreateEventListener implements EventListener<TextChannelCreateEvent> {
+public final class TextChannelCreateEventListener implements DiscordEventListener<TextChannelCreateEvent> {
 
     private final ChannelService channelService;
 

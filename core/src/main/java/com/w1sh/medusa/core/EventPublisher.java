@@ -1,12 +1,12 @@
 package com.w1sh.medusa.core;
 
+import com.w1sh.medusa.data.Event;
 import com.w1sh.medusa.data.events.EventType;
 import com.w1sh.medusa.data.events.InlineEvent;
 import com.w1sh.medusa.data.events.MultipleInlineEvent;
 import com.w1sh.medusa.data.events.Type;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.listeners.EventListener;
-import discord4j.core.event.domain.Event;
+import com.w1sh.medusa.listeners.CustomEventListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
@@ -15,7 +15,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,13 +26,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public final class EventPublisher {
 
-    private final Map<Class<? extends Event>, EventListener<? extends Event>> listenerMap = new ConcurrentHashMap<>();
+    private final Map<Class<? extends Event>, CustomEventListener<? extends Event>> listenerMap = new ConcurrentHashMap<>();
     private final ApplicationContext applicationContext;
     private final ResponseDispatcher responseDispatcher;
 
     @PostConstruct
     private void init() {
-        final var listeners = applicationContext.getBeansOfType(EventListener.class);
+        final var listeners = applicationContext.getBeansOfType(CustomEventListener.class);
         listeners.values().forEach(this::registerListener);
         log.info("Found and registered {} event listeners", listeners.size());
     }
@@ -49,7 +48,7 @@ public final class EventPublisher {
         }
     }
 
-    public <T extends Event> void registerListener(final EventListener<T> listener) {
+    public <T extends Event> void registerListener(final CustomEventListener<T> listener) {
         log.info("Registering event listener of type <{}>", listener.getClass().getSimpleName());
         listenerMap.put(listener.getEventType(), listener);
     }

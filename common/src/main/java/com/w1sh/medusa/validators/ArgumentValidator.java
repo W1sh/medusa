@@ -1,6 +1,7 @@
 package com.w1sh.medusa.validators;
 
-import com.w1sh.medusa.data.events.Event;
+import com.w1sh.medusa.data.Event;
+import com.w1sh.medusa.data.events.Type;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import lombok.RequiredArgsConstructor;
@@ -21,16 +22,16 @@ public final class ArgumentValidator implements Validator {
     @Override
     public Mono<Boolean> validate(Event event){
         return Mono.justOrEmpty(event)
-                .filter(e -> e.getArguments().size() >= e.getMinArguments())
+                .filter(e -> e.getArguments().size() >= e.getClass().getAnnotation(Type.class).minimumArguments())
                 .hasElement()
                 .transform(ifElse(b -> Mono.empty(), b -> createErrorMessage(event)))
                 .transform(isEmpty());
     }
 
     private Mono<TextMessage> createErrorMessage(Event event){
-        return event.getMessage().getChannel()
+        return event.getChannel()
                 .map(channel -> new TextMessage(channel,
-                        ":x: Invalid number of arguments, expected " + event.getMinArguments() + " arguments", false))
+                        ":x: Invalid number of arguments, expected " + event.getClass().getAnnotation(Type.class).minimumArguments() + " arguments", false))
                 .doOnNext(textMessage -> {
                     log.error("Invalid number of arguments received, event discarded");
                     responseDispatcher.queue(textMessage);

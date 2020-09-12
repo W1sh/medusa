@@ -1,10 +1,10 @@
 package com.w1sh.medusa.api.misc.listeners;
 
 import com.w1sh.medusa.api.misc.events.StatusEvent;
-import com.w1sh.medusa.data.events.Event;
+import com.w1sh.medusa.data.Event;
 import com.w1sh.medusa.data.responses.Embed;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.listeners.EventListener;
+import com.w1sh.medusa.listeners.CustomEventListener;
 import com.w1sh.medusa.metrics.Trackers;
 import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.core.object.entity.channel.MessageChannel;
@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class StatusEventListener implements EventListener<StatusEvent> {
+public final class StatusEventListener implements CustomEventListener<StatusEvent> {
 
     @Value("${medusa.version}")
     private String version;
@@ -25,7 +25,7 @@ public final class StatusEventListener implements EventListener<StatusEvent> {
 
     @Override
     public Mono<Void> execute(StatusEvent event) {
-        return event.getMessage().getChannel()
+        return event.getChannel()
                 .flatMap(messageChannel -> createStatusEmbed(messageChannel, event))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)

@@ -6,7 +6,7 @@ import com.w1sh.medusa.data.events.EventType;
 import com.w1sh.medusa.data.events.Type;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.listeners.EventListener;
+import com.w1sh.medusa.listeners.CustomEventListener;
 import com.w1sh.medusa.utils.Reactive;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
@@ -17,7 +17,7 @@ import java.util.Set;
 
 @Slf4j
 @Component
-public final class DisableEventListener implements EventListener<DisableEvent> {
+public final class DisableEventListener implements CustomEventListener<DisableEvent> {
 
     private final EventPublisher eventPublisher;
     private final ResponseDispatcher responseDispatcher;
@@ -53,11 +53,11 @@ public final class DisableEventListener implements EventListener<DisableEvent> {
                 .findFirst()
                 .orElse(null);
 
-        final var disabledMessage = Mono.defer(() -> event.getMessage().getChannel()
+        final var disabledMessage = Mono.defer(() -> event.getChannel()
                 .map(channel -> new TextMessage(channel, String.format("Disabled event of type **%s**",
                         clazz != null ? clazz.getSimpleName() : "?"), false)));
 
-        final var errorMessage = Mono.defer(() -> event.getMessage().getChannel()
+        final var errorMessage = Mono.defer(() -> event.getChannel()
                 .map(channel -> new TextMessage(channel, String.format("Failed to disable event with prefix **%s**", prefix), false)));
 
         return Mono.justOrEmpty(clazz)
@@ -70,8 +70,7 @@ public final class DisableEventListener implements EventListener<DisableEvent> {
         final var content = eventPublisher.removeListener(type) ? String.format("Disabled all events of type **%s**", type.name()) :
                 String.format("Failed to disable events of type **%s**", type.name());
 
-        return event.getMessage().getChannel()
-                .map(channel -> new TextMessage(channel, content, false));
+        return event.getChannel().map(channel -> new TextMessage(channel, content, false));
     }
 
     private enum DisableType {

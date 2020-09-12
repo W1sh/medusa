@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class ShuffleQueueListener implements EventListener<ShuffleQueueEvent> {
+public final class ShuffleQueueListener implements CustomEventListener<ShuffleQueueEvent> {
 
     private final AudioConnectionManager audioConnectionManager;
 

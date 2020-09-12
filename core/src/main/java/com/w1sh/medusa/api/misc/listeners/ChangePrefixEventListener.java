@@ -4,7 +4,7 @@ import com.w1sh.medusa.api.misc.events.ChangePrefixEvent;
 import com.w1sh.medusa.core.EventFactory;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.listeners.EventListener;
+import com.w1sh.medusa.listeners.CustomEventListener;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.discordjson.json.ActivityUpdateRequest;
@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class ChangePrefixEventListener implements EventListener<ChangePrefixEvent> {
+public final class ChangePrefixEventListener implements CustomEventListener<ChangePrefixEvent> {
 
     private final ResponseDispatcher responseDispatcher;
     private final EventFactory eventFactory;
@@ -32,8 +32,7 @@ public final class ChangePrefixEventListener implements EventListener<ChangePref
     }
 
     public Mono<TextMessage> changePrefixSuccess(String prefix, ChangePrefixEvent event){
-        return event.getMessage().getChannel()
-                .map(chan -> new TextMessage(chan, String.format("Changed prefix to \"%s\"", prefix), false));
+        return event.getChannel().map(chan -> new TextMessage(chan, String.format("Changed prefix to \"%s\"", prefix), false));
     }
 
     public Mono<Void> changePrefix(ChangePrefixEvent event){

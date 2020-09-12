@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class MessageCreateEventListener implements EventListener<MessageCreateEvent> {
+public final class MessageCreateEventListener implements DiscordEventListener<MessageCreateEvent> {
 
     private final NoLinksRuleEnforcer noLinksRuleEnforcer;
     private final BlocklistRuleEnforcer blocklistRuleEnforcer;

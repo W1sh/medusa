@@ -16,7 +16,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public final class CardSearchListener implements EventListener<CardSearchEvent> {
+public final class CardSearchListener implements CustomEventListener<CardSearchEvent> {
 
     private final CardService cardService;
     private final ResponseDispatcher responseDispatcher;
@@ -34,18 +34,17 @@ public final class CardSearchListener implements EventListener<CardSearchEvent> 
     }
 
     private Mono<Embed> createEmbed(List<Card> cards, CardSearchEvent event){
-        return event.getMessage().getChannel()
-                .map(channel -> {
-                    if(cards.isEmpty()){
-                        return CardUtils.createErrorEmbed(channel, event);
-                    }
-                    return new Embed(channel, embedCreateSpec -> {
-                        embedCreateSpec.setColor(Color.GREEN);
-                        embedCreateSpec.setTitle(String.format("Search results for \"%s\"", event.getInlineArgument()));
-                        for (int i = 0; i < 5; i++) {
-                            embedCreateSpec.addField(String.format("**%d** - **%s**", (i+1), cards.get(i).getName()), cards.get(i).getOracleText(), false);
-                        }
-                    }, event.isFragment(), event.getInlineOrder());
-                });
+        return event.getChannel().map(channel -> {
+            if(cards.isEmpty()){
+                return CardUtils.createErrorEmbed(channel, event);
+            }
+            return new Embed(channel, embedCreateSpec -> {
+                embedCreateSpec.setColor(Color.GREEN);
+                embedCreateSpec.setTitle(String.format("Search results for \"%s\"", event.getInlineArgument()));
+                for (int i = 0; i < 5; i++) {
+                    embedCreateSpec.addField(String.format("**%d** - **%s**", (i+1), cards.get(i).getName()), cards.get(i).getOracleText(), false);
+                }
+            }, event.isFragment(), event.getInlineOrder());
+        });
     }
 }

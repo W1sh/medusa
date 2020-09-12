@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class PauseTrackListener implements EventListener<PauseTrackEvent> {
+public final class PauseTrackListener implements CustomEventListener<PauseTrackEvent> {
 
     private final AudioConnectionManager audioConnectionManager;
 

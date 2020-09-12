@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class ClearQueueListener implements EventListener<ClearQueueEvent> {
+public final class ClearQueueListener implements CustomEventListener<ClearQueueEvent> {
 
     private final AudioConnectionManager audioConnectionManager;
 

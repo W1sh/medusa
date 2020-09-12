@@ -1,4 +1,4 @@
-package com.w1sh.medusa.data.events;
+package com.w1sh.medusa.data;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
@@ -12,9 +12,7 @@ import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.gateway.ShardInfo;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
@@ -56,10 +54,10 @@ public class Event {
     private ShardInfo shardInfo;
 
     @Transient
-    private List<String> arguments;
+    private GatewayDiscordClient client;
 
     @Transient
-    private GatewayDiscordClient client;
+    private List<String> arguments;
 
     public Event(MessageCreateEvent event){
         this.userId = event.getMember().map(User::getId).map(Snowflake::asString).orElse(null);
@@ -67,8 +65,8 @@ public class Event {
         this.message = event.getMessage();
         this.shardInfo = event.getShardInfo();
         this.member = event.getMember().orElse(null);
-        this.arguments = new ArrayList<>();
         this.client = event.getClient();
+        this.arguments = new ArrayList<>();
 
         Objects.requireNonNull(userId);
         Objects.requireNonNull(guildId);
@@ -86,7 +84,7 @@ public class Event {
      * @return A {@link Mono} where, upon successful completion, emits the {@link MessageChannel} the message was created in,
      * if present.
      */
-    public Mono<MessageChannel> getMessageChannel(){
+    public Mono<MessageChannel> getChannel(){
         return message.getChannel();
     }
 

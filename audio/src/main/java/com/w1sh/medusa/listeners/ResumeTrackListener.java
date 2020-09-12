@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class ResumeTrackListener implements EventListener<ResumeTrackEvent> {
+public final class ResumeTrackListener implements CustomEventListener<ResumeTrackEvent> {
 
     private final AudioConnectionManager audioConnectionManager;
 

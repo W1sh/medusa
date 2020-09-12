@@ -25,28 +25,24 @@ public final class PlaylistDeleteAction implements Function<PlaylistEvent, Mono<
         if (DELETE_ALL_PARAMETER.equalsIgnoreCase(event.getArguments().get(1))) return deleteAll(event);
 
         final Integer index = Integer.parseInt(event.getArguments().get(1));
-        final String userId = event.getMember().map(member -> member.getId().asString()).orElse("");
 
-        return playlistService.deleteIndex(userId, index)
+        return playlistService.deleteIndex(event.getUserId(), index)
                 .flatMap(ignored -> createDeleteTextMessage(event))
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> log.error("Failed to delete playlist", throwable)));
     }
 
     private Mono<? extends Response> deleteAll(PlaylistEvent event) {
-        final String userId = event.getMember().map(member -> member.getId().asString()).orElse("");
-
-        return playlistService.deleteByUserId(userId)
+        return playlistService.deleteByUserId(event.getUserId())
                 .flatMap(ignored -> createDeleteAllTextMessage(event))
-                .onErrorResume(throwable -> Mono.fromRunnable(() -> log.error("Failed to delete all playlists of user with id <{}>", userId, throwable)));
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> log.error("Failed to delete all playlists of user with id <{}>",
+                        event.getGuildId(), throwable)));
     }
 
     private Mono<TextMessage> createDeleteTextMessage(PlaylistEvent event){
-        return event.getMessage().getChannel()
-                .map(channel -> new TextMessage(channel, "Playlist has been deleted!", false));
+        return event.getChannel().map(channel -> new TextMessage(channel, "Playlist has been deleted!", false));
     }
 
     private Mono<TextMessage> createDeleteAllTextMessage(PlaylistEvent event){
-        return event.getMessage().getChannel()
-                .map(channel -> new TextMessage(channel, "All your playlists have been deleted!", false));
+        return event.getChannel().map(channel -> new TextMessage(channel, "All your playlists have been deleted!", false));
     }
 }

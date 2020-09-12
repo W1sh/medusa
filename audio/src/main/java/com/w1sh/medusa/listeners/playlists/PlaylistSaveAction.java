@@ -9,7 +9,6 @@ import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.events.PlaylistEvent;
 import com.w1sh.medusa.mappers.AudioTrack2TrackMapper;
 import com.w1sh.medusa.services.PlaylistService;
-import discord4j.core.object.entity.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -30,7 +29,7 @@ public final class PlaylistSaveAction implements Function<PlaylistEvent, Mono<? 
 
     @Override
     public Mono<? extends Response> apply(PlaylistEvent event) {
-        Mono<List<Track>> tracks = audioConnectionManager.getAudioConnection(event)
+        final Mono<List<Track>> tracks = audioConnectionManager.getAudioConnection(event)
                 .flatMap(this::getAllTracks);
 
         return tracks.map(t -> createPlaylist(event, t))
@@ -41,32 +40,23 @@ public final class PlaylistSaveAction implements Function<PlaylistEvent, Mono<? 
     }
 
     private Playlist createPlaylist(PlaylistEvent event, List<Track> tracks){
-        String userId = event.getMember().map(member -> member.getId().asString()).orElseThrow();
-        String name = event.getArguments().getOrDefault(1, "Playlist");
-        return new Playlist(userId, name, tracks);
+        final String name = event.getArguments().size() > 1 ? event.getArguments().get(1) : "Playlist";
+        return new Playlist(event.getUserId(), name, tracks);
     }
 
     private Mono<TextMessage> createFailedSaveErrorMessage(PlaylistEvent event){
-        return event.getMessage().getChannel()
-                .map(channel -> new TextMessage(channel, String.format("**%s**, could not save your playlist, try again later!",
-                        getMemberName(event.getMember().orElse(null))), false));
+        return event.getChannel().map(channel -> new TextMessage(channel, String.format("**%s**, could not save your playlist, try again later!",
+                        event.getNickname()), false));
     }
 
     private Mono<TextMessage> createSavePlaylistSuccessMessage(PlaylistEvent event, Playlist playlist){
-        return event.getMessage().getChannel()
-                .map(channel -> new TextMessage(channel, String.format("**%s**, saved your playlist with %d tracks!",
-                        getMemberName(event.getMember().orElse(null)),
-                        playlist.getTracks().size()), false));
+        return event.getChannel().map(channel -> new TextMessage(channel, String.format("**%s**, saved your playlist with %d tracks!",
+                        event.getNickname(), playlist.getTracks().size()), false));
     }
 
     private Mono<List<Track>> getAllTracks(AudioConnection audioConnection){
         return Flux.fromIterable(audioConnection.getTrackScheduler().getFullQueue())
                 .map(audioTrack2TrackMapper::map)
                 .collectList();
-    }
-
-    private String getMemberName(Member member) {
-        if (member == null) return "";
-        return member.getNickname().orElse(member.getDisplayName());
     }
 }

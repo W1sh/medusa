@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class SkipTrackListener implements EventListener<SkipTrackEvent> {
+public final class SkipTrackListener implements CustomEventListener<SkipTrackEvent> {
 
     private final AudioConnectionManager audioConnectionManager;
 

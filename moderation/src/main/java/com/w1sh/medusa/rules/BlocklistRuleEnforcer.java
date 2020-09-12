@@ -19,12 +19,11 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public final class BlocklistRuleEnforcer implements RuleEnforcer<MessageCreateEvent> {
+public final class BlocklistRuleEnforcer {
 
     private final ChannelService channelService;
     private final WarningService warningService;
 
-    @Override
     public Mono<Boolean> validate(MessageCreateEvent event) {
         return event.getMessage().getChannel()
                 .ofType(GuildChannel.class)
@@ -33,7 +32,6 @@ public final class BlocklistRuleEnforcer implements RuleEnforcer<MessageCreateEv
                 .map(channel -> containsBlocklistedWords(event.getMessage().getContent(), channel.getBlocklist()));
     }
 
-    @Override
     public Mono<Response> enforce(MessageCreateEvent event) {
         final String channelId = event.getMessage().getChannelId().asString();
         final String userId = event.getMember().map(member -> member.getId().asString()).orElse("");

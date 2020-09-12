@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class CardDetailListener implements EventListener<CardDetailEvent> {
+public final class CardDetailListener implements CustomEventListener<CardDetailEvent> {
 
     private final CardService cardService;
     private final ResponseDispatcher responseDispatcher;
@@ -34,35 +34,33 @@ public final class CardDetailListener implements EventListener<CardDetailEvent> 
     }
 
     private Mono<Response> createEmbed(Card card, CardDetailEvent event){
-        return event.getMessage().getChannel()
-                .map(channel -> {
-                    if(card.isEmpty() || card.getImage() == null || card.getImage().getSmall() == null || card.getUri() == null
-                            || card.getName() == null || card.getManaCost() == null || card.getTypeLine() == null){
-                        return CardUtils.createErrorEmbed(channel, event);
-                    }
-                    return new Embed(channel, embedCreateSpec -> {
-                        embedCreateSpec.setThumbnail(card.getImage().getSmall());
-                        embedCreateSpec.setColor(Color.GREEN);
-                        embedCreateSpec.setUrl(card.getUri());
-                        embedCreateSpec.setTitle(String.format("%s %s",
-                                card.getName(),
-                                card.getManaCost()));
-                        embedCreateSpec.addField(String.format("**%s**", card.getTypeLine()),
-                                String.format("%s%n*%s*",
-                                        card.getOracleText() == null ? ResponseUtils.ZERO_WIDTH_SPACE : card.getOracleText(),
-                                        card.getFlavorText() == null ? ResponseUtils.ZERO_WIDTH_SPACE : card.getFlavorText()), false);
-                        if(card.getPower() != null || card.getToughness() != null){
-                            embedCreateSpec.addField(ResponseUtils.ZERO_WIDTH_SPACE,
-                                    String.format("**%s/%s**",
-                                            card.getPower(),
-                                            card.getToughness()), true);
-                        }
-                    }, event.isFragment(), event.getInlineOrder());
-                });
+        return event.getChannel().map(channel -> {
+            if(card.isEmpty() || card.getImage() == null || card.getImage().getSmall() == null || card.getUri() == null
+                    || card.getName() == null || card.getManaCost() == null || card.getTypeLine() == null){
+                return CardUtils.createErrorEmbed(channel, event);
+            }
+            return new Embed(channel, embedCreateSpec -> {
+                embedCreateSpec.setThumbnail(card.getImage().getSmall());
+                embedCreateSpec.setColor(Color.GREEN);
+                embedCreateSpec.setUrl(card.getUri());
+                embedCreateSpec.setTitle(String.format("%s %s",
+                        card.getName(),
+                        card.getManaCost()));
+                embedCreateSpec.addField(String.format("**%s**", card.getTypeLine()),
+                        String.format("%s%n*%s*",
+                                card.getOracleText() == null ? ResponseUtils.ZERO_WIDTH_SPACE : card.getOracleText(),
+                                card.getFlavorText() == null ? ResponseUtils.ZERO_WIDTH_SPACE : card.getFlavorText()), false);
+                if(card.getPower() != null || card.getToughness() != null){
+                    embedCreateSpec.addField(ResponseUtils.ZERO_WIDTH_SPACE,
+                            String.format("**%s/%s**",
+                                    card.getPower(),
+                                    card.getToughness()), true);
+                }
+            }, event.isFragment(), event.getInlineOrder());
+        });
     }
 
     private Mono<Response> notFoundMessage(CardDetailEvent event) {
-        return event.getMessage().getChannel()
-                .map(channel -> CardUtils.createErrorEmbed(channel, event));
+        return event.getChannel().map(channel -> CardUtils.createErrorEmbed(channel, event));
     }
 }

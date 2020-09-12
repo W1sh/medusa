@@ -4,14 +4,14 @@ import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.BlocklistEvent;
-import com.w1sh.medusa.listeners.EventListener;
+import com.w1sh.medusa.listeners.CustomEventListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class BlocklistEventListener implements EventListener<BlocklistEvent> {
+public final class BlocklistEventListener implements CustomEventListener<BlocklistEvent> {
 
     private final BlocklistAddAction blocklistAddAction;
     private final BlocklistRemoveAction blocklistRemoveAction;
@@ -34,9 +34,8 @@ public final class BlocklistEventListener implements EventListener<BlocklistEven
             case ADD: return blocklistAddAction.apply(event);
             case REMOVE: return blocklistRemoveAction.apply(event);
             case SHOW: return blocklistShowAction.apply(event);
-            default: return event.getMessage().getChannel()
-                    .map(channel -> new TextMessage(channel,
-                            "Unknown blocklist action, try one of the following: **ADD**, **REMOVE**, **SHOW**", false));
+            default: return event.getChannel().map(channel -> new TextMessage(channel,
+                    "Unknown blocklist action, try one of the following: **ADD**, **REMOVE**, **SHOW**", false));
         }
     }
 

@@ -15,7 +15,7 @@ import java.util.Queue;
 
 @Component
 @RequiredArgsConstructor
-public final class QueueTrackListener implements EventListener<QueueTrackEvent> {
+public final class QueueTrackListener implements CustomEventListener<QueueTrackEvent> {
 
     private final AudioConnectionManager audioConnectionManager;
     private final ResponseDispatcher responseDispatcher;
@@ -37,33 +37,32 @@ public final class QueueTrackListener implements EventListener<QueueTrackEvent> 
                 .orElse(0L);
         final AudioTrack playingTrack = trackQueue.poll();
 
-        return event.getMessage().getChannel()
-                .map(channel -> new Embed(channel, embedCreateSpec -> {
-                    embedCreateSpec.setColor(Color.GREEN);
-                    embedCreateSpec.setTitle(":notes:\tQueued tracks");
-                    if (playingTrack != null) {
-                        embedCreateSpec.addField("Currently playing",
-                                String.format("**%s**%n[%s](%s) | %s",
-                                        playingTrack.getInfo().author,
-                                        playingTrack.getInfo().title,
-                                        playingTrack.getInfo().uri,
-                                        ResponseUtils.formatDuration(playingTrack.getInfo().length)), true);
-                    }
-                    int queuePosition = 0;
-                    if(!trackQueue.isEmpty()) embedCreateSpec.addField(ResponseUtils.ZERO_WIDTH_SPACE,
-                            ":arrow_down: **Queue** :arrow_down:", false);
-                    for (AudioTrack track : trackQueue) {
-                        if(queuePosition < 5) {
-                            queuePosition++;
-                            embedCreateSpec.addField(String.format("**%s**", track.getInfo().author), String.format("**%d**\t[%s](%s) | %s",
-                                    queuePosition,
-                                    track.getInfo().title,
-                                    track.getInfo().uri,
-                                    ResponseUtils.formatDuration(track.getInfo().length)), false);
-                        } else break;
-                    }
-                    embedCreateSpec.setFooter(String.format("%d queued tracks | Queue duration: %s",
-                            trackQueue.size(), ResponseUtils.formatDuration(queueDuration)), null);
-                }));
+        return event.getChannel().map(channel -> new Embed(channel, embedCreateSpec -> {
+            embedCreateSpec.setColor(Color.GREEN);
+            embedCreateSpec.setTitle(":notes:\tQueued tracks");
+            if (playingTrack != null) {
+                embedCreateSpec.addField("Currently playing",
+                        String.format("**%s**%n[%s](%s) | %s",
+                                playingTrack.getInfo().author,
+                                playingTrack.getInfo().title,
+                                playingTrack.getInfo().uri,
+                                ResponseUtils.formatDuration(playingTrack.getInfo().length)), true);
+            }
+            int queuePosition = 0;
+            if(!trackQueue.isEmpty()) embedCreateSpec.addField(ResponseUtils.ZERO_WIDTH_SPACE,
+                    ":arrow_down: **Queue** :arrow_down:", false);
+            for (AudioTrack track : trackQueue) {
+                if(queuePosition < 5) {
+                    queuePosition++;
+                    embedCreateSpec.addField(String.format("**%s**", track.getInfo().author), String.format("**%d**\t[%s](%s) | %s",
+                            queuePosition,
+                            track.getInfo().title,
+                            track.getInfo().uri,
+                            ResponseUtils.formatDuration(track.getInfo().length)), false);
+                } else break;
+            }
+            embedCreateSpec.setFooter(String.format("%d queued tracks | Queue duration: %s",
+                    trackQueue.size(), ResponseUtils.formatDuration(queueDuration)), null);
+        }));
     }
 }

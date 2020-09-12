@@ -1,6 +1,6 @@
 package com.w1sh.medusa.core;
 
-import com.w1sh.medusa.data.events.Event;
+import com.w1sh.medusa.data.Event;
 import com.w1sh.medusa.validators.Validator;
 import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
@@ -43,6 +43,7 @@ public final class Instance {
 
     private final EventFactory eventFactory;
     private final EventPublisher eventPublisher;
+    private final DiscordEventPublisher discordEventPublisher;
     private final List<Validator> validators;
     private final Set<Class<? extends Event>> events;
     private final Executor executor;
@@ -50,10 +51,11 @@ public final class Instance {
     @Value("${discord.token}")
     private String token;
 
-    public Instance(EventFactory eventFactory, EventPublisher eventPublisher, List<Validator> validators,
-                    Executor executor, Reflections reflections) {
+    public Instance(EventFactory eventFactory, EventPublisher eventPublisher, DiscordEventPublisher discordEventPublisher,
+                    List<Validator> validators, Executor executor, Reflections reflections) {
         this.eventFactory = eventFactory;
         this.eventPublisher = eventPublisher;
+        this.discordEventPublisher = discordEventPublisher;
         this.validators = validators;
         this.executor = executor;
         this.events = reflections.getSubTypesOf(Event.class)
@@ -97,24 +99,24 @@ public final class Instance {
     }
 
     private void initDispatcher(GatewayDiscordClient gateway) {
-        final Publisher<?> onReady = gateway.on(ReadyEvent.class, eventPublisher::publishEvent);
+        final Publisher<?> onReady = gateway.on(ReadyEvent.class, discordEventPublisher::publishEvent);
 
-        final Publisher<?> onGuildDelete = gateway.on(GuildDeleteEvent.class, eventPublisher::publishEvent);
+        final Publisher<?> onGuildDelete = gateway.on(GuildDeleteEvent.class, discordEventPublisher::publishEvent);
 
-        final Publisher<?> onMemberLeave = gateway.on(MemberLeaveEvent.class, eventPublisher::publishEvent);
+        final Publisher<?> onMemberLeave = gateway.on(MemberLeaveEvent.class, discordEventPublisher::publishEvent);
 
-        final Publisher<?> onTextChannelCreate = gateway.on(TextChannelCreateEvent.class, eventPublisher::publishEvent);
+        final Publisher<?> onTextChannelCreate = gateway.on(TextChannelCreateEvent.class, discordEventPublisher::publishEvent);
 
-        final Publisher<?> onTextChannelDelete = gateway.on(TextChannelDeleteEvent.class, eventPublisher::publishEvent);
+        final Publisher<?> onTextChannelDelete = gateway.on(TextChannelDeleteEvent.class, discordEventPublisher::publishEvent);
 
-        final Publisher<?> onMessageUpdate = gateway.on(MessageUpdateEvent.class, eventPublisher::publishEvent);
+        final Publisher<?> onMessageUpdate = gateway.on(MessageUpdateEvent.class, discordEventPublisher::publishEvent);
 
         final Publisher<?> onMessageCreate = gateway.on(MessageCreateEvent.class)
                 .filter(event -> event.getClass().equals(MessageCreateEvent.class) && event.getMember().map(user -> !user.isBot()).orElse(false))
                 .flatMap(event -> Mono.justOrEmpty(eventFactory.extractEvents(event)))
                 .filterWhen(ev -> Flux.fromIterable(validators)
                         .filter(validator -> Event.class.isAssignableFrom(ev.getClass()))
-                        .flatMap(validator -> validator.validate((Event) ev))
+                        .flatMap(validator -> validator.validate(ev))
                         .all(bool -> true)
                         .defaultIfEmpty(true))
                 .flatMap(eventPublisher::publishEvent);

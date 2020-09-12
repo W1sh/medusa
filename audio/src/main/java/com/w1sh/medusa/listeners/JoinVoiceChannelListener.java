@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class JoinVoiceChannelListener implements EventListener<JoinVoiceChannelEvent> {
+public final class JoinVoiceChannelListener implements CustomEventListener<JoinVoiceChannelEvent> {
 
     @Value("${event.voice.join}")
     private String voiceJoin;
@@ -35,13 +35,11 @@ public final class JoinVoiceChannelListener implements EventListener<JoinVoiceCh
     }
 
     private Mono<TextMessage> createEmptyVoiceStateErrorMessage(JoinVoiceChannelEvent event){
-        return event.getMessage().getChannel()
-                .map(chan -> new TextMessage(chan, String.format("**%s**, you are not in a voice channel!",
-                        event.getMember().flatMap(Member::getNickname).orElse("You")), false));
+        return event.getChannel().map(chan -> new TextMessage(chan, String.format("**%s**, you are not in a voice channel!",
+                        event.getNickname()), false));
     }
 
     private Mono<TextMessage> createJoinSuccessMessage(JoinVoiceChannelEvent event){
-        return event.getMessage().getChannel()
-                .map(channel -> new TextMessage(channel, voiceJoin, false));
+        return event.getChannel().map(channel -> new TextMessage(channel, voiceJoin, false));
     }
 }

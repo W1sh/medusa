@@ -11,6 +11,8 @@ public @interface Type {
 
     String prefix();
 
+    int minimumArguments() default 0;
+
     EventType eventType() default EventType.OTHER;
 
 }

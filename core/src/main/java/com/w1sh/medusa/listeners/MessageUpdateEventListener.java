@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class MessageUpdateEventListener implements EventListener<MessageUpdateEvent> {
+public final class MessageUpdateEventListener implements DiscordEventListener<MessageUpdateEvent> {
 
     private final NoLinksRuleEnforcer noLinksRuleEnforcer;
     private final ChannelService channelService;

@@ -18,12 +18,11 @@ import java.util.regex.Pattern;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public final class NoLinksRuleEnforcer implements RuleEnforcer<String>{
+public final class NoLinksRuleEnforcer {
 
     private final Pattern p = Pattern.compile("^((https?|ftp)://|(www|ftp)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$");
     private final WarningService warningService;
 
-    @Override
     public Mono<Boolean> validate(String value) {
         return Mono.justOrEmpty(value)
                 .flatMapIterable(m -> Arrays.asList(m.split(" ")))
@@ -31,15 +30,14 @@ public final class NoLinksRuleEnforcer implements RuleEnforcer<String>{
                 .hasElements();
     }
 
-    @Override
     public Mono<Response> enforce(MessageCreateEvent event) {
-        String channelId = event.getMessage().getChannelId().asString();
-        String userId = event.getMember().map(member -> member.getId().asString()).orElse("");
-        String guildId = event.getGuildId().map(Snowflake::asString).orElse("");
+        final String channelId = event.getMessage().getChannelId().asString();
+        final String userId = event.getMember().map(member -> member.getId().asString()).orElse("");
+        final String guildId = event.getGuildId().map(Snowflake::asString).orElse("");
 
         final Warning warning = new Warning(userId, channelId, guildId);
 
-        Mono<Response> warningMessage = event.getMessage().getChannel()
+        final Mono<Response> warningMessage = event.getMessage().getChannel()
                 .map(chan -> new TextMessage(chan, String.format("**%s**, no links are allowed on this channel",
                         event.getMember().map(Member::getDisplayName).orElse("")), false));
 

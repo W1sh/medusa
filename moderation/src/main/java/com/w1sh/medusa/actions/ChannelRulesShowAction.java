@@ -6,8 +6,6 @@ import com.w1sh.medusa.data.responses.Embed;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.events.ChannelRulesEvent;
 import com.w1sh.medusa.services.ChannelService;
-import discord4j.common.util.Snowflake;
-import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.rest.util.Color;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -23,25 +21,21 @@ public final class ChannelRulesShowAction implements Function<ChannelRulesEvent,
 
     @Override
     public Mono<? extends Response> apply(ChannelRulesEvent event) {
-        final String guildId = event.getGuildId().map(Snowflake::asString).orElse("");
-
         final Mono<Channel> createChannelMono = Mono.defer(() -> event.getMessage().getChannel()
-                .map(chan -> new Channel(chan.getId().asString(), guildId)));
+                .map(chan -> new Channel(chan.getId().asString(), event.getGuildId())));
 
-        return event.getMessage().getChannel()
-                .ofType(GuildChannel.class)
+        return event.getGuildChannel()
                 .flatMap(channelService::findByChannel)
                 .switchIfEmpty(createChannelMono)
                 .flatMap(channelRules -> channelRulesEmbed(channelRules, event));
     }
 
     private Mono<Embed> channelRulesEmbed(Channel channelRule, ChannelRulesEvent event) {
-        return event.getMessage().getChannel()
-                .map(chan -> new Embed(chan, embedCreateSpec -> {
-                    embedCreateSpec.setColor(Color.GREEN);
-                    embedCreateSpec.setTitle("Channel Rules");
-                    embedCreateSpec.setDescription(rulesEmbedDescription(channelRule));
-                }));
+        return event.getChannel().map(chan -> new Embed(chan, embedCreateSpec -> {
+            embedCreateSpec.setColor(Color.GREEN);
+            embedCreateSpec.setTitle("Channel Rules");
+            embedCreateSpec.setDescription(rulesEmbedDescription(channelRule));
+        }));
     }
 
     private String rulesEmbedDescription(Channel channelRule){

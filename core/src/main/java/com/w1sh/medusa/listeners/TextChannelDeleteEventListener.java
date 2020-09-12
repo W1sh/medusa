@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public final class TextChannelDeleteEventListener implements EventListener<TextChannelDeleteEvent>{
+public final class TextChannelDeleteEventListener implements DiscordEventListener<TextChannelDeleteEvent> {
 
     private final ChannelService channelService;
     private final WarningService warningService;
