@@ -33,6 +33,7 @@ import reactor.retry.Retry;
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Modifier;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,8 +42,10 @@ import java.util.stream.Collectors;
 @Component
 public final class Instance {
 
+    public static final Instant START_INSTANCE = Instant.now();
+
     private final EventFactory eventFactory;
-    private final EventPublisher eventPublisher;
+    private final CustomEventPublisher customEventPublisher;
     private final DiscordEventPublisher discordEventPublisher;
     private final List<Validator> validators;
     private final Set<Class<? extends Event>> events;
@@ -51,10 +54,10 @@ public final class Instance {
     @Value("${discord.token}")
     private String token;
 
-    public Instance(EventFactory eventFactory, EventPublisher eventPublisher, DiscordEventPublisher discordEventPublisher,
+    public Instance(EventFactory eventFactory, CustomEventPublisher customEventPublisher, DiscordEventPublisher discordEventPublisher,
                     List<Validator> validators, Executor executor, Reflections reflections) {
         this.eventFactory = eventFactory;
-        this.eventPublisher = eventPublisher;
+        this.customEventPublisher = customEventPublisher;
         this.discordEventPublisher = discordEventPublisher;
         this.validators = validators;
         this.executor = executor;
@@ -99,17 +102,17 @@ public final class Instance {
     }
 
     private void initDispatcher(GatewayDiscordClient gateway) {
-        final Publisher<?> onReady = gateway.on(ReadyEvent.class, discordEventPublisher::publishEvent);
+        final Publisher<?> onReady = gateway.on(ReadyEvent.class, discordEventPublisher::publish);
 
-        final Publisher<?> onGuildDelete = gateway.on(GuildDeleteEvent.class, discordEventPublisher::publishEvent);
+        final Publisher<?> onGuildDelete = gateway.on(GuildDeleteEvent.class, discordEventPublisher::publish);
 
-        final Publisher<?> onMemberLeave = gateway.on(MemberLeaveEvent.class, discordEventPublisher::publishEvent);
+        final Publisher<?> onMemberLeave = gateway.on(MemberLeaveEvent.class, discordEventPublisher::publish);
 
-        final Publisher<?> onTextChannelCreate = gateway.on(TextChannelCreateEvent.class, discordEventPublisher::publishEvent);
+        final Publisher<?> onTextChannelCreate = gateway.on(TextChannelCreateEvent.class, discordEventPublisher::publish);
 
-        final Publisher<?> onTextChannelDelete = gateway.on(TextChannelDeleteEvent.class, discordEventPublisher::publishEvent);
+        final Publisher<?> onTextChannelDelete = gateway.on(TextChannelDeleteEvent.class, discordEventPublisher::publish);
 
-        final Publisher<?> onMessageUpdate = gateway.on(MessageUpdateEvent.class, discordEventPublisher::publishEvent);
+        final Publisher<?> onMessageUpdate = gateway.on(MessageUpdateEvent.class, discordEventPublisher::publish);
 
         final Publisher<?> onMessageCreate = gateway.on(MessageCreateEvent.class)
                 .filter(event -> event.getClass().equals(MessageCreateEvent.class) && event.getMember().map(user -> !user.isBot()).orElse(false))
@@ -119,7 +122,7 @@ public final class Instance {
                         .flatMap(validator -> validator.validate(ev))
                         .all(bool -> true)
                         .defaultIfEmpty(true))
-                .flatMap(eventPublisher::publishEvent);
+                .flatMap(customEventPublisher::publish);
 
         final Publisher<?> onDisconnect = gateway.onDisconnect()
                 .doOnTerminate(() -> log.info("Client disconnected"));
@@ -135,5 +138,29 @@ public final class Instance {
             log.info("Registering new event of type <{}>", clazz.getSimpleName());
         }
         log.info("Found and registered {} events", events.size());
+    }
+
+    public static String getUptime(){
+        final long seconds = Duration.between(START_INSTANCE, Instant.now()).getSeconds();
+        final long absSeconds = Math.abs(seconds);
+        String positive;
+        if(absSeconds >= 3600){
+            positive = String.format("%d %s, %d %s and %d %s",
+                    absSeconds / 3600,
+                    absSeconds / 3600 > 1 ? "hours" : "hour",
+                    (absSeconds % 3600) / 60,
+                    ((absSeconds % 3600) / 60) > 1 ? "minutes" : "minute",
+                    absSeconds % 60,
+                    absSeconds % 60 > 1 ? "seconds" : "second");
+        } else if (absSeconds >= 60){
+            positive = String.format("%d %s and %d %s",
+                    (absSeconds % 3600) / 60,
+                    ((absSeconds % 3600) / 60) > 1 ? "minutes" : "minute",
+                    absSeconds % 60,
+                    absSeconds % 60 > 1 ? "seconds" : "second");
+        } else {
+            positive = String.format("%d %s", absSeconds % 60, absSeconds % 60 > 1 ? "seconds" : "second");
+        }
+        return positive;
     }
 }
