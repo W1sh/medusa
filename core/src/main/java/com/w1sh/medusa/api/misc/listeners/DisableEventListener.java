@@ -1,7 +1,7 @@
 package com.w1sh.medusa.api.misc.listeners;
 
 import com.w1sh.medusa.api.misc.events.DisableEvent;
-import com.w1sh.medusa.core.EventPublisher;
+import com.w1sh.medusa.core.CustomEventPublisher;
 import com.w1sh.medusa.data.events.EventType;
 import com.w1sh.medusa.data.events.Type;
 import com.w1sh.medusa.data.responses.TextMessage;
@@ -19,12 +19,12 @@ import java.util.Set;
 @Component
 public final class DisableEventListener implements CustomEventListener<DisableEvent> {
 
-    private final EventPublisher eventPublisher;
+    private final CustomEventPublisher customEventPublisher;
     private final ResponseDispatcher responseDispatcher;
     private final Set<Class<?>> classes;
 
-    public DisableEventListener(EventPublisher eventPublisher, ResponseDispatcher responseDispatcher, Reflections reflections) {
-        this.eventPublisher = eventPublisher;
+    public DisableEventListener(CustomEventPublisher customEventPublisher, ResponseDispatcher responseDispatcher, Reflections reflections) {
+        this.customEventPublisher = customEventPublisher;
         this.responseDispatcher = responseDispatcher;
         this.classes = reflections.getTypesAnnotatedWith(Type.class);
     }
@@ -61,13 +61,13 @@ public final class DisableEventListener implements CustomEventListener<DisableEv
                 .map(channel -> new TextMessage(channel, String.format("Failed to disable event with prefix **%s**", prefix), false)));
 
         return Mono.justOrEmpty(clazz)
-                .filter(eventPublisher::removeListener)
+                .filter(customEventPublisher::removeListener)
                 .hasElement()
                 .transform(Reactive.ifElse(bool -> disabledMessage, bool -> errorMessage));
     }
 
     private Mono<TextMessage> disableEvent(EventType type, DisableEvent event) {
-        final var content = eventPublisher.removeListener(type) ? String.format("Disabled all events of type **%s**", type.name()) :
+        final var content = customEventPublisher.removeListener(type) ? String.format("Disabled all events of type **%s**", type.name()) :
                 String.format("Failed to disable events of type **%s**", type.name());
 
         return event.getChannel().map(channel -> new TextMessage(channel, content, false));

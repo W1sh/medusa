@@ -25,7 +25,6 @@ public final class PermissionsValidator implements Validator {
 
     @Override
     public Mono<Boolean> validate(Event event) {
-
         return event.getGuildChannel()
                 .transform(flatZipWith(Mono.just(event.getClient().getSelfId()), this::hasPermissions))
                 .flatMap(effPermissions -> Flux.fromIterable(event.getClass().getAnnotation(Type.class).eventType().getPermissions())
@@ -35,8 +34,7 @@ public final class PermissionsValidator implements Validator {
     }
 
     private Mono<TextMessage> createErrorMessage(Event event){
-        return event.getChannel()
-                .map(channel -> new TextMessage(channel, ":x: I do not have permission to do that", false))
+        return event.getChannel().map(channel -> new TextMessage(channel, ":x: I do not have permission to do that", false))
                 .doOnNext(textMessage -> {
                     log.error("Permissions validation failed, event discarded");
                     responseDispatcher.queue(textMessage);

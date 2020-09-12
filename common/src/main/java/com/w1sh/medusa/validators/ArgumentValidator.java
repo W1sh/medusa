@@ -29,9 +29,8 @@ public final class ArgumentValidator implements Validator {
     }
 
     private Mono<TextMessage> createErrorMessage(Event event){
-        return event.getChannel()
-                .map(channel -> new TextMessage(channel,
-                        ":x: Invalid number of arguments, expected " + event.getClass().getAnnotation(Type.class).minimumArguments() + " arguments", false))
+        return event.getChannel().map(channel -> new TextMessage(channel,
+                ":x: Invalid number of arguments, expected " + event.getClass().getAnnotation(Type.class).minimumArguments() + " arguments", false))
                 .doOnNext(textMessage -> {
                     log.error("Invalid number of arguments received, event discarded");
                     responseDispatcher.queue(textMessage);
