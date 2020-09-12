@@ -1,5 +1,7 @@
 package com.w1sh.medusa.data;
 
+import discord4j.common.util.Snowflake;
+import discord4j.core.event.domain.message.MessageCreateEvent;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -25,9 +27,9 @@ public class Warning {
     @CreatedDate
     private Instant createdOn;
 
-    public Warning(String userId, String channelId, String guildId) {
-        this.userId = userId;
-        this.channelId = channelId;
-        this.guildId = guildId;
+    public Warning(MessageCreateEvent event) {
+        this.channelId = event.getMessage().getChannelId().asString();
+        this.userId = event.getMember().map(member -> member.getId().asString()).orElse("");
+        this.guildId = event.getGuildId().map(Snowflake::asString).orElse("");
     }
 }

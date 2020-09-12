@@ -13,7 +13,6 @@ import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.gateway.ShardInfo;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -41,7 +40,6 @@ public class Event {
 
     private String guildId;
 
-    @CreatedDate
     private Instant createdOn;
 
     @Transient
@@ -67,6 +65,7 @@ public class Event {
         this.member = event.getMember().orElse(null);
         this.client = event.getClient();
         this.arguments = new ArrayList<>();
+        this.createdOn = Instant.now();
 
         Objects.requireNonNull(userId);
         Objects.requireNonNull(guildId);
