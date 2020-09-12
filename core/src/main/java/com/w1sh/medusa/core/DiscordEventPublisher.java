@@ -36,7 +36,7 @@ public final class DiscordEventPublisher implements EventPublisher<Event> {
 
         final var listener = listenerMap.get(event.getClass());
         return Mono.justOrEmpty(event)
-                .filter(e -> listener != null)
+                .filter(Objects::nonNull)
                 .flatMap(listener::executeIfAssignable);
     }
 

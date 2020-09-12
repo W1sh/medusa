@@ -8,6 +8,7 @@ import com.w1sh.medusa.data.events.Type;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.listeners.CustomEventListener;
 import com.w1sh.medusa.listeners.EventListener;
+import com.w1sh.medusa.services.EventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
@@ -30,6 +31,7 @@ public final class CustomEventPublisher implements EventPublisher<Event>{
     private final Map<Class<? extends Event>, EventListener<? extends Event, Event>> listenerMap = new ConcurrentHashMap<>();
     private final ApplicationContext applicationContext;
     private final ResponseDispatcher responseDispatcher;
+    private final EventService eventService;
 
     @PostConstruct
     private void init() {
@@ -81,7 +83,8 @@ public final class CustomEventPublisher implements EventPublisher<Event>{
     private <T extends Event> Mono<Void> publishEvent(final T event) {
         final var listener = listenerMap.get(event.getClass());
         return Mono.justOrEmpty(event)
-                .filter(e -> listener != null)
+                .doOnSuccess(eventService::save)
+                .filter(Objects::nonNull)
                 .flatMap(listener::executeIfAssignable);
     }
 }
