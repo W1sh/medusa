@@ -111,35 +111,35 @@
             <dependency>
                 <groupId>com.w1sh</groupId>
                 <artifactId>core</artifactId>
-                <version>${version}</version>
+                <version>${project.version}</version>
                 <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>com.w1sh</groupId>
                 <artifactId>audio</artifactId>
-                <version>${version}</version>
+                <version>${project.version}</version>
                 <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>com.w1sh</groupId>
                 <artifactId>mtg</artifactId>
-                <version>${version}</version>
+                <version>${project.version}</version>
                 <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>com.w1sh</groupId>
                 <artifactId>common</artifactId>
-                <version>${version}</version>
+                <version>${project.version}</version>
                 <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>com.w1sh</groupId>
                 <artifactId>moderation</artifactId>
-                <version>${version}</version>
+                <version>${project.version}</version>
                 <scope>compile</scope>
             </dependency>
         </dependencies>
