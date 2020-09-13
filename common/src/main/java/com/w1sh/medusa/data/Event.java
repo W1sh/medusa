@@ -71,11 +71,6 @@ public class Event {
         Objects.requireNonNull(guildId);
     }
 
-    public Event(MessageCreateEvent event, List<String> arguments) {
-        this(event);
-        this.arguments = arguments;
-    }
-
     /**
      * Gets the {@link MessageChannel} the {@link Message} was created in, if present.
      * This may not be available if the {@code Message} was sent in a private channel.

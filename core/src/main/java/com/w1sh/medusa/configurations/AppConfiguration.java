@@ -10,6 +10,7 @@ import org.reflections.Reflections;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.data.mongodb.ReactiveMongoDatabaseFactory;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
@@ -46,6 +47,13 @@ public class AppConfiguration {
     @Bean
     public ReactiveMongoTemplate reactiveMongoTemplate() {
         return new ReactiveMongoTemplate(reactiveMongoDatabaseFactory());
+    }
+
+    @Bean
+    public ResourceBundleMessageSource messageSource() {
+        final var source = new ResourceBundleMessageSource();
+        source.setBasenames("messages");
+        return source;
     }
 
     @Bean

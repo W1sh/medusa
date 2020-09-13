@@ -1,7 +1,7 @@
 package com.w1sh.medusa;
 
 import com.w1sh.medusa.core.Instance;
-import com.w1sh.medusa.utils.ResponseUtils;
+import com.w1sh.medusa.services.MessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -15,7 +15,7 @@ import java.time.Instant;
 import java.util.Date;
 
 @SpringBootApplication
-@PropertySource(value = "classpath:text-constants.properties")
+@PropertySource(value = "classpath:messages_en.properties")
 public class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
@@ -29,7 +29,7 @@ public class Main {
 
     @PreDestroy
     public void onDestroy(){
-        String duration = ResponseUtils.formatDuration(Duration.between(Instance.START_INSTANCE, Instant.now()).toMillis());
+        String duration = MessageService.formatDuration(Duration.between(Instance.START_INSTANCE, Instant.now()).toMillis());
         logger.info("Closing Medusa - Alive for {}", duration);
     }
 }

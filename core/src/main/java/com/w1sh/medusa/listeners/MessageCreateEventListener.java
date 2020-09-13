@@ -1,11 +1,10 @@
 package com.w1sh.medusa.listeners;
 
-import com.w1sh.medusa.data.responses.Response;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.rules.BlocklistRuleEnforcer;
 import com.w1sh.medusa.rules.NoLinksRuleEnforcer;
 import com.w1sh.medusa.services.ChannelService;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.GuildChannel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -17,16 +16,15 @@ public final class MessageCreateEventListener implements DiscordEventListener<Me
 
     private final NoLinksRuleEnforcer noLinksRuleEnforcer;
     private final BlocklistRuleEnforcer blocklistRuleEnforcer;
-    private final ResponseDispatcher responseDispatcher;
     private final ChannelService channelService;
 
     @Override
     public Mono<Void> execute(MessageCreateEvent event) {
-        final Mono<Response> noLinksRuleMono = Mono.defer(() -> Mono.justOrEmpty(event.getMessage().getContent())
+        final Mono<Message> noLinksRuleMono = Mono.defer(() -> Mono.justOrEmpty(event.getMessage().getContent())
                 .filterWhen(noLinksRuleEnforcer::validate)
                 .flatMap(ignored -> noLinksRuleEnforcer.enforce(event)));
 
-        final Mono<Response> blocklistRuleMono = Mono.defer(() -> Mono.justOrEmpty(event)
+        final Mono<Message> blocklistRuleMono = Mono.defer(() -> Mono.justOrEmpty(event)
                 .filterWhen(blocklistRuleEnforcer::validate)
                 .flatMap(ignored -> blocklistRuleEnforcer.enforce(event)));
 
@@ -36,8 +34,6 @@ public final class MessageCreateEventListener implements DiscordEventListener<Me
                 .flatMap(channelService::findByChannel)
                 .then(noLinksRuleMono)
                 .switchIfEmpty(blocklistRuleMono)
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
                 .then();
     }
 }

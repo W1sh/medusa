@@ -2,9 +2,10 @@ package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.data.LoopAction;
-import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.data.responses.MessageEnum;
 import com.w1sh.medusa.events.LoopEvent;
+import com.w1sh.medusa.services.MessageService;
+import discord4j.core.object.entity.Message;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -14,7 +15,7 @@ import reactor.core.publisher.Mono;
 public final class LoopEventListener implements CustomEventListener<LoopEvent> {
 
     private final AudioConnectionManager audioConnectionManager;
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
 
     @Override
     public Mono<Void> execute(LoopEvent event) {
@@ -23,16 +24,12 @@ public final class LoopEventListener implements CustomEventListener<LoopEvent> {
         return audioConnectionManager.getAudioConnection(event)
                 .doOnNext(con -> con.getTrackScheduler().loop(loopAction))
                 .flatMap(la -> changeLoopModeMessage(event, loopAction))
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
                 .then();
     }
 
-    private Mono<TextMessage> changeLoopModeMessage(LoopEvent event, LoopAction loopAction){
-        final String template = LoopAction.UNKNOWN.equals(loopAction) ?
-                "Unknown loop mode, try one of the following: **TRACK**, **QUEUE**, **OFF**" :
-                String.format("Changed loop mode to **%s**!", loopAction);
-
-        return event.getChannel().map(chan -> new TextMessage(chan, template, false));
+    private Mono<Message> changeLoopModeMessage(LoopEvent event, LoopAction loopAction){
+        if (!LoopAction.UNKNOWN.equals(loopAction)) {
+            return messageService.send(event.getChannel(), MessageEnum.LOOP_SUCCESS);
+        } else return messageService.send(event.getChannel(), MessageEnum.LOOP_ERROR);
     }
 }
