@@ -4,7 +4,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.events.QueueTrackEvent;
 import com.w1sh.medusa.services.MessageService;
-import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.rest.util.Color;
 import lombok.RequiredArgsConstructor;
@@ -45,10 +44,10 @@ public final class QueueTrackListener implements CustomEventListener<QueueTrackE
                                 playingTrack.getInfo().author,
                                 playingTrack.getInfo().title,
                                 playingTrack.getInfo().uri,
-                                ResponseUtils.formatDuration(playingTrack.getInfo().length)), true);
+                                MessageService.formatDuration(playingTrack.getInfo().length)), true);
             }
             int queuePosition = 0;
-            if(!trackQueue.isEmpty()) embedCreateSpec.addField(ResponseUtils.ZERO_WIDTH_SPACE,
+            if(!trackQueue.isEmpty()) embedCreateSpec.addField(MessageService.ZERO_WIDTH_SPACE,
                     ":arrow_down: **Queue** :arrow_down:", false);
             for (AudioTrack track : trackQueue) {
                 if(queuePosition < 5) {
@@ -57,11 +56,11 @@ public final class QueueTrackListener implements CustomEventListener<QueueTrackE
                             queuePosition,
                             track.getInfo().title,
                             track.getInfo().uri,
-                            ResponseUtils.formatDuration(track.getInfo().length)), false);
+                            MessageService.formatDuration(track.getInfo().length)), false);
                 } else break;
             }
             embedCreateSpec.setFooter(String.format("%d queued tracks | Queue duration: %s",
-                    trackQueue.size(), ResponseUtils.formatDuration(queueDuration)), null);
+                    trackQueue.size(), MessageService.formatDuration(queueDuration)), null);
         };
     }
 }

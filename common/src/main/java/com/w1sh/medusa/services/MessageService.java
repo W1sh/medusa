@@ -22,11 +22,16 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 @Slf4j
 @Component
 public class MessageService {
+
+    public static final String BULLET = "\u2022";
+    public static final String ZERO_WIDTH_SPACE = "\u200E";
+
 
     private final Map<String, SortedSet<Response>> responseMap = new ConcurrentHashMap<>();
     private final FluxSink<Response> fluxSink;
@@ -97,4 +102,8 @@ public class MessageService {
         return messageSource.getMessage(messageKey, args, Locale.ENGLISH);
     }
 
+    public static String formatDuration(Long duration){
+        return String.format("%02d:%02d", TimeUnit.MILLISECONDS.toMinutes(duration),
+                TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration)));
+    }
 }

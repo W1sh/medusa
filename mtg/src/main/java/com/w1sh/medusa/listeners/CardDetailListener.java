@@ -7,7 +7,6 @@ import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.services.CardService;
 import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.utils.CardUtils;
-import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.core.object.entity.Message;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.rest.util.Color;
@@ -50,10 +49,10 @@ public final class CardDetailListener implements CustomEventListener<CardDetailE
                     card.getManaCost()));
             embedCreateSpec.addField(String.format("**%s**", card.getTypeLine()),
                     String.format("%s%n*%s*",
-                            card.getOracleText() == null ? ResponseUtils.ZERO_WIDTH_SPACE : card.getOracleText(),
-                            card.getFlavorText() == null ? ResponseUtils.ZERO_WIDTH_SPACE : card.getFlavorText()), false);
+                            card.getOracleText() == null ? MessageService.ZERO_WIDTH_SPACE : card.getOracleText(),
+                            card.getFlavorText() == null ? MessageService.ZERO_WIDTH_SPACE : card.getFlavorText()), false);
             if (card.getPower() != null || card.getToughness() != null) {
-                embedCreateSpec.addField(ResponseUtils.ZERO_WIDTH_SPACE,
+                embedCreateSpec.addField(MessageService.ZERO_WIDTH_SPACE,
                         String.format("**%s/%s**",
                                 card.getPower(),
                                 card.getToughness()), true);

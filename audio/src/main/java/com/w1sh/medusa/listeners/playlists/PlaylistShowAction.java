@@ -4,7 +4,6 @@ import com.w1sh.medusa.data.Playlist;
 import com.w1sh.medusa.events.PlaylistEvent;
 import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.services.PlaylistService;
-import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.core.object.entity.Message;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.rest.util.Color;
@@ -39,9 +38,9 @@ public final class PlaylistShowAction implements Function<PlaylistEvent, Mono<Me
                     event.getNickname()));
             for (Playlist playlist : playlists) {
                 embedCreateSpec.addField(String.format("**%s**", playlist.getName()), String.format("** %s %d track(s)** | %s",
-                        ResponseUtils.BULLET,
+                        MessageService.BULLET,
                         playlist.getTracks() != null ? playlist.getTracks().size() : 0,
-                        ResponseUtils.formatDuration(playlist.getFullDuration())), false);
+                        MessageService.formatDuration(playlist.getFullDuration())), false);
             }
         };
     }

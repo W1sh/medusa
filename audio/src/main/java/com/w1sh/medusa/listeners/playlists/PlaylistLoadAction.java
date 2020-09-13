@@ -7,7 +7,6 @@ import com.w1sh.medusa.data.responses.MessageEnum;
 import com.w1sh.medusa.events.PlaylistEvent;
 import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.services.PlaylistService;
-import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.core.object.entity.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +46,6 @@ public final class PlaylistLoadAction implements Function<PlaylistEvent, Mono<Me
         final Long duration = tracks.stream().map(Track::getDuration).reduce(Long::sum).orElse(0L);
 
         return messageService.send(event.getChannel(), MessageEnum.PLAYLIST_LOAD_SUCCESS,
-                String.valueOf(tracks.size()), ResponseUtils.formatDuration(duration));
+                String.valueOf(tracks.size()), MessageService.formatDuration(duration));
     }
 }

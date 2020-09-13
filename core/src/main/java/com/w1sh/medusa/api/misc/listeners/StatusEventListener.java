@@ -5,7 +5,6 @@ import com.w1sh.medusa.core.Instance;
 import com.w1sh.medusa.data.Event;
 import com.w1sh.medusa.listeners.CustomEventListener;
 import com.w1sh.medusa.services.MessageService;
-import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.rest.util.Color;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +42,7 @@ public final class StatusEventListener implements CustomEventListener<StatusEven
                     embedCreateSpec.addField("Memory Usage", String.format("%d MB / %d MB",
                             numberAsMegabytes(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()),
                             numberAsMegabytes(Runtime.getRuntime().totalMemory())), true);
-                    embedCreateSpec.addField(ResponseUtils.ZERO_WIDTH_SPACE, ResponseUtils.ZERO_WIDTH_SPACE, true);
+                    embedCreateSpec.addField(MessageService.ZERO_WIDTH_SPACE, MessageService.ZERO_WIDTH_SPACE, true);
                     embedCreateSpec.addField("Guilds", String.format("%d (%d Avg Users/Guild)",
                             tuple.getT1(), tuple.getT2()/tuple.getT1()), true);
                     embedCreateSpec.addField("Users", tuple.getT2().toString(), true);

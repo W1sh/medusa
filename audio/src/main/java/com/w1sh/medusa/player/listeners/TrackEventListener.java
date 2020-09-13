@@ -8,7 +8,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import com.w1sh.medusa.AudioConnection;
 import com.w1sh.medusa.data.responses.MessageEnum;
 import com.w1sh.medusa.services.MessageService;
-import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.core.object.entity.Message;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.rest.util.Color;
@@ -51,7 +50,7 @@ public final class TrackEventListener extends AudioEventAdapter {
                         String.format("[%s](%s) | %s",
                                 track.getInfo().title,
                                 track.getInfo().uri,
-                                ResponseUtils.formatDuration(track.getInfo().length)), false);
+                                MessageService.formatDuration(track.getInfo().length)), false);
 
         messageService.send(Mono.just(audioConnection.getMessageChannel()), embedCreateSpec)
                 .doOnSuccess(e -> log.info("Starting track <{}> in guild with id <{}>", track.getInfo().title, audioConnection.getGuildId()))
@@ -86,11 +85,11 @@ public final class TrackEventListener extends AudioEventAdapter {
     public void onTrackLoad(AudioTrack track){
         final Consumer<EmbedCreateSpec> embedCreateSpec = spec -> spec.setTitle(":ballot_box_with_check:\tAdded to queue")
                 .setColor(Color.GREEN)
-                .addField(ResponseUtils.ZERO_WIDTH_SPACE, String.format("**%s**%n[%s](%s) | %s",
+                .addField(MessageService.ZERO_WIDTH_SPACE, String.format("**%s**%n[%s](%s) | %s",
                         track.getInfo().author,
                         track.getInfo().title,
                         track.getInfo().uri,
-                        ResponseUtils.formatDuration(track.getInfo().length)), true);
+                        MessageService.formatDuration(track.getInfo().length)), true);
 
         messageService.send(Mono.just(audioConnection.getMessageChannel()), embedCreateSpec)
                 .doOnSuccess(e -> log.info("Loaded track <{}> in guild with id <{}>", track.getInfo().title, audioConnection.getGuildId()))
