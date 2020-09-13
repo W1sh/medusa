@@ -144,35 +144,35 @@
 
             <dependency>
                 <groupId>com.w1sh</groupId>
-                <artifactId>core</artifactId>
+                <artifactId>medusa-core</artifactId>
                 <version>${project.version}</version>
                 <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>com.w1sh</groupId>
-                <artifactId>audio</artifactId>
+                <artifactId>medusa-audio</artifactId>
                 <version>${project.version}</version>
                 <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>com.w1sh</groupId>
-                <artifactId>mtg</artifactId>
+                <artifactId>medusa-mtg</artifactId>
                 <version>${project.version}</version>
                 <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>com.w1sh</groupId>
-                <artifactId>common</artifactId>
+                <artifactId>medusa-common</artifactId>
                 <version>${project.version}</version>
                 <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>com.w1sh</groupId>
-                <artifactId>moderation</artifactId>
+                <artifactId>medusa-moderation</artifactId>
                 <version>${project.version}</version>
                 <scope>compile</scope>
             </dependency>

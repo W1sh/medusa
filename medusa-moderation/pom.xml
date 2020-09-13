@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>moderation</artifactId>
+    <artifactId>medusa-moderation</artifactId>
 
     <dependencies>
         <dependency>
@@ -34,7 +34,7 @@
 
         <dependency>
             <groupId>com.w1sh</groupId>
-            <artifactId>common</artifactId>
+            <artifactId>medusa-common</artifactId>
         </dependency>
     </dependencies>
 </project>
