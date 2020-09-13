@@ -4,7 +4,7 @@ import com.w1sh.medusa.api.misc.events.StatusEvent;
 import com.w1sh.medusa.core.Instance;
 import com.w1sh.medusa.data.Event;
 import com.w1sh.medusa.data.responses.Embed;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.listeners.CustomEventListener;
 import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.core.object.entity.channel.MessageChannel;
@@ -21,14 +21,14 @@ public final class StatusEventListener implements CustomEventListener<StatusEven
     @Value("${medusa.version}")
     private String version;
 
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
 
     @Override
     public Mono<Void> execute(StatusEvent event) {
         return event.getChannel()
                 .flatMap(messageChannel -> createStatusEmbed(messageChannel, event))
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
+                .doOnNext(messageService::queue)
+                .doAfterTerminate(messageService::flush)
                 .then();
     }
 

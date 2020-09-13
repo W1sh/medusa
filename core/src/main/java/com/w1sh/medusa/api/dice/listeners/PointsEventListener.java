@@ -3,7 +3,7 @@ package com.w1sh.medusa.api.dice.listeners;
 import com.w1sh.medusa.api.dice.events.PointsEvent;
 import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.listeners.CustomEventListener;
 import com.w1sh.medusa.rules.NoGamblingRuleEnforcer;
 import com.w1sh.medusa.services.UserService;
@@ -18,7 +18,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public final class PointsEventListener implements CustomEventListener<PointsEvent> {
 
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
     private final UserService userService;
     private final NoGamblingRuleEnforcer noGamblingRuleEnforcer;
 
@@ -29,13 +29,13 @@ public final class PointsEventListener implements CustomEventListener<PointsEven
                 .switchIfEmpty(Flux.just(event.getUserId()))
                 .flatMap(user -> userService.findByUserIdAndGuildId(user, event.getGuildId()))
                 .flatMap(user -> createUserPointsMessage(user, event))
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
+                .doOnNext(messageService::queue)
+                .doAfterTerminate(messageService::flush)
                 .then();
 
         Mono<Void> noGamblingResponse = noGamblingRuleEnforcer.enforce(event)
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
+                .doOnNext(messageService::queue)
+                .doAfterTerminate(messageService::flush)
                 .then();
 
         return event.getGuildChannel()

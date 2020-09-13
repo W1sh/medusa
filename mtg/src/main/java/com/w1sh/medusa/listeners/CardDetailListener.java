@@ -3,7 +3,7 @@ package com.w1sh.medusa.listeners;
 import com.w1sh.medusa.data.events.InlineEvent;
 import com.w1sh.medusa.data.responses.Embed;
 import com.w1sh.medusa.data.responses.Response;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.events.CardDetailEvent;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.services.CardService;
@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono;
 public final class CardDetailListener implements CustomEventListener<CardDetailEvent> {
 
     private final CardService cardService;
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
 
     @Override
     public Mono<Void> execute(CardDetailEvent event) {
@@ -28,8 +28,8 @@ public final class CardDetailListener implements CustomEventListener<CardDetailE
                 .flatMap(ev -> cardService.getCardByName(ev.getInlineArgument()))
                 .flatMap(tuple -> this.createEmbed(tuple, event))
                 .switchIfEmpty(notFoundMessage(event))
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
+                .doOnNext(messageService::queue)
+                .doAfterTerminate(messageService::flush)
                 .then();
     }
 

@@ -2,7 +2,7 @@ package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.events.ForwardTrackEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ public final class ForwardTrackListener implements CustomEventListener<ForwardTr
 
     private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
     private final AudioConnectionManager audioConnectionManager;
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
 
     @PostConstruct
     public void init(){
@@ -55,7 +55,7 @@ public final class ForwardTrackListener implements CustomEventListener<ForwardTr
     private Mono<TextMessage> createErrorMessage(ForwardTrackEvent event){
         return event.getChannel()
                 .map(channel -> new TextMessage(channel, ":x: Invalid argument received, the argument must be of type **minutes : seconds**", false))
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush);
+                .doOnNext(messageService::queue)
+                .doAfterTerminate(messageService::flush);
     }
 }

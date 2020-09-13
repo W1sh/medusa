@@ -9,7 +9,7 @@ import com.w1sh.medusa.AudioConnection;
 import com.w1sh.medusa.data.responses.Embed;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.rest.util.Color;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ import java.util.function.Function;
 public final class TrackEventListener extends AudioEventAdapter {
 
     private final AudioConnection audioConnection;
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
 
     @Override
     public void onPlayerPause(AudioPlayer player) {
@@ -158,8 +158,8 @@ public final class TrackEventListener extends AudioEventAdapter {
     }
 
     public <A extends Response> Function<Mono<A>, Mono<A>> dispatchElastic() {
-        return pipeline -> pipeline.doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
+        return pipeline -> pipeline.doOnNext(messageService::queue)
+                .doAfterTerminate(messageService::flush)
                 .subscribeOn(Schedulers.elastic());
     }
 

@@ -3,7 +3,7 @@ package com.w1sh.medusa.api.misc.listeners;
 import com.w1sh.medusa.api.misc.events.ChangePrefixEvent;
 import com.w1sh.medusa.core.EventFactory;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.listeners.CustomEventListener;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public final class ChangePrefixEventListener implements CustomEventListener<ChangePrefixEvent> {
 
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
     private final EventFactory eventFactory;
 
     @Override
@@ -25,8 +25,8 @@ public final class ChangePrefixEventListener implements CustomEventListener<Chan
                 .map(ev -> ev.getArguments().get(0))
                 .doOnNext(eventFactory::setPrefix)
                 .flatMap(prefix -> changePrefixSuccess(prefix, event))
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
+                .doOnNext(messageService::queue)
+                .doAfterTerminate(messageService::flush)
                 .flatMap(t -> changePrefix(event))
                 .then();
     }

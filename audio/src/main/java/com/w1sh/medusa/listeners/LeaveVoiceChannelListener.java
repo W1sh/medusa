@@ -2,7 +2,7 @@ package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.events.LeaveVoiceChannelEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,18 +15,18 @@ import static com.w1sh.medusa.utils.Reactive.ifElse;
 @RequiredArgsConstructor
 public final class LeaveVoiceChannelListener implements CustomEventListener<LeaveVoiceChannelEvent> {
 
-    @Value("${event.voice.leave}")
+    @Value("${message.event.voice.leave}")
     private String voiceLeave;
 
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
     private final AudioConnectionManager audioConnectionManager;
 
     @Override
     public Mono<Void> execute(LeaveVoiceChannelEvent event) {
         return audioConnectionManager.leaveVoiceChannel(event.getGuildId())
                 .transform(ifElse(b -> createLeaveSuccessMessage(event), b-> createNoVoiceStateErrorMessage(event)))
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
+                .doOnNext(messageService::queue)
+                .doAfterTerminate(messageService::flush)
                 .then();
     }
 

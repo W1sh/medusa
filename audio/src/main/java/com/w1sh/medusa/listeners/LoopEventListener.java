@@ -3,7 +3,7 @@ package com.w1sh.medusa.listeners;
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.data.LoopAction;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.events.LoopEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 public final class LoopEventListener implements CustomEventListener<LoopEvent> {
 
     private final AudioConnectionManager audioConnectionManager;
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
 
     @Override
     public Mono<Void> execute(LoopEvent event) {
@@ -23,8 +23,8 @@ public final class LoopEventListener implements CustomEventListener<LoopEvent> {
         return audioConnectionManager.getAudioConnection(event)
                 .doOnNext(con -> con.getTrackScheduler().loop(loopAction))
                 .flatMap(la -> changeLoopModeMessage(event, loopAction))
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
+                .doOnNext(messageService::queue)
+                .doAfterTerminate(messageService::flush)
                 .then();
     }
 

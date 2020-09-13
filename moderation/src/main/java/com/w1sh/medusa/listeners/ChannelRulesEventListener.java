@@ -5,7 +5,7 @@ import com.w1sh.medusa.actions.ChannelRulesDeactivateAction;
 import com.w1sh.medusa.actions.ChannelRulesShowAction;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.events.ChannelRulesEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -18,13 +18,13 @@ public final class ChannelRulesEventListener implements CustomEventListener<Chan
     private final ChannelRulesShowAction channelRulesShowAction;
     private final ChannelRulesActivateAction channelRulesActivateAction;
     private final ChannelRulesDeactivateAction channelRulesDeactivateAction;
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
 
     @Override
     public Mono<Void> execute(ChannelRulesEvent event) {
         return applyAction(event)
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
+                .doOnNext(messageService::queue)
+                .doAfterTerminate(messageService::flush)
                 .then();
     }
 

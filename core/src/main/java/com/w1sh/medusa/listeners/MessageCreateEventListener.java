@@ -1,7 +1,7 @@
 package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.data.responses.Response;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.rules.BlocklistRuleEnforcer;
 import com.w1sh.medusa.rules.NoLinksRuleEnforcer;
 import com.w1sh.medusa.services.ChannelService;
@@ -17,7 +17,7 @@ public final class MessageCreateEventListener implements DiscordEventListener<Me
 
     private final NoLinksRuleEnforcer noLinksRuleEnforcer;
     private final BlocklistRuleEnforcer blocklistRuleEnforcer;
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
     private final ChannelService channelService;
 
     @Override
@@ -36,8 +36,8 @@ public final class MessageCreateEventListener implements DiscordEventListener<Me
                 .flatMap(channelService::findByChannel)
                 .then(noLinksRuleMono)
                 .switchIfEmpty(blocklistRuleMono)
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
+                .doOnNext(messageService::queue)
+                .doAfterTerminate(messageService::flush)
                 .then();
     }
 }

@@ -4,7 +4,7 @@ import com.w1sh.medusa.api.dice.events.RouletteEvent;
 import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.listeners.CustomEventListener;
 import com.w1sh.medusa.rules.NoGamblingRuleEnforcer;
 import com.w1sh.medusa.services.UserService;
@@ -20,7 +20,7 @@ import java.util.Random;
 @RequiredArgsConstructor
 public final class RouletteEventListener implements CustomEventListener<RouletteEvent> {
 
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
     private final UserService userService;
     private final NoGamblingRuleEnforcer noGamblingRuleEnforcer;
     private final Random random;
@@ -40,8 +40,8 @@ public final class RouletteEventListener implements CustomEventListener<Roulette
         return event.getGuildChannel()
                 .flatMap(noGamblingRuleEnforcer::validate)
                 .transform(Reactive.ifElse(bool -> noGamblingRuleEnforcer.enforce(event), bool -> rouletteMessage))
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
+                .doOnNext(messageService::queue)
+                .doAfterTerminate(messageService::flush)
                 .then();
     }
 

@@ -3,7 +3,7 @@ package com.w1sh.medusa.listeners;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.data.responses.Embed;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.events.QueueTrackEvent;
 import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.rest.util.Color;
@@ -18,15 +18,15 @@ import java.util.Queue;
 public final class QueueTrackListener implements CustomEventListener<QueueTrackEvent> {
 
     private final AudioConnectionManager audioConnectionManager;
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
 
     @Override
     public Mono<Void> execute(QueueTrackEvent event) {
         return audioConnectionManager.getAudioConnection(event)
                 .map(con -> con.getTrackScheduler().getFullQueue())
                 .flatMap(queue -> createPlaylistEmbed(event, queue))
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
+                .doOnNext(messageService::queue)
+                .doAfterTerminate(messageService::flush)
                 .then();
     }
 

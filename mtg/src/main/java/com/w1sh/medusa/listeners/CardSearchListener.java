@@ -2,7 +2,7 @@ package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.data.events.InlineEvent;
 import com.w1sh.medusa.data.responses.Embed;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.events.CardSearchEvent;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.services.CardService;
@@ -19,7 +19,7 @@ import java.util.List;
 public final class CardSearchListener implements CustomEventListener<CardSearchEvent> {
 
     private final CardService cardService;
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
 
     @Override
     public Mono<Void> execute(CardSearchEvent event) {
@@ -28,8 +28,8 @@ public final class CardSearchListener implements CustomEventListener<CardSearchE
                 .flatMapMany(ev -> cardService.getCardsByName(ev.getInlineArgument()))
                 .collectList()
                 .flatMap(list -> createEmbed(list, event))
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
+                .doOnNext(messageService::queue)
+                .doAfterTerminate(messageService::flush)
                 .then();
     }
 

@@ -2,7 +2,7 @@ package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.AudioConnectionManager;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.events.JoinVoiceChannelEvent;
 import discord4j.core.object.entity.Member;
 import lombok.RequiredArgsConstructor;
@@ -14,10 +14,10 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public final class JoinVoiceChannelListener implements CustomEventListener<JoinVoiceChannelEvent> {
 
-    @Value("${event.voice.join}")
+    @Value("${message.event.voice.join}")
     private String voiceJoin;
 
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
     private final AudioConnectionManager audioConnectionManager;
 
     @Override
@@ -29,8 +29,8 @@ public final class JoinVoiceChannelListener implements CustomEventListener<JoinV
                 .flatMap(audioConnectionManager::joinVoiceChannel)
                 .flatMap(audioConnection -> createJoinSuccessMessage(event))
                 .switchIfEmpty(createEmptyVoiceStateErrorMessage(event))
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
+                .doOnNext(messageService::queue)
+                .doAfterTerminate(messageService::flush)
                 .then();
     }
 

@@ -5,7 +5,7 @@ import com.w1sh.medusa.data.events.EventType;
 import com.w1sh.medusa.data.events.InlineEvent;
 import com.w1sh.medusa.data.events.MultipleInlineEvent;
 import com.w1sh.medusa.data.events.Type;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.listeners.CustomEventListener;
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.services.EventService;
@@ -30,7 +30,7 @@ public final class CustomEventPublisher implements EventPublisher<Event>{
 
     private final Map<Class<? extends Event>, EventListener<? extends Event, Event>> listenerMap = new ConcurrentHashMap<>();
     private final ApplicationContext applicationContext;
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
     private final EventService eventService;
 
     @PostConstruct
@@ -74,7 +74,7 @@ public final class CustomEventPublisher implements EventPublisher<Event>{
     }
 
     private Mono<Void> publishMulti(final List<InlineEvent> events) {
-        responseDispatcher.flush((long) events.size());
+        messageService.flush((long) events.size());
         return Flux.fromIterable(events)
                 .flatMapSequential(this::publish)
                 .then();

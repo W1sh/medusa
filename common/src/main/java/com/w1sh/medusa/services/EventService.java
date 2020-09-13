@@ -39,6 +39,7 @@ public class EventService {
     }
 
     private void scheduleBatchSave() {
+        log.info("Registering periodically batch save of events with delay of {} hours and interval of {} hours", saveDelay, saveInterval);
         Schedulers.boundedElastic().schedulePeriodically(() -> {
             eventRepository.saveAll(events);
             events.clear();

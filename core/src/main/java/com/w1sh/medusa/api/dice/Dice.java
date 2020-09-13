@@ -2,7 +2,7 @@ package com.w1sh.medusa.api.dice;
 
 import com.w1sh.medusa.data.Event;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,7 @@ public class Dice {
     public static final String ROLL_ARGUMENT_DELIMITER = "-";
 
     private final Random random;
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
 
     public Mono<Integer> roll(Integer min, Integer max){
         return Mono.just(random.nextInt(min + max + 1) + min);
@@ -46,7 +46,7 @@ public class Dice {
                 .map(channel -> new TextMessage(channel,
                         ":x: Invalid argument received, the argument must be of type **X-Y** where **Y** must be greater than **X**",
                         false))
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush);
+                .doOnNext(messageService::queue)
+                .doAfterTerminate(messageService::flush);
     }
 }

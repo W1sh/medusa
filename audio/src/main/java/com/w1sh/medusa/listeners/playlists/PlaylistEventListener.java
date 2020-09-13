@@ -2,7 +2,7 @@ package com.w1sh.medusa.listeners.playlists;
 
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.events.PlaylistEvent;
 import com.w1sh.medusa.listeners.CustomEventListener;
 import lombok.RequiredArgsConstructor;
@@ -17,13 +17,13 @@ public final class PlaylistEventListener implements CustomEventListener<Playlist
     private final PlaylistShowAction playlistShowAction;
     private final PlaylistDeleteAction playlistDeleteAction;
     private final PlaylistLoadAction playlistLoadAction;
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
 
     @Override
     public Mono<Void> execute(PlaylistEvent event) {
         return applyAction(event)
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
+                .doOnNext(messageService::queue)
+                .doAfterTerminate(messageService::flush)
                 .then();
     }
 

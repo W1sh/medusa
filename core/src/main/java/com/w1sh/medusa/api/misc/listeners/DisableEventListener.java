@@ -5,7 +5,7 @@ import com.w1sh.medusa.core.CustomEventPublisher;
 import com.w1sh.medusa.data.events.EventType;
 import com.w1sh.medusa.data.events.Type;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.listeners.CustomEventListener;
 import com.w1sh.medusa.utils.Reactive;
 import lombok.extern.slf4j.Slf4j;
@@ -20,12 +20,12 @@ import java.util.Set;
 public final class DisableEventListener implements CustomEventListener<DisableEvent> {
 
     private final CustomEventPublisher customEventPublisher;
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
     private final Set<Class<?>> classes;
 
-    public DisableEventListener(CustomEventPublisher customEventPublisher, ResponseDispatcher responseDispatcher, Reflections reflections) {
+    public DisableEventListener(CustomEventPublisher customEventPublisher, MessageService messageService, Reflections reflections) {
         this.customEventPublisher = customEventPublisher;
-        this.responseDispatcher = responseDispatcher;
+        this.messageService = messageService;
         this.classes = reflections.getTypesAnnotatedWith(Type.class);
     }
 
@@ -36,12 +36,12 @@ public final class DisableEventListener implements CustomEventListener<DisableEv
 
         switch (disableType) {
             case EVENT: return disableEvent(argument, event)
-                    .doOnNext(responseDispatcher::queue)
-                    .doAfterTerminate(responseDispatcher::flush)
+                    .doOnNext(messageService::queue)
+                    .doAfterTerminate(messageService::flush)
                     .then();
             case TYPE: return disableEvent(EventType.of(argument), event)
-                    .doOnNext(responseDispatcher::queue)
-                    .doAfterTerminate(responseDispatcher::flush)
+                    .doOnNext(messageService::queue)
+                    .doAfterTerminate(messageService::flush)
                     .then();
             default: return Mono.empty();
         }

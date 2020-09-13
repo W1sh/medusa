@@ -3,7 +3,7 @@ package com.w1sh.medusa;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.w1sh.medusa.data.Event;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
@@ -32,11 +32,11 @@ public final class AudioConnectionManager {
 
     private final AudioPlayerManager playerManager;
     private final Map<String, AudioConnection> audioConnections;
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
 
-    public AudioConnectionManager(AudioPlayerManager playerManager, ResponseDispatcher responseDispatcher) {
+    public AudioConnectionManager(AudioPlayerManager playerManager, MessageService messageService) {
         this.playerManager = playerManager;
-        this.responseDispatcher = responseDispatcher;
+        this.messageService = messageService;
         this.audioConnections = new HashMap<>();
     }
 
@@ -126,7 +126,7 @@ public final class AudioConnectionManager {
 
     private Mono<AudioConnection> createAudioConnection(AudioPlayer player, VoiceConnection voiceConnection, MessageChannel channel){
         final String guildId = ((GuildChannel) channel).getGuildId().asString();
-        final AudioConnection audioConnection = new AudioConnection(player, voiceConnection, responseDispatcher);
+        final AudioConnection audioConnection = new AudioConnection(player, voiceConnection, messageService);
         audioConnection.setMessageChannel(channel);
 
         logger.info("Creating new audio connection in guild <{}>", guildId);

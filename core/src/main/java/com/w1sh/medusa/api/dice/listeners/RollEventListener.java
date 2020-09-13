@@ -3,7 +3,7 @@ package com.w1sh.medusa.api.dice.listeners;
 import com.w1sh.medusa.api.dice.Dice;
 import com.w1sh.medusa.api.dice.events.RollEvent;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.listeners.CustomEventListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,12 +15,12 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public final class RollEventListener implements CustomEventListener<RollEvent> {
 
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
     private final Dice dice;
 
-    @Value("${event.roll.start}")
+    @Value("${message.event.roll.start}")
     private String rollStart;
-    @Value("${event.roll.result}")
+    @Value("${message.event.roll.result}")
     private String rollResult;
 
     @Override
@@ -30,8 +30,8 @@ public final class RollEventListener implements CustomEventListener<RollEvent> {
                 .map(ev -> ev.getArguments().get(0).split(Dice.ROLL_ARGUMENT_DELIMITER))
                 .flatMap(limits -> dice.roll(Integer.parseInt(limits[0]), Integer.parseInt(limits[1])))
                 .flatMapMany(result -> sendResults(result, event))
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
+                .doOnNext(messageService::queue)
+                .doAfterTerminate(messageService::flush)
                 .then();
     }
 

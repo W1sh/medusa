@@ -2,7 +2,7 @@ package com.w1sh.medusa.listeners.blocklist;
 
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.events.BlocklistEvent;
 import com.w1sh.medusa.listeners.CustomEventListener;
 import lombok.RequiredArgsConstructor;
@@ -16,13 +16,13 @@ public final class BlocklistEventListener implements CustomEventListener<Blockli
     private final BlocklistAddAction blocklistAddAction;
     private final BlocklistRemoveAction blocklistRemoveAction;
     private final BlocklistShowAction blocklistShowAction;
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
 
     @Override
     public Mono<Void> execute(BlocklistEvent event) {
         return applyAction(event)
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
+                .doOnNext(messageService::queue)
+                .doAfterTerminate(messageService::flush)
                 .then();
     }
 

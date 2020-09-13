@@ -3,7 +3,7 @@ package com.w1sh.medusa.validators;
 import com.w1sh.medusa.data.Event;
 import com.w1sh.medusa.data.events.Type;
 import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
+import com.w1sh.medusa.services.MessageService;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.rest.util.PermissionSet;
@@ -21,7 +21,7 @@ import static com.w1sh.medusa.utils.Reactive.isEmpty;
 @Slf4j
 public final class PermissionsValidator implements Validator {
 
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
 
     @Override
     public Mono<Boolean> validate(Event event) {
@@ -37,9 +37,9 @@ public final class PermissionsValidator implements Validator {
         return event.getChannel().map(channel -> new TextMessage(channel, ":x: I do not have permission to do that", false))
                 .doOnNext(textMessage -> {
                     log.error("Permissions validation failed, event discarded");
-                    responseDispatcher.queue(textMessage);
+                    messageService.queue(textMessage);
                 })
-                .doAfterTerminate(responseDispatcher::flush);
+                .doAfterTerminate(messageService::flush);
     }
 
     private Mono<PermissionSet> hasPermissions(GuildChannel channel, Snowflake snowflake) {
