@@ -15,7 +15,7 @@ import java.time.Instant;
 import java.util.Date;
 
 @SpringBootApplication
-@PropertySource(value = "classpath:message.properties")
+@PropertySource(value = "classpath:messages_en.properties")
 public class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);

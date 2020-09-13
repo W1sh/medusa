@@ -2,15 +2,14 @@ package com.w1sh.medusa.api.dice.listeners;
 
 import com.w1sh.medusa.api.dice.events.PointsBoardEvent;
 import com.w1sh.medusa.data.User;
-import com.w1sh.medusa.data.responses.Response;
-import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.listeners.CustomEventListener;
 import com.w1sh.medusa.rules.NoGamblingRuleEnforcer;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.services.UserService;
 import com.w1sh.medusa.utils.Reactive;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.MessageChannel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -29,27 +28,25 @@ public final class PointsBoardEventListener implements CustomEventListener<Point
 
     @Override
     public Mono<Void> execute(PointsBoardEvent event) {
-        final Mono<Response> pointsLeaderboardMessage = Mono.defer(() -> userService.findTop5PointsInGuild(event.getGuildId())
+        final Mono<Message> pointsLeaderboardMessage = Mono.defer(() -> userService.findTop5PointsInGuild(event.getGuildId())
                 .collectList()
                 .zipWith(event.getGuild(), this::buildBoard)
                 .flatMap(Flux::collectList)
-                .zipWith(event.getChannel(), this::listUsers));
+                .flatMap(strings -> listUsers(strings, event.getChannel())));
 
         return event.getGuildChannel()
                 .flatMap(noGamblingRuleEnforcer::validate)
                 .transform(Reactive.ifElse(bool -> noGamblingRuleEnforcer.enforce(event), bool -> pointsLeaderboardMessage))
-                .doOnNext(messageService::queue)
-                .doAfterTerminate(messageService::flush)
                 .then();
     }
 
-    private Response listUsers(List<String> usersList, MessageChannel channel){
+    private Mono<Message> listUsers(List<String> usersList, Mono<MessageChannel> channel){
         StringBuilder stringBuilder = new StringBuilder();
         for(String u : usersList){
             stringBuilder.append(u);
             stringBuilder.append(System.lineSeparator());
         }
-        return new TextMessage(channel, stringBuilder.toString(), false);
+        return messageService.send(channel, stringBuilder.toString());
     }
 
     private Flux<String> buildBoard(List<User> users, Guild guild){

@@ -1,9 +1,9 @@
 package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.AudioConnectionManager;
-import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.services.MessageService;
+import com.w1sh.medusa.data.responses.MessageEnum;
 import com.w1sh.medusa.events.RewindTrackEvent;
+import com.w1sh.medusa.services.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -39,7 +39,7 @@ public final class RewindTrackListener implements CustomEventListener<RewindTrac
                         (time, ac) -> Mono.fromRunnable(() -> ac.getTrackScheduler().rewind(time)))
                 .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to rewind track to requested time <{}>", event.getArguments().get(0), t)))
                 .transform(isEmpty())
-                .flatMap(b -> createErrorMessage(event))
+                .flatMap(b -> messageService.send(event.getChannel(), MessageEnum.MOVETIME_ERROR))
                 .then();
     }
 
@@ -50,12 +50,5 @@ public final class RewindTrackListener implements CustomEventListener<RewindTrac
         } catch (ParseException e) {
             sink.error(e);
         }
-    }
-
-    private Mono<TextMessage> createErrorMessage(RewindTrackEvent event){
-        return event.getChannel()
-                .map(channel -> new TextMessage(channel, ":x: Invalid argument received, the argument must be of type **minutes : seconds**", false))
-                .doOnNext(messageService::queue)
-                .doAfterTerminate(messageService::flush);
     }
 }

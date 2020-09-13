@@ -3,10 +3,10 @@ package com.w1sh.medusa.listeners;
 import com.w1sh.medusa.actions.ChannelRulesActivateAction;
 import com.w1sh.medusa.actions.ChannelRulesDeactivateAction;
 import com.w1sh.medusa.actions.ChannelRulesShowAction;
-import com.w1sh.medusa.data.responses.Response;
-import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.services.MessageService;
+import com.w1sh.medusa.data.responses.MessageEnum;
 import com.w1sh.medusa.events.ChannelRulesEvent;
+import com.w1sh.medusa.services.MessageService;
+import discord4j.core.object.entity.Message;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -22,28 +22,20 @@ public final class ChannelRulesEventListener implements CustomEventListener<Chan
 
     @Override
     public Mono<Void> execute(ChannelRulesEvent event) {
-        return applyAction(event)
-                .doOnNext(messageService::queue)
-                .doAfterTerminate(messageService::flush)
-                .then();
+        return applyAction(event).then();
     }
 
-    private Mono<? extends Response> applyAction(ChannelRulesEvent event) {
+    private Mono<Message> applyAction(ChannelRulesEvent event) {
         if(event.getArguments().isEmpty()) return channelRulesShowAction.apply(event);
-        if(event.getArguments().size() < 2) return errorResponse(event);
+        if(event.getArguments().size() < 2) return messageService.send(event.getChannel(), MessageEnum.RULES_ERROR);
 
         RulesAction playlistAction = RulesAction.of(event.getArguments().get(1));
         switch (playlistAction) {
             case ON: return channelRulesActivateAction.apply(event);
             case OFF: return channelRulesDeactivateAction.apply(event);
             case SHOW: return channelRulesShowAction.apply(event);
-            default: return errorResponse(event);
+            default: return messageService.send(event.getChannel(), MessageEnum.RULES_ERROR);
         }
-    }
-
-    private Mono<? extends Response> errorResponse(ChannelRulesEvent event) {
-        return event.getChannel().map(channel -> new TextMessage(channel,
-                "Unknown rules action, try one of the following: **ON**, **OFF**, **SHOW**", false));
     }
 
     private enum RulesAction {

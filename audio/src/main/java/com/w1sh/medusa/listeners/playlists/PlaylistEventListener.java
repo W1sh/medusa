@@ -1,10 +1,10 @@
 package com.w1sh.medusa.listeners.playlists;
 
-import com.w1sh.medusa.data.responses.Response;
-import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.services.MessageService;
+import com.w1sh.medusa.data.responses.MessageEnum;
 import com.w1sh.medusa.events.PlaylistEvent;
 import com.w1sh.medusa.listeners.CustomEventListener;
+import com.w1sh.medusa.services.MessageService;
+import discord4j.core.object.entity.Message;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -21,22 +21,17 @@ public final class PlaylistEventListener implements CustomEventListener<Playlist
 
     @Override
     public Mono<Void> execute(PlaylistEvent event) {
-        return applyAction(event)
-                .doOnNext(messageService::queue)
-                .doAfterTerminate(messageService::flush)
-                .then();
+        return applyAction(event).then();
     }
 
-    private Mono<? extends Response> applyAction(PlaylistEvent event) {
+    private Mono<Message> applyAction(PlaylistEvent event) {
         PlaylistAction playlistAction = PlaylistAction.of(event.getArguments().get(0));
         switch (playlistAction) {
             case SAVE: return playlistSaveAction.apply(event);
             case SHOW: return playlistShowAction.apply(event);
             case DELETE: return playlistDeleteAction.apply(event);
             case LOAD: return playlistLoadAction.apply(event);
-            default: return event.getMessage().getChannel()
-                    .map(channel -> new TextMessage(channel,
-                            "Unknown playlist action, try one of the following: **SHOW**, **SAVE**, **LOAD**, **DELETE**", false));
+            default: return messageService.send(event.getChannel(), MessageEnum.PLAYLIST_ERROR);
         }
     }
 

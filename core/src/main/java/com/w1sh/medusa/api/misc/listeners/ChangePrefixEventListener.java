@@ -2,16 +2,19 @@ package com.w1sh.medusa.api.misc.listeners;
 
 import com.w1sh.medusa.api.misc.events.ChangePrefixEvent;
 import com.w1sh.medusa.core.EventFactory;
-import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.services.MessageService;
+import com.w1sh.medusa.data.responses.MessageEnum;
 import com.w1sh.medusa.listeners.CustomEventListener;
+import com.w1sh.medusa.services.MessageService;
+import discord4j.core.object.entity.Message;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.discordjson.json.ActivityUpdateRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public final class ChangePrefixEventListener implements CustomEventListener<ChangePrefixEvent> {
@@ -21,18 +24,17 @@ public final class ChangePrefixEventListener implements CustomEventListener<Chan
 
     @Override
     public Mono<Void> execute(ChangePrefixEvent event) {
-        return Mono.just(event)
-                .map(ev -> ev.getArguments().get(0))
-                .doOnNext(eventFactory::setPrefix)
-                .flatMap(prefix -> changePrefixSuccess(prefix, event))
-                .doOnNext(messageService::queue)
-                .doAfterTerminate(messageService::flush)
+        final String prefix = event.getArguments().get(0);
+        eventFactory.setPrefix(prefix);
+        log.info("Changed prefix to \"{}\"", prefix);
+
+        return changePrefixSuccess(prefix, event)
                 .flatMap(t -> changePrefix(event))
                 .then();
     }
 
-    public Mono<TextMessage> changePrefixSuccess(String prefix, ChangePrefixEvent event){
-        return event.getChannel().map(chan -> new TextMessage(chan, String.format("Changed prefix to \"%s\"", prefix), false));
+    public Mono<Message> changePrefixSuccess(String prefix, ChangePrefixEvent event){
+        return messageService.send(event.getChannel(), MessageEnum.CHANGE_PREFIX_SUCCESS, prefix);
     }
 
     public Mono<Void> changePrefix(ChangePrefixEvent event){

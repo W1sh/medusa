@@ -3,16 +3,17 @@ package com.w1sh.medusa.api.misc.listeners;
 import com.w1sh.medusa.api.misc.events.StatusEvent;
 import com.w1sh.medusa.core.Instance;
 import com.w1sh.medusa.data.Event;
-import com.w1sh.medusa.data.responses.Embed;
-import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.listeners.CustomEventListener;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.utils.ResponseUtils;
-import discord4j.core.object.entity.channel.MessageChannel;
+import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.rest.util.Color;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+
+import java.util.function.Consumer;
 
 @Component
 @RequiredArgsConstructor
@@ -25,17 +26,15 @@ public final class StatusEventListener implements CustomEventListener<StatusEven
 
     @Override
     public Mono<Void> execute(StatusEvent event) {
-        return event.getChannel()
-                .flatMap(messageChannel -> createStatusEmbed(messageChannel, event))
-                .doOnNext(messageService::queue)
-                .doAfterTerminate(messageService::flush)
+        return createStatusEmbedSpec(event)
+                .flatMap(embedCreateSpec -> messageService.send(event.getChannel(), embedCreateSpec))
                 .then();
     }
 
-    private Mono<Embed> createStatusEmbed(MessageChannel messageChannel, Event event){
+    private Mono<Consumer<EmbedCreateSpec>> createStatusEmbedSpec(Event event) {
         return event.getClient().getGuilds().count()
                 .zipWith(event.getClient().getUsers().count())
-                .map(tuple -> new Embed(messageChannel, embedCreateSpec -> {
+                .map(tuple -> embedCreateSpec -> {
                     embedCreateSpec.setColor(Color.GREEN);
                     embedCreateSpec.setTitle(String.format("Medusa - Shard %d/%d",
                             event.getShardInfo().getIndex() + 1,
@@ -50,7 +49,7 @@ public final class StatusEventListener implements CustomEventListener<StatusEven
                     embedCreateSpec.addField("Users", tuple.getT2().toString(), true);
                     //embedCreateSpec.addField("Total events", Trackers.getTotalEventCount().toString(), true);
                     embedCreateSpec.setFooter(String.format("Version: %s", version), null);
-                }));
+                });
     }
 
     private Long numberAsMegabytes(Long number){

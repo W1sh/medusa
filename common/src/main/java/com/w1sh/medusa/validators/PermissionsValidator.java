@@ -2,9 +2,10 @@ package com.w1sh.medusa.validators;
 
 import com.w1sh.medusa.data.Event;
 import com.w1sh.medusa.data.events.Type;
-import com.w1sh.medusa.data.responses.TextMessage;
+import com.w1sh.medusa.data.responses.MessageEnum;
 import com.w1sh.medusa.services.MessageService;
 import discord4j.common.util.Snowflake;
+import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.rest.util.PermissionSet;
 import lombok.RequiredArgsConstructor;
@@ -33,13 +34,9 @@ public final class PermissionsValidator implements Validator {
                 .transform(isEmpty());
     }
 
-    private Mono<TextMessage> createErrorMessage(Event event){
-        return event.getChannel().map(channel -> new TextMessage(channel, ":x: I do not have permission to do that", false))
-                .doOnNext(textMessage -> {
-                    log.error("Permissions validation failed, event discarded");
-                    messageService.queue(textMessage);
-                })
-                .doAfterTerminate(messageService::flush);
+    private Mono<Message> createErrorMessage(Event event){
+        return messageService.send(event.getChannel(), MessageEnum.VALIDATOR_PERMISSIONS_ERROR)
+                .doOnNext(textMessage -> log.error("Permissions validation failed, event discarded"));
     }
 
     private Mono<PermissionSet> hasPermissions(GuildChannel channel, Snowflake snowflake) {

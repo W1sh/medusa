@@ -1,21 +1,17 @@
 package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.AudioConnectionManager;
-import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.services.MessageService;
+import com.w1sh.medusa.data.responses.MessageEnum;
 import com.w1sh.medusa.events.JoinVoiceChannelEvent;
+import com.w1sh.medusa.services.MessageService;
 import discord4j.core.object.entity.Member;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
 public final class JoinVoiceChannelListener implements CustomEventListener<JoinVoiceChannelEvent> {
-
-    @Value("${message.event.voice.join}")
-    private String voiceJoin;
 
     private final MessageService messageService;
     private final AudioConnectionManager audioConnectionManager;
@@ -27,19 +23,8 @@ public final class JoinVoiceChannelListener implements CustomEventListener<JoinV
                         .flatMap(Member::getVoiceState)
                         .hasElement())
                 .flatMap(audioConnectionManager::joinVoiceChannel)
-                .flatMap(audioConnection -> createJoinSuccessMessage(event))
-                .switchIfEmpty(createEmptyVoiceStateErrorMessage(event))
-                .doOnNext(messageService::queue)
-                .doAfterTerminate(messageService::flush)
+                .flatMap(audioConnection -> messageService.send(event.getChannel(), MessageEnum.JOIN_SUCCESS))
+                .switchIfEmpty(messageService.send(event.getChannel(), MessageEnum.JOIN_ERROR))
                 .then();
-    }
-
-    private Mono<TextMessage> createEmptyVoiceStateErrorMessage(JoinVoiceChannelEvent event){
-        return event.getChannel().map(chan -> new TextMessage(chan, String.format("**%s**, you are not in a voice channel!",
-                        event.getNickname()), false));
-    }
-
-    private Mono<TextMessage> createJoinSuccessMessage(JoinVoiceChannelEvent event){
-        return event.getChannel().map(channel -> new TextMessage(channel, voiceJoin, false));
     }
 }

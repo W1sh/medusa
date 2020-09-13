@@ -1,7 +1,7 @@
 package com.w1sh.medusa.api.dice;
 
 import com.w1sh.medusa.data.Event;
-import com.w1sh.medusa.data.responses.TextMessage;
+import com.w1sh.medusa.data.responses.MessageEnum;
 import com.w1sh.medusa.services.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,19 +34,10 @@ public class Dice {
                 .hasElement()
                 .flatMap(bool -> {
                     if(Boolean.FALSE.equals(bool)){
-                        return createRollErrorMessage(event);
+                        return messageService.send(event.getChannel(), MessageEnum.ROLL_ERROR);
                     }else return Mono.empty();
                 })
                 .hasElement()
                 .map(b -> !b);
-    }
-
-    private Mono<TextMessage> createRollErrorMessage(Event event){
-        return event.getMessage().getChannel()
-                .map(channel -> new TextMessage(channel,
-                        ":x: Invalid argument received, the argument must be of type **X-Y** where **Y** must be greater than **X**",
-                        false))
-                .doOnNext(messageService::queue)
-                .doAfterTerminate(messageService::flush);
     }
 }

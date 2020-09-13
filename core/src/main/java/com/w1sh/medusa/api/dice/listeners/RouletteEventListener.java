@@ -2,13 +2,13 @@ package com.w1sh.medusa.api.dice.listeners;
 
 import com.w1sh.medusa.api.dice.events.RouletteEvent;
 import com.w1sh.medusa.data.User;
-import com.w1sh.medusa.data.responses.Response;
-import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.services.MessageService;
+import com.w1sh.medusa.data.responses.MessageEnum;
 import com.w1sh.medusa.listeners.CustomEventListener;
 import com.w1sh.medusa.rules.NoGamblingRuleEnforcer;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.services.UserService;
 import com.w1sh.medusa.utils.Reactive;
+import discord4j.core.object.entity.Message;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -32,7 +32,7 @@ public final class RouletteEventListener implements CustomEventListener<Roulette
 
         final Mono<User> guildUserMono = Mono.defer(() -> userService.findByUserIdAndGuildId(event.getUserId(), event.getGuildId()));
 
-        final Mono<Response> rouletteMessage = Mono.defer(() -> Mono.zip(valueMono, guildUserMono)
+        final Mono<Message> rouletteMessage = Mono.defer(() -> Mono.zip(valueMono, guildUserMono)
                 .filter(tuple -> tuple.getT1() <= tuple.getT2().getPoints())
                 .flatMap(tuple -> roulettePoints(tuple.getT1(), tuple.getT2(), event))
                 .switchIfEmpty(createErrorMessage(event)));
@@ -40,12 +40,10 @@ public final class RouletteEventListener implements CustomEventListener<Roulette
         return event.getGuildChannel()
                 .flatMap(noGamblingRuleEnforcer::validate)
                 .transform(Reactive.ifElse(bool -> noGamblingRuleEnforcer.enforce(event), bool -> rouletteMessage))
-                .doOnNext(messageService::queue)
-                .doAfterTerminate(messageService::flush)
                 .then();
     }
 
-    private Mono<Response> roulettePoints(Integer points, User user, RouletteEvent event){
+    private Mono<Message> roulettePoints(Integer points, User user, RouletteEvent event){
         final boolean won = random.nextBoolean();
         RouletteResult rouletteResult;
         if (won) {
@@ -60,16 +58,13 @@ public final class RouletteEventListener implements CustomEventListener<Roulette
                 .flatMap(ignored -> createRouletteResultMessage(rouletteResult, event));
     }
 
-    private Mono<Response> createRouletteResultMessage(RouletteResult rouletteResult, RouletteEvent event){
-        return event.getChannel()
-                .map(chan -> new TextMessage(chan, String.format("**%s** %s %d points in the roulette. He now has %d points!",
-                        event.getNickname(), rouletteResult.isWon() ? "won" : "lost",
-                        rouletteResult.getGambledPoints(), rouletteResult.getUser().getPoints()), false));
+    private Mono<Message> createRouletteResultMessage(RouletteResult rouletteResult, RouletteEvent event) {
+        return messageService.send(event.getChannel(), MessageEnum.ROULETTE_RESULT, event.getNickname(), rouletteResult.isWon() ? "won" : "lost",
+                String.valueOf(rouletteResult.getGambledPoints()), String.valueOf(rouletteResult.getUser().getPoints()));
     }
 
-    private Mono<TextMessage> createErrorMessage(RouletteEvent event) {
-        return event.getChannel()
-                .map(channel -> new TextMessage(channel, "Could not perform the roulette, make sure you have enough points!", false));
+    private Mono<Message> createErrorMessage(RouletteEvent event) {
+        return messageService.send(event.getChannel(), MessageEnum.ROULETTE_ERROR);
     }
 
     @Data

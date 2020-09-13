@@ -2,8 +2,9 @@ package com.w1sh.medusa.validators;
 
 import com.w1sh.medusa.data.Event;
 import com.w1sh.medusa.data.events.Type;
-import com.w1sh.medusa.data.responses.TextMessage;
+import com.w1sh.medusa.data.responses.MessageEnum;
 import com.w1sh.medusa.services.MessageService;
+import discord4j.core.object.entity.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -28,13 +29,9 @@ public final class ArgumentValidator implements Validator {
                 .transform(isEmpty());
     }
 
-    private Mono<TextMessage> createErrorMessage(Event event){
-        return event.getChannel().map(channel -> new TextMessage(channel,
-                ":x: Invalid number of arguments, expected " + event.getClass().getAnnotation(Type.class).minimumArguments() + " arguments", false))
-                .doOnNext(textMessage -> {
-                    log.error("Invalid number of arguments received, event discarded");
-                    messageService.queue(textMessage);
-                })
-                .doAfterTerminate(messageService::flush);
+    private Mono<Message> createErrorMessage(Event event){
+        return messageService.send(event.getChannel(), MessageEnum.VALIDATOR_ARGUMENTS_ERROR,
+                String.valueOf(event.getClass().getAnnotation(Type.class).minimumArguments()))
+                .doOnNext(textMessage -> log.error("Invalid number of arguments received, event discarded"));
     }
 }

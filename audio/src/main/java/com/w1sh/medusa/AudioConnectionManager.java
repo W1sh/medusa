@@ -76,8 +76,8 @@ public final class AudioConnectionManager {
     public Mono<Boolean> leaveVoiceChannel(String guildId) {
         return Mono.just(guildId)
                 .doOnSuccess(snowflake -> logger.info("Client leaving voice channel in guild <{}>", guildId))
-                .map(snowflake -> audioConnections.get(guildId))
-                .doOnNext(connection -> destroyAudioConnection(guildId, connection))
+                .flatMap(snowflake -> Mono.justOrEmpty(audioConnections.getOrDefault(guildId, null)))
+                .flatMap(connection -> destroyAudioConnection(guildId, connection))
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to leave voice channel", throwable)))
                 .hasElement();
     }
@@ -134,8 +134,8 @@ public final class AudioConnectionManager {
         return Mono.just(audioConnection);
     }
 
-    private void destroyAudioConnection(String guildId, AudioConnection connection){
-        connection.destroy();
+    private Mono<Void> destroyAudioConnection(String guildId, AudioConnection connection){
         audioConnections.remove(guildId);
+        return connection.destroy();
     }
 }

@@ -4,10 +4,11 @@ import com.w1sh.medusa.api.misc.events.DisableEvent;
 import com.w1sh.medusa.core.CustomEventPublisher;
 import com.w1sh.medusa.data.events.EventType;
 import com.w1sh.medusa.data.events.Type;
-import com.w1sh.medusa.data.responses.TextMessage;
-import com.w1sh.medusa.services.MessageService;
+import com.w1sh.medusa.data.responses.MessageEnum;
 import com.w1sh.medusa.listeners.CustomEventListener;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.utils.Reactive;
+import discord4j.core.object.entity.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
 import org.springframework.stereotype.Component;
@@ -36,29 +37,24 @@ public final class DisableEventListener implements CustomEventListener<DisableEv
 
         switch (disableType) {
             case EVENT: return disableEvent(argument, event)
-                    .doOnNext(messageService::queue)
-                    .doAfterTerminate(messageService::flush)
                     .then();
             case TYPE: return disableEvent(EventType.of(argument), event)
-                    .doOnNext(messageService::queue)
-                    .doAfterTerminate(messageService::flush)
                     .then();
             default: return Mono.empty();
         }
     }
 
-    private Mono<TextMessage> disableEvent(String prefix, DisableEvent event) {
+    private Mono<Message> disableEvent(String prefix, DisableEvent event) {
         final var clazz = classes.stream()
                 .filter(c -> c.getAnnotation(Type.class).prefix().equals(prefix))
                 .findFirst()
                 .orElse(null);
 
-        final var disabledMessage = Mono.defer(() -> event.getChannel()
-                .map(channel -> new TextMessage(channel, String.format("Disabled event of type **%s**",
-                        clazz != null ? clazz.getSimpleName() : "?"), false)));
+        final var disabledMessage = Mono.defer(() ->
+                messageService.send(event.getChannel(), MessageEnum.DISABLE_SINGLE_SUCCESS, clazz != null ? clazz.getSimpleName() : "?"));
 
-        final var errorMessage = Mono.defer(() -> event.getChannel()
-                .map(channel -> new TextMessage(channel, String.format("Failed to disable event with prefix **%s**", prefix), false)));
+        final var errorMessage = Mono.defer(() ->
+                messageService.send(event.getChannel(), MessageEnum.DISABLE_MULTIPLE_SUCCESS, prefix));
 
         return Mono.justOrEmpty(clazz)
                 .filter(customEventPublisher::removeListener)
@@ -66,11 +62,17 @@ public final class DisableEventListener implements CustomEventListener<DisableEv
                 .transform(Reactive.ifElse(bool -> disabledMessage, bool -> errorMessage));
     }
 
-    private Mono<TextMessage> disableEvent(EventType type, DisableEvent event) {
-        final var content = customEventPublisher.removeListener(type) ? String.format("Disabled all events of type **%s**", type.name()) :
-                String.format("Failed to disable events of type **%s**", type.name());
+    private Mono<Message> disableEvent(EventType type, DisableEvent event) {
+        final var disabledMessage = Mono.defer(() ->
+                messageService.send(event.getChannel(), MessageEnum.DISABLE_MULTIPLE_SUCCESS, type.name()));
 
-        return event.getChannel().map(channel -> new TextMessage(channel, content, false));
+        final var errorMessage = Mono.defer(() ->
+                messageService.send(event.getChannel(), MessageEnum.DISABLE_MULTIPLE_ERROR, type.name()));
+
+        return Mono.justOrEmpty(type)
+                .filter(customEventPublisher::removeListener)
+                .hasElement()
+                .transform(Reactive.ifElse(bool -> disabledMessage, bool -> errorMessage));
     }
 
     private enum DisableType {

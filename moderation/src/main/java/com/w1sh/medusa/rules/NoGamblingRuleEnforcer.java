@@ -2,9 +2,10 @@ package com.w1sh.medusa.rules;
 
 import com.w1sh.medusa.data.Event;
 import com.w1sh.medusa.data.Rule;
-import com.w1sh.medusa.data.responses.Response;
-import com.w1sh.medusa.data.responses.TextMessage;
+import com.w1sh.medusa.data.responses.MessageEnum;
 import com.w1sh.medusa.services.ChannelService;
+import com.w1sh.medusa.services.MessageService;
+import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.GuildChannel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import reactor.core.publisher.Mono;
 public final class NoGamblingRuleEnforcer {
 
     private final ChannelService channelService;
+    private final MessageService messageService;
 
     public Mono<Boolean> validate(GuildChannel channel) {
         return channelService.findByChannel(channel)
@@ -24,10 +26,8 @@ public final class NoGamblingRuleEnforcer {
                 .hasElement();
     }
 
-    public Mono<Response> enforce(Event event) {
-        Mono<Response> warningMessage = Mono.defer(() -> event.getChannel()
-                .map(chan -> new TextMessage(chan, String.format("**%s**, no gambling allowed on this channel",
-                        event.getNickname()), false)));
+    public Mono<Message> enforce(Event event) {
+        Mono<Message> warningMessage = Mono.defer(() -> messageService.send(event.getChannel(), MessageEnum.NOGAMBLING, event.getNickname()));
 
         return Mono.fromRunnable(() -> event.getMessage().delete().subscribe().dispose())
                 .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete message", t)))

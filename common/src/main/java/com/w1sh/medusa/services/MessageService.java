@@ -8,6 +8,7 @@ import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.MessageChannel;
+import discord4j.core.spec.EmbedCreateSpec;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.ResourceBundleMessageSource;
@@ -19,6 +20,7 @@ import reactor.core.publisher.UnicastProcessor;
 
 import java.time.Duration;
 import java.util.Locale;
+import java.util.function.Consumer;
 
 @Slf4j
 @Component
@@ -40,6 +42,11 @@ public class MessageService {
     }
 
     public void queue(Response response) { Mono.just(response).subscribe(responseProcessor::onNext); }
+
+    public Mono<Message> send(Mono<MessageChannel> channelMono, Consumer<EmbedCreateSpec> embedCreateSpec) {
+        return channelMono.flatMap(channel -> channel.createEmbed(embedCreateSpec))
+                .doOnNext(m -> messageCache.put(m.getId().asString(), m));
+    }
 
     public Mono<Message> send(Mono<MessageChannel> channelMono, String message) {
         return channelMono.flatMap(channel -> channel.createMessage(message))
