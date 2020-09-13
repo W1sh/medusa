@@ -24,7 +24,7 @@ public final class JoinVoiceChannelListener implements CustomEventListener<JoinV
                         .hasElement())
                 .flatMap(audioConnectionManager::joinVoiceChannel)
                 .flatMap(audioConnection -> messageService.send(event.getChannel(), MessageEnum.JOIN_SUCCESS))
-                .switchIfEmpty(messageService.send(event.getChannel(), MessageEnum.JOIN_ERROR))
+                .switchIfEmpty(messageService.send(event.getChannel(), MessageEnum.JOIN_ERROR, event.getNickname()))
                 .then();
     }
 }

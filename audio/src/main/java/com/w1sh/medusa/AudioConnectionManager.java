@@ -19,8 +19,8 @@ import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuple2;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
@@ -37,7 +37,7 @@ public final class AudioConnectionManager {
     public AudioConnectionManager(AudioPlayerManager playerManager, MessageService messageService) {
         this.playerManager = playerManager;
         this.messageService = messageService;
-        this.audioConnections = new HashMap<>();
+        this.audioConnections = new ConcurrentHashMap<>();
     }
 
     public void requestTrack(String guildId, String trackLink){
@@ -73,13 +73,11 @@ public final class AudioConnectionManager {
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to join voice channel", throwable)));
     }
 
-    public Mono<Boolean> leaveVoiceChannel(String guildId) {
-        return Mono.just(guildId)
+    public Mono<Void> leaveVoiceChannel(String guildId) {
+        return Mono.justOrEmpty(audioConnections.getOrDefault(guildId, null))
                 .doOnSuccess(snowflake -> logger.info("Client leaving voice channel in guild <{}>", guildId))
-                .flatMap(snowflake -> Mono.justOrEmpty(audioConnections.getOrDefault(guildId, null)))
                 .flatMap(connection -> destroyAudioConnection(guildId, connection))
-                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to leave voice channel", throwable)))
-                .hasElement();
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to leave voice channel", throwable)));
     }
 
     public void onDisconnect(AudioConnection connection, VoiceChannel voiceChannel){

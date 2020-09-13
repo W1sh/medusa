@@ -19,9 +19,10 @@ public final class LeaveVoiceChannelListener implements CustomEventListener<Leav
 
     @Override
     public Mono<Void> execute(LeaveVoiceChannelEvent event) {
-        return audioConnectionManager.leaveVoiceChannel(event.getGuildId())
+        return audioConnectionManager.getAudioConnection(event)
+                .hasElement()
                 .transform(ifElse(b -> messageService.send(event.getChannel(), MessageEnum.LEAVE_SUCCESS),
                         b -> messageService.send(event.getChannel(), MessageEnum.LEAVE_ERROR, event.getNickname())))
-                .then();
+                .then(audioConnectionManager.leaveVoiceChannel(event.getGuildId()));
     }
 }

@@ -131,15 +131,17 @@ public final class DefaultAudioTrackScheduler implements AudioTrackScheduler {
     }
 
     @Override
-    public void forward(long milliseconds) {
+    public long forward(long milliseconds) {
         final AudioTrack playingTrack = player.getPlayingTrack();
-        final long newTrackPosition = (playingTrack.getPosition() - milliseconds) < 0 ? 0 : milliseconds;
-        playingTrack.setPosition(newTrackPosition);
+        final long newTrackPosition = (playingTrack.getPosition() + milliseconds) >= playingTrack.getDuration() ? 0 : milliseconds;
+        playingTrack.setPosition(playingTrack.getPosition() + newTrackPosition);
+        return playingTrack.getPosition();
     }
 
     @Override
-    public void rewind(long milliseconds) {
+    public long rewind(long milliseconds) {
         player.getPlayingTrack().setPosition(milliseconds);
+        return player.getPlayingTrack().getPosition();
     }
 
     @Override

@@ -18,6 +18,8 @@ import org.springframework.data.mongodb.core.SimpleReactiveMongoDatabaseFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.security.SecureRandom;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 @Configuration
 @EnableScheduling
@@ -54,6 +56,13 @@ public class AppConfiguration {
         final var source = new ResourceBundleMessageSource();
         source.setBasenames("messages");
         return source;
+    }
+
+    @Bean
+    public SimpleDateFormat simpleDateFormat() {
+        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
+        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return simpleDateFormat;
     }
 
     @Bean

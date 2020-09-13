@@ -26,9 +26,9 @@ public interface AudioTrackScheduler {
 
     AudioTrack remove(int index);
 
-    void forward(long milliseconds);
+    long forward(long milliseconds);
 
-    void rewind(long milliseconds);
+    long rewind(long milliseconds);
 
     boolean pause();
 
