@@ -1,9 +1,9 @@
 package com.w1sh.medusa;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.player.DefaultAudioTrackScheduler;
 import com.w1sh.medusa.player.listeners.TrackEventListener;
+import com.w1sh.medusa.services.MessageService;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.voice.VoiceConnection;

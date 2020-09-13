@@ -9,11 +9,11 @@
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
-        <module>audio</module>
-        <module>core</module>
-        <module>mtg</module>
-        <module>common</module>
-        <module>moderation</module>
+        <module>medusa-audio</module>
+        <module>medusa-core</module>
+        <module>medusa-mtg</module>
+        <module>medusa-common</module>
+        <module>medusa-moderation</module>
     </modules>
 
     <properties>
