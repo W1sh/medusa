@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class ReplayTrackListener implements EventListener<ReplayTrackEvent> {
+public final class ReplayTrackListener implements CustomEventListener<ReplayTrackEvent> {
 
     private final AudioConnectionManager audioConnectionManager;
 

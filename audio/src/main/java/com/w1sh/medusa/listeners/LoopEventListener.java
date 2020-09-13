@@ -11,14 +11,14 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class LoopEventListener implements EventListener<LoopEvent> {
+public final class LoopEventListener implements CustomEventListener<LoopEvent> {
 
     private final AudioConnectionManager audioConnectionManager;
     private final ResponseDispatcher responseDispatcher;
 
     @Override
     public Mono<Void> execute(LoopEvent event) {
-        LoopAction loopAction = LoopAction.of(event.getArguments().get(0));
+        final LoopAction loopAction = LoopAction.of(event.getArguments().get(0));
 
         return audioConnectionManager.getAudioConnection(event)
                 .doOnNext(con -> con.getTrackScheduler().loop(loopAction))
@@ -33,7 +33,6 @@ public final class LoopEventListener implements EventListener<LoopEvent> {
                 "Unknown loop mode, try one of the following: **TRACK**, **QUEUE**, **OFF**" :
                 String.format("Changed loop mode to **%s**!", loopAction);
 
-        return event.getMessage().getChannel()
-                .map(chan -> new TextMessage(chan, template, false));
+        return event.getChannel().map(chan -> new TextMessage(chan, template, false));
     }
 }

@@ -1,11 +1,11 @@
 package com.w1sh.medusa.api.misc.listeners;
 
 import com.w1sh.medusa.api.misc.events.StatusEvent;
-import com.w1sh.medusa.data.events.Event;
+import com.w1sh.medusa.core.Instance;
+import com.w1sh.medusa.data.Event;
 import com.w1sh.medusa.data.responses.Embed;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.listeners.EventListener;
-import com.w1sh.medusa.metrics.Trackers;
+import com.w1sh.medusa.listeners.CustomEventListener;
 import com.w1sh.medusa.utils.ResponseUtils;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.rest.util.Color;
@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class StatusEventListener implements EventListener<StatusEvent> {
+public final class StatusEventListener implements CustomEventListener<StatusEvent> {
 
     @Value("${medusa.version}")
     private String version;
@@ -25,7 +25,7 @@ public final class StatusEventListener implements EventListener<StatusEvent> {
 
     @Override
     public Mono<Void> execute(StatusEvent event) {
-        return event.getMessage().getChannel()
+        return event.getChannel()
                 .flatMap(messageChannel -> createStatusEmbed(messageChannel, event))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush)
@@ -40,7 +40,7 @@ public final class StatusEventListener implements EventListener<StatusEvent> {
                     embedCreateSpec.setTitle(String.format("Medusa - Shard %d/%d",
                             event.getShardInfo().getIndex() + 1,
                             event.getShardInfo().getCount()));
-                    embedCreateSpec.addField("Uptime", Trackers.getUptime(), true);
+                    embedCreateSpec.addField("Uptime", Instance.getUptime(), true);
                     embedCreateSpec.addField("Memory Usage", String.format("%d MB / %d MB",
                             numberAsMegabytes(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()),
                             numberAsMegabytes(Runtime.getRuntime().totalMemory())), true);
@@ -48,7 +48,7 @@ public final class StatusEventListener implements EventListener<StatusEvent> {
                     embedCreateSpec.addField("Guilds", String.format("%d (%d Avg Users/Guild)",
                             tuple.getT1(), tuple.getT2()/tuple.getT1()), true);
                     embedCreateSpec.addField("Users", tuple.getT2().toString(), true);
-                    embedCreateSpec.addField("Total events", Trackers.getTotalEventCount().toString(), true);
+                    //embedCreateSpec.addField("Total events", Trackers.getTotalEventCount().toString(), true);
                     embedCreateSpec.setFooter(String.format("Version: %s", version), null);
                 }));
     }

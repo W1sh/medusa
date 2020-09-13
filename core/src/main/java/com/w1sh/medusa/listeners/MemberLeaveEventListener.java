@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public final class MemberLeaveEventListener implements EventListener<MemberLeaveEvent> {
+public final class MemberLeaveEventListener implements DiscordEventListener<MemberLeaveEvent> {
 
     private final UserService userService;
     private final WarningService warningService;

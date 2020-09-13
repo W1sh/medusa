@@ -4,14 +4,14 @@ import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.PlaylistEvent;
-import com.w1sh.medusa.listeners.EventListener;
+import com.w1sh.medusa.listeners.CustomEventListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class PlaylistEventListener implements EventListener<PlaylistEvent> {
+public final class PlaylistEventListener implements CustomEventListener<PlaylistEvent> {
 
     private final PlaylistSaveAction playlistSaveAction;
     private final PlaylistShowAction playlistShowAction;

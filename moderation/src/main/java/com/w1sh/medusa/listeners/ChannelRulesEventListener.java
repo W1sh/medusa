@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class ChannelRulesEventListener implements EventListener<ChannelRulesEvent> {
+public final class ChannelRulesEventListener implements CustomEventListener<ChannelRulesEvent> {
 
     private final ChannelRulesShowAction channelRulesShowAction;
     private final ChannelRulesActivateAction channelRulesActivateAction;
@@ -42,9 +42,8 @@ public final class ChannelRulesEventListener implements EventListener<ChannelRul
     }
 
     private Mono<? extends Response> errorResponse(ChannelRulesEvent event) {
-        return event.getMessage().getChannel()
-                .map(channel -> new TextMessage(channel,
-                        "Unknown rules action, try one of the following: **ON**, **OFF**, **SHOW**", false));
+        return event.getChannel().map(channel -> new TextMessage(channel,
+                "Unknown rules action, try one of the following: **ON**, **OFF**, **SHOW**", false));
     }
 
     private enum RulesAction {

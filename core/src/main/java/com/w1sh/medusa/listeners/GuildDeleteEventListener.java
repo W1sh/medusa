@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public final class GuildDeleteEventListener implements EventListener<GuildDeleteEvent> {
+public final class GuildDeleteEventListener implements DiscordEventListener<GuildDeleteEvent> {
 
     private final UserService userService;
     private final WarningService warningService;

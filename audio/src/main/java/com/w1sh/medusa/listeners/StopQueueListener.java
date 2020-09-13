@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class StopQueueListener implements EventListener<StopQueueEvent> {
+public final class StopQueueListener implements CustomEventListener<StopQueueEvent> {
 
     private final AudioConnectionManager audioConnectionManager;
 

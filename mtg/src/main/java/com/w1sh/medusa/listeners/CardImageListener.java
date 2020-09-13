@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class CardImageListener implements EventListener<CardImageEvent> {
+public final class CardImageListener implements CustomEventListener<CardImageEvent> {
 
     private final CardService cardService;
     private final ResponseDispatcher responseDispatcher;
@@ -31,17 +31,16 @@ public final class CardImageListener implements EventListener<CardImageEvent> {
     }
 
     private Mono<Embed> createEmbed(Card card, CardImageEvent event){
-        return event.getMessage().getChannel()
-                .map(channel -> {
-                    if(card.isEmpty() || card.getUri() == null || card.getName() == null || card.getImage() == null || card.getImage().getNormal() == null){
-                        return CardUtils.createErrorEmbed(channel, event);
-                    }
-                    return new Embed(channel, embedCreateSpec -> {
-                        embedCreateSpec.setColor(Color.GREEN);
-                        embedCreateSpec.setUrl(card.getUri());
-                        embedCreateSpec.setTitle(card.getName());
-                        embedCreateSpec.setImage(card.getImage().getNormal());
-                    }, event.isFragment(), event.getInlineOrder());
-                });
+        return event.getChannel().map(channel -> {
+            if(card.isEmpty() || card.getUri() == null || card.getName() == null || card.getImage() == null || card.getImage().getNormal() == null){
+                return CardUtils.createErrorEmbed(channel, event);
+            }
+            return new Embed(channel, embedCreateSpec -> {
+                embedCreateSpec.setColor(Color.GREEN);
+                embedCreateSpec.setUrl(card.getUri());
+                embedCreateSpec.setTitle(card.getName());
+                embedCreateSpec.setImage(card.getImage().getNormal());
+            }, event.isFragment(), event.getInlineOrder());
+        });
     }
 }

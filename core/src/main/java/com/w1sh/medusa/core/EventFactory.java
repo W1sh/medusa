@@ -1,6 +1,6 @@
 package com.w1sh.medusa.core;
 
-import com.w1sh.medusa.data.events.Event;
+import com.w1sh.medusa.data.Event;
 import com.w1sh.medusa.data.events.InlineEvent;
 import com.w1sh.medusa.data.events.MultipleInlineEvent;
 import com.w1sh.medusa.data.events.Type;
@@ -16,13 +16,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import static java.util.stream.Collectors.toMap;
 
 @Slf4j
 @Component
@@ -33,7 +29,7 @@ public final class EventFactory {
     private static final Pattern WORD_PATTERN = Pattern.compile("\\w");
     private static final String ARGUMENT_DELIMITER = " ";
 
-    private final Map<String, Class<? extends MessageCreateEvent>> events = new ConcurrentHashMap<>(0);
+    private final Map<String, Class<? extends Event>> events = new ConcurrentHashMap<>(0);
 
     @Getter @Setter
     private String prefix;
@@ -42,11 +38,10 @@ public final class EventFactory {
         this.prefix = "!";
     }
 
-    public MessageCreateEvent extractEvents(final MessageCreateEvent event){
+    public Event extractEvents(final MessageCreateEvent event){
         final var content = event.getMessage().getContent();
         final var type = extract(content);
         switch (type) {
-            case MESSAGE: return event;
             case EVENT:
                 final String eventKeyword = content.split(ARGUMENT_DELIMITER)[0].substring(1);
                 final Event e = createInstance(eventKeyword, event);
@@ -73,7 +68,7 @@ public final class EventFactory {
         events.put(type.prefix(), clazz);
     }
 
-    private MessageCreateEvent extractInlineEvents(final MessageCreateEvent event, final List<String> matches){
+    private Event extractInlineEvents(final MessageCreateEvent event, final List<String> matches){
         final List<InlineEvent> inlineEvents = new ArrayList<>();
 
         int order = 1;
@@ -103,19 +98,15 @@ public final class EventFactory {
 
     private Event extractArguments(final Event event){
         final var content = event.getMessage().getContent().split(ARGUMENT_DELIMITER);
-        final var argumentsList = Arrays.asList(content).subList(1, content.length);
-        final var arguments = IntStream.range(0, argumentsList.size())
-                .boxed()
-                .collect(toMap(Function.identity(), argumentsList::get));
-        event.setArguments(arguments);
+        event.setArguments(Arrays.asList(content).subList(1, content.length));
         return event;
     }
 
     private Event createInstance(final String prefix, final MessageCreateEvent event) {
         try {
-            final Class<? extends MessageCreateEvent> clazz = events.get(prefix);
+            final Class<? extends Event> clazz = events.get(prefix);
             if(clazz == null) return null;
-            return (Event) clazz.getConstructor(MessageCreateEvent.class).newInstance(event);
+            return clazz.getConstructor(MessageCreateEvent.class).newInstance(event);
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             log.error("Could not create an instance of the event", e);
         }

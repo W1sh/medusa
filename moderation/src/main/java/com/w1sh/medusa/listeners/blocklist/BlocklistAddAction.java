@@ -5,8 +5,6 @@ import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.events.BlocklistEvent;
 import com.w1sh.medusa.services.ChannelService;
-import discord4j.common.util.Snowflake;
-import discord4j.core.object.entity.channel.GuildChannel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -26,13 +24,11 @@ public final class BlocklistAddAction implements Function<BlocklistEvent, Mono<?
     public Mono<? extends Response> apply(BlocklistEvent event) {
         if (StringUtils.isEmpty(event.getArguments().get(1))) return errorMessage(event);
         final String blockedWord = event.getArguments().get(1);
-        final String guildId = event.getGuildId().map(Snowflake::asString).orElse("");
 
-        final Mono<Channel> createChannelMono = Mono.defer(() -> event.getMessage().getChannel()
-                .map(chan -> new Channel(chan.getId().asString(), guildId)));
+        final Mono<Channel> createChannelMono = Mono.defer(() -> event.getChannel()
+                .map(chan -> new Channel(chan.getId().asString(), event.getGuildId())));
 
-        return event.getMessage().getChannel()
-                .ofType(GuildChannel.class)
+        return event.getGuildChannel()
                 .flatMap(channelService::findByChannel)
                 .switchIfEmpty(createChannelMono)
                 .doOnNext(channel -> channel.getBlocklist().add(blockedWord))
@@ -41,12 +37,10 @@ public final class BlocklistAddAction implements Function<BlocklistEvent, Mono<?
     }
 
     private Mono<? extends Response> blocklistedMessage(BlocklistEvent event){
-        return event.getMessage().getChannel()
-                .map(chan -> new TextMessage(chan, "Word has been added to the blocklist", false));
+        return event.getChannel().map(chan -> new TextMessage(chan, "Word has been added to the blocklist", false));
     }
 
     private Mono<? extends Response> errorMessage(BlocklistEvent event){
-        return event.getMessage().getChannel()
-                .map(chan -> new TextMessage(chan, "No word received. Nothing to add to the blocklist", false));
+        return event.getChannel().map(chan -> new TextMessage(chan, "No word received. Nothing to add to the blocklist", false));
     }
 }

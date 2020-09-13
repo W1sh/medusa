@@ -6,8 +6,6 @@ import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.events.ChannelRulesEvent;
 import com.w1sh.medusa.services.ChannelService;
-import discord4j.common.util.Snowflake;
-import discord4j.core.object.entity.channel.GuildChannel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -23,13 +21,11 @@ public final class ChannelRulesActivateAction implements Function<ChannelRulesEv
     @Override
     public Mono<? extends Response> apply(ChannelRulesEvent event) {
         final Rule rule = Rule.of(event.getArguments().get(0));
-        final String guildId = event.getGuildId().map(Snowflake::asString).orElse("");
 
         final Mono<Channel> createChannelMono = Mono.defer(() -> event.getMessage().getChannel()
-                .map(chan -> new Channel(chan.getId().asString(), guildId)));
+                .map(chan -> new Channel(chan.getId().asString(), event.getGuildId())));
 
-        return event.getMessage().getChannel()
-                .ofType(GuildChannel.class)
+        return event.getGuildChannel()
                 .flatMap(channelService::findByChannel)
                 .switchIfEmpty(createChannelMono)
                 .filter(channel -> !channel.getRules().contains(rule))
@@ -39,7 +35,6 @@ public final class ChannelRulesActivateAction implements Function<ChannelRulesEv
     }
 
     private Mono<TextMessage> createRuleActivatedMessage(Rule rule, ChannelRulesEvent event){
-        return event.getMessage().getChannel()
-                .map(chan -> new TextMessage(chan, String.format("**%s** rule has been activated", rule.getValue()), false));
+        return event.getChannel().map(chan -> new TextMessage(chan, String.format("**%s** rule has been activated", rule.getValue()), false));
     }
 }

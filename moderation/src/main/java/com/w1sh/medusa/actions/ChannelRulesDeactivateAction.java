@@ -5,7 +5,6 @@ import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.events.ChannelRulesEvent;
 import com.w1sh.medusa.services.ChannelService;
-import discord4j.core.object.entity.channel.GuildChannel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -22,8 +21,7 @@ public final class ChannelRulesDeactivateAction implements Function<ChannelRules
     public Mono<? extends Response> apply(ChannelRulesEvent event) {
         final Rule rule = Rule.of(event.getArguments().get(0));
 
-        return event.getMessage().getChannel()
-                .ofType(GuildChannel.class)
+        return event.getGuildChannel()
                 .flatMap(channelService::findByChannel)
                 .doOnNext(channelRule -> channelRule.getRules().remove(rule))
                 .flatMap(channelService::delete)
@@ -31,7 +29,6 @@ public final class ChannelRulesDeactivateAction implements Function<ChannelRules
     }
 
     private Mono<TextMessage> createRuleDeactivatedMessage(Rule rule, ChannelRulesEvent event){
-        return event.getMessage().getChannel()
-                .map(chan -> new TextMessage(chan, String.format("**%s** rule has been deactivated", rule.getValue()), false));
+        return event.getChannel().map(chan -> new TextMessage(chan, String.format("**%s** rule has been deactivated", rule.getValue()), false));
     }
 }

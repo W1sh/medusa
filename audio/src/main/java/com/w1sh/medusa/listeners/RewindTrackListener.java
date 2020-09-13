@@ -20,7 +20,7 @@ import static com.w1sh.medusa.utils.Reactive.isEmpty;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public final class RewindTrackListener implements EventListener<RewindTrackEvent> {
+public final class RewindTrackListener implements CustomEventListener<RewindTrackEvent> {
 
     private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
     private final AudioConnectionManager audioConnectionManager;
@@ -53,7 +53,7 @@ public final class RewindTrackListener implements EventListener<RewindTrackEvent
     }
 
     private Mono<TextMessage> createErrorMessage(RewindTrackEvent event){
-        return event.getMessage().getChannel()
+        return event.getChannel()
                 .map(channel -> new TextMessage(channel, ":x: Invalid argument received, the argument must be of type **minutes : seconds**", false))
                 .doOnNext(responseDispatcher::queue)
                 .doAfterTerminate(responseDispatcher::flush);

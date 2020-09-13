@@ -8,7 +8,6 @@ import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.events.PlaylistEvent;
 import com.w1sh.medusa.services.PlaylistService;
 import com.w1sh.medusa.utils.ResponseUtils;
-import discord4j.common.util.Snowflake;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -28,26 +27,24 @@ public final class PlaylistLoadAction implements Function<PlaylistEvent, Mono<? 
 
     @Override
     public Mono<? extends Response> apply(PlaylistEvent event) {
-        int index = Integer.parseInt(event.getArguments().get(1));
-        String userId = event.getMember().map(member -> member.getId().asString()).orElse("");
-        Snowflake guildId = event.getGuildId().orElse(Snowflake.of(0L));
+        final int index = Integer.parseInt(event.getArguments().get(1));
 
-        return playlistService.findAllByUserId(userId)
+        return playlistService.findAllByUserId(event.getUserId())
                 .flatMapIterable(Function.identity())
                 .take(index)
                 .last()
                 .map(Playlist::getTracks)
                 .flatMapMany(Flux::fromIterable)
-                .doOnNext(track -> audioConnectionManager.requestTrack(guildId.asLong(), track.getUri()))
+                .doOnNext(track -> audioConnectionManager.requestTrack(event.getGuildId(), track.getUri()))
                 .collectList()
                 .flatMap(tracks -> createEmbed(tracks, event))
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> log.error("Failed to load playlist", throwable)));
     }
 
     private Mono<TextMessage> createEmbed(List<Track> tracks, PlaylistEvent event){
-        Long duration = tracks.stream().map(Track::getDuration).reduce(Long::sum).orElse(0L);
+        final Long duration = tracks.stream().map(Track::getDuration).reduce(Long::sum).orElse(0L);
 
-        return event.getMessage().getChannel()
+        return event.getChannel()
                 .map(channel -> new TextMessage(channel, String.format("Loaded playlist with **%d** tracks loaded and a total duration of **%s**",
                         tracks.size(), ResponseUtils.formatDuration(duration)), false));
     }

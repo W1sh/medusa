@@ -4,8 +4,7 @@ import com.w1sh.medusa.api.dice.Dice;
 import com.w1sh.medusa.api.dice.events.RollEvent;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.listeners.EventListener;
-import discord4j.core.object.entity.Member;
+import com.w1sh.medusa.listeners.CustomEventListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -14,7 +13,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class RollEventListener implements EventListener<RollEvent> {
+public final class RollEventListener implements CustomEventListener<RollEvent> {
 
     private final ResponseDispatcher responseDispatcher;
     private final Dice dice;
@@ -37,12 +36,11 @@ public final class RollEventListener implements EventListener<RollEvent> {
     }
 
     private Flux<TextMessage> sendResults(Integer result, RollEvent event){
-        Mono<TextMessage> rollStartMessage = event.getMessage().getChannel()
+        final Mono<TextMessage> rollStartMessage = event.getChannel()
                 .map(chan -> new TextMessage(chan, rollStart,false));
 
-        Mono<TextMessage> rollResultMessage = event.getMessage().getChannel()
-                .map(chan -> new TextMessage(chan, String.format(rollResult, event.getMember()
-                        .flatMap(Member::getNickname).orElse("You"), result), false));
+        final Mono<TextMessage> rollResultMessage = event.getChannel()
+                .map(chan -> new TextMessage(chan, String.format(rollResult, event.getNickname(), result), false));
 
         return Flux.merge(rollStartMessage, rollResultMessage);
     }

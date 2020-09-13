@@ -3,7 +3,7 @@ package com.w1sh.medusa.api.misc.listeners;
 import com.w1sh.medusa.api.misc.events.PingEvent;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
-import com.w1sh.medusa.listeners.EventListener;
+import com.w1sh.medusa.listeners.CustomEventListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -15,13 +15,13 @@ import java.time.Instant;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public final class PingEventListener implements EventListener<PingEvent> {
+public final class PingEventListener implements CustomEventListener<PingEvent> {
 
     private final ResponseDispatcher responseDispatcher;
 
     @Override
     public Mono<Void> execute(PingEvent event) {
-        return event.getMessage().getChannel()
+        return event.getChannel()
                 .doOnNext(channel -> {
                     Long duration = Duration.between(event.getMessage().getTimestamp(), Instant.now()).toMillis();
                     responseDispatcher.queue(new TextMessage(channel, String.format("Pong! `%sms`", duration), false));

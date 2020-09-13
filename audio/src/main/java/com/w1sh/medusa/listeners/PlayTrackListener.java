@@ -10,14 +10,13 @@ import reactor.core.publisher.Mono;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public final class PlayTrackListener implements EventListener<PlayTrackEvent> {
+public final class PlayTrackListener implements CustomEventListener<PlayTrackEvent> {
 
     private final AudioConnectionManager audioConnectionManager;
 
     @Override
     public Mono<Void> execute(PlayTrackEvent event) {
-        return Mono.justOrEmpty(event)
-                .flatMap(tuple -> audioConnectionManager.requestTrack(event))
+        return audioConnectionManager.requestTrack(event)
                 .onErrorResume(throwable -> Mono.fromRunnable(() -> log.error("Failed to play track", throwable)))
                 .then();
     }

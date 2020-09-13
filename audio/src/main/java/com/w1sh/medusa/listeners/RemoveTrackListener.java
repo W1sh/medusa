@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-public class RemoveTrackListener implements EventListener<RemoveTrackEvent> {
+public final class RemoveTrackListener implements CustomEventListener<RemoveTrackEvent> {
 
     private final AudioConnectionManager audioConnectionManager;
 

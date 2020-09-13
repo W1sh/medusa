@@ -1,6 +1,7 @@
 package com.w1sh.medusa.validators;
 
-import com.w1sh.medusa.data.events.Event;
+import com.w1sh.medusa.data.Event;
+import com.w1sh.medusa.data.events.Type;
 import com.w1sh.medusa.data.responses.TextMessage;
 import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import discord4j.common.util.Snowflake;
@@ -24,18 +25,16 @@ public final class PermissionsValidator implements Validator {
 
     @Override
     public Mono<Boolean> validate(Event event) {
-        return event.getMessage().getChannel()
-                .ofType(GuildChannel.class)
+        return event.getGuildChannel()
                 .transform(flatZipWith(Mono.just(event.getClient().getSelfId()), this::hasPermissions))
-                .flatMap(effPermissions -> Flux.fromIterable(event.getPermissions())
+                .flatMap(effPermissions -> Flux.fromIterable(event.getClass().getAnnotation(Type.class).eventType().getPermissions())
                         .all(effPermissions::contains)
                         .flatMap(bool -> Boolean.FALSE.equals(bool) ? createErrorMessage(event) : Mono.empty()))
                 .transform(isEmpty());
     }
 
     private Mono<TextMessage> createErrorMessage(Event event){
-        return event.getMessage().getChannel()
-                .map(channel -> new TextMessage(channel, ":x: I do not have permission to do that", false))
+        return event.getChannel().map(channel -> new TextMessage(channel, ":x: I do not have permission to do that", false))
                 .doOnNext(textMessage -> {
                     log.error("Permissions validation failed, event discarded");
                     responseDispatcher.queue(textMessage);
