@@ -22,6 +22,9 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 public final class CardPriceEventListener implements CustomEventListener<CardPriceEvent> {
 
+    private static final String TITLE_FIELD_FORMAT = "**%s**";
+    private static final String TEXT_FIELD_FORMAT = "%s %s %s";
+
     private final CardService cardService;
     private final MessageService messageService;
     private final CardUtils cardUtils;
@@ -59,18 +62,21 @@ public final class CardPriceEventListener implements CustomEventListener<CardPri
 
     private void addFieldsForEvenPrints(EmbedCreateSpec embedCreateSpec, List<Card> list, int maxFields) {
         for (int i = 0; i < maxFields; i += 2) {
-            embedCreateSpec.addField(String.format("**%s**", list.get(i).getSet()), String.format("%s %s %s",
-                    getUsdField(list.get(i)), MessageService.BULLET, getEurField(list.get(i))), true);
+            embedCreateSpec.addField(String.format(TITLE_FIELD_FORMAT, list.get(i).getSet()),
+                    String.format(TEXT_FIELD_FORMAT, getUsdField(list.get(i)), MessageService.BULLET, getEurField(list.get(i))),
+                    true);
             embedCreateSpec.addField(MessageService.ZERO_WIDTH_SPACE, MessageService.ZERO_WIDTH_SPACE, true);
-            embedCreateSpec.addField(String.format("**%s**", list.get(i + 1).getSet()), String.format("%s %s %s",
-                    getUsdField(list.get(i + 1)), MessageService.BULLET, getEurField(list.get(i + 1))), true);
+            embedCreateSpec.addField(String.format(TITLE_FIELD_FORMAT, list.get(i + 1).getSet()),
+                    String.format(TEXT_FIELD_FORMAT, getUsdField(list.get(i + 1)), MessageService.BULLET, getEurField(list.get(i + 1))),
+                    true);
         }
     }
 
     private void addFieldsForOddPrints(EmbedCreateSpec embedCreateSpec, List<Card> list, int maxFields) {
         for (int i = 0; i < maxFields; i++) {
-            embedCreateSpec.addField(String.format("**%s**", list.get(i).getSet()), String.format("%s %s %s",
-                    getUsdField(list.get(i)), MessageService.BULLET, getEurField(list.get(i))), true);
+            embedCreateSpec.addField(String.format(TITLE_FIELD_FORMAT, list.get(i).getSet()),
+                    String.format(TEXT_FIELD_FORMAT, getUsdField(list.get(i)), MessageService.BULLET, getEurField(list.get(i))),
+                    true);
         }
     }
 
