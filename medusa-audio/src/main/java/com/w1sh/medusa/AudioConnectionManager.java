@@ -11,8 +11,7 @@ import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.voice.VoiceConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -24,11 +23,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
+@Slf4j
 @Component
 public final class AudioConnectionManager {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(120);
-    private static final Logger logger = LoggerFactory.getLogger(AudioConnectionManager.class);
 
     private final AudioPlayerManager playerManager;
     private final Map<String, AudioConnection> audioConnections;
@@ -53,8 +52,8 @@ public final class AudioConnectionManager {
                 .map(AudioConnection::getTrackScheduler)
                 .flatMap(trackScheduler -> event.getMessage().getChannel()
                         .doOnNext(messageChannel -> playerManager.loadItem(event.getArguments().get(0), trackScheduler.getAudioLoadResultListener())))
-                .doOnSuccess(tuple -> logger.info("Loaded song request to voice channel in guild <{}>", event.getGuildId()))
-                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to load requested track", throwable)));
+                .doOnSuccess(tuple -> log.info("Loaded song request to voice channel in guild with id <{}>", event.getGuildId()))
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> log.error("Failed to load requested track", throwable)));
     }
 
     public Mono<AudioConnection> joinVoiceChannel(Event event) {
@@ -69,15 +68,15 @@ public final class AudioConnectionManager {
                             .flatMap(tuple -> createAudioConnection(audioPlayer, tuple.getT1(), tuple.getT2()))
                             .doOnNext(conn -> onDisconnect(conn, channel));
                 })
-                .doOnSuccess(audioConnection -> logger.info("Client joined voice channel in guild <{}>", event.getGuildId()))
-                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to join voice channel", throwable)));
+                .doOnSuccess(audioConnection -> log.info("Client joined voice channel in guild with id <{}>", event.getGuildId()))
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> log.error("Failed to join voice channel", throwable)));
     }
 
     public Mono<Void> leaveVoiceChannel(String guildId) {
         return Mono.justOrEmpty(audioConnections.getOrDefault(guildId, null))
-                .doOnSuccess(snowflake -> logger.info("Client leaving voice channel in guild <{}>", guildId))
+                .doOnSuccess(snowflake -> log.info("Client leaving voice channel in guild with id <{}>", guildId))
                 .flatMap(connection -> destroyAudioConnection(guildId, connection))
-                .onErrorResume(throwable -> Mono.fromRunnable(() -> logger.error("Failed to leave voice channel", throwable)));
+                .onErrorResume(throwable -> Mono.fromRunnable(() -> log.error("Failed to leave voice channel", throwable)));
     }
 
     public void onDisconnect(AudioConnection connection, VoiceChannel voiceChannel){
@@ -87,7 +86,7 @@ public final class AudioConnectionManager {
                         .count()
                         .map(count -> 1L == count))
                 .next()
-                .doOnSuccess(ignored -> logger.info("Destroying audio connection in guild <{}>", connection.getGuildId()))
+                .doOnSuccess(ignored -> log.info("Destroying audio connection in guild <{}>", connection.getGuildId()))
                 .flatMap(ignored -> connection.destroy())
                 .subscribe();
     }
@@ -101,7 +100,7 @@ public final class AudioConnectionManager {
     private AudioConnection scheduleLeave(AudioConnection audioConnection, MessageChannel messageChannel){
         audioConnection.getTrackScheduler().stop();
         audioConnection.setLeaving(true);
-        logger.info("Scheduling client to leave voice channel in guild <{}> after <{}> seconds",
+        log.info("Scheduling client to leave voice channel in guild with id <{}> after {} seconds",
                 ((GuildChannel) messageChannel).getGuildId().asLong(), TIMEOUT.getSeconds());
         Schedulers.elastic().schedule(() -> leaveVoiceChannel(((GuildChannel) messageChannel).getGuildId().asString()).subscribe(),
                 120, TimeUnit.SECONDS);
@@ -109,13 +108,13 @@ public final class AudioConnectionManager {
     }
 
     public void shutdown(){
-        logger.info("Starting shutdown of AudioConnectionManager");
-        logger.info("Terminating <{}> audio connections", audioConnections.size());
+        log.info("Starting shutdown of AudioConnectionManager");
+        log.info("Terminating {} audio connections", audioConnections.size());
         audioConnections.values().forEach(AudioConnection::destroy);
     }
 
     public Mono<AudioConnection> getAudioConnection(Event event) {
-        logger.info("Retrieving audio connection for guild with id <{}>", event.getGuildId());
+        log.info("Retrieving audio connection for guild with id <{}>", event.getGuildId());
         return Mono.justOrEmpty(audioConnections.get(event.getGuildId()))
                 .zipWith(event.getMessage().getChannel())
                 .doOnNext(tuple -> tuple.getT1().setMessageChannel(tuple.getT2()))
@@ -127,7 +126,7 @@ public final class AudioConnectionManager {
         final AudioConnection audioConnection = new AudioConnection(player, voiceConnection, messageService);
         audioConnection.setMessageChannel(channel);
 
-        logger.info("Creating new audio connection in guild <{}>", guildId);
+        log.info("Creating new audio connection in guild with id<{}>", guildId);
         audioConnections.put(guildId, audioConnection);
         return Mono.just(audioConnection);
     }
