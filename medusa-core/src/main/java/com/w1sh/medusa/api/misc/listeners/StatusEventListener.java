@@ -4,6 +4,7 @@ import com.w1sh.medusa.api.misc.events.StatusEvent;
 import com.w1sh.medusa.core.Instance;
 import com.w1sh.medusa.data.Event;
 import com.w1sh.medusa.listeners.CustomEventListener;
+import com.w1sh.medusa.services.EventService;
 import com.w1sh.medusa.services.MessageService;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.rest.util.Color;
@@ -22,6 +23,7 @@ public final class StatusEventListener implements CustomEventListener<StatusEven
     private String version;
 
     private final MessageService messageService;
+    private final EventService eventService;
 
     @Override
     public Mono<Void> execute(StatusEvent event) {
@@ -31,8 +33,7 @@ public final class StatusEventListener implements CustomEventListener<StatusEven
     }
 
     private Mono<Consumer<EmbedCreateSpec>> createStatusEmbedSpec(Event event) {
-        return event.getClient().getGuilds().count()
-                .zipWith(event.getClient().getUsers().count())
+        return Mono.zip(event.getClient().getGuilds().count(), event.getClient().getUsers().count(),eventService.countAll())
                 .map(tuple -> embedCreateSpec -> {
                     embedCreateSpec.setColor(Color.GREEN);
                     embedCreateSpec.setTitle(String.format("Medusa - Shard %d/%d",
@@ -46,7 +47,7 @@ public final class StatusEventListener implements CustomEventListener<StatusEven
                     embedCreateSpec.addField("Guilds", String.format("%d (%d Avg Users/Guild)",
                             tuple.getT1(), tuple.getT2()/tuple.getT1()), true);
                     embedCreateSpec.addField("Users", tuple.getT2().toString(), true);
-                    //embedCreateSpec.addField("Total events", Trackers.getTotalEventCount().toString(), true);
+                    embedCreateSpec.addField("Total events", tuple.getT3().toString(), true);
                     embedCreateSpec.setFooter(String.format("Version: %s", version), null);
                 });
     }

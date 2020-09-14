@@ -5,6 +5,7 @@ import com.w1sh.medusa.repos.EventRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.PostConstruct;
@@ -36,6 +37,14 @@ public class EventService {
 
     public void save(Event event){
         events.add(event);
+    }
+
+    public Mono<Long> countAll(){
+        log.info("Counting all events in database");
+        return eventRepository.countAll()
+                .mergeWith(Mono.justOrEmpty((long) events.size()))
+                .reduce(0L, Long::sum)
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to count all events", t)));
     }
 
     private void scheduleBatchSave() {
