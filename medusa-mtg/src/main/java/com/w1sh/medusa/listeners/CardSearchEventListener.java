@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 
 @Component
 @RequiredArgsConstructor
-public final class CardSearchListener implements CustomEventListener<CardSearchEvent> {
+public final class CardSearchEventListener implements CustomEventListener<CardSearchEvent> {
 
     private final CardService cardService;
     private final MessageService messageService;
@@ -36,9 +36,7 @@ public final class CardSearchListener implements CustomEventListener<CardSearchE
     }
 
     private Mono<Message> createCardSearchEmbed(List<Card> cards, CardSearchEvent event){
-        if(cards.isEmpty()){
-            return cardUtils.createErrorEmbed(event);
-        }
+        if(cards.isEmpty()) return cardUtils.createErrorEmbed(event);
 
         final Consumer<EmbedCreateSpec> specConsumer = embedCreateSpec -> {
             embedCreateSpec.setColor(Color.GREEN);

@@ -1,58 +1,59 @@
 package com.w1sh.medusa.listeners;
 
 import com.w1sh.medusa.data.events.InlineEvent;
-import com.w1sh.medusa.data.responses.Embed;
 import com.w1sh.medusa.data.responses.Response;
-import com.w1sh.medusa.dispatchers.ResponseDispatcher;
 import com.w1sh.medusa.events.CardPriceEvent;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.services.CardService;
+import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.utils.CardUtils;
-import com.w1sh.medusa.utils.ResponseUtils;
+import discord4j.core.object.entity.Message;
+import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.rest.util.Color;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 @Component
 @RequiredArgsConstructor
-public final class CardPriceEventListener implements EventListener<CardPriceEvent> {
+public final class CardPriceEventListener implements CustomEventListener<CardPriceEvent> {
 
     private final CardService cardService;
-    private final ResponseDispatcher responseDispatcher;
+    private final MessageService messageService;
+    private final CardUtils cardUtils;
 
     @Override
     public Mono<Void> execute(CardPriceEvent event) {
         return Mono.just(event)
                 .filter(InlineEvent::hasArgument)
-                .flatMap(ev -> cardService.getCardByName(ev.getInlineArgument()))
-                .flatMap(tuple -> this.createEmbed(tuple, event))
-                .switchIfEmpty(notFoundMessage(event))
-                .doOnNext(responseDispatcher::queue)
-                .doAfterTerminate(responseDispatcher::flush)
+                .flatMap(ev -> cardService.getUniquePrintsByName(ev.getInlineArgument()))
+                .flatMap(list -> createCardPriceEmbed(list, event))
+                .switchIfEmpty(cardUtils.createErrorEmbed(event))
                 .then();
     }
 
-    private Mono<Response> createEmbed(Card card, CardPriceEvent event){
-        return event.getMessage().getChannel()
-                .map(channel -> {
-                    if(card.isEmpty() || card.getUri() == null || card.getName() == null
-                            || card.getPrice() == null) {
-                        return CardUtils.createErrorEmbed(channel, event);
-                    }
-                    return new Embed(channel, embedCreateSpec -> {
-                        embedCreateSpec.setColor(Color.GREEN);
-                        embedCreateSpec.setUrl(card.getUri());
-                        embedCreateSpec.setTitle(String.format("**Prices for %s**", card.getName()));
-                        embedCreateSpec.setDescription(card.getTypeLine());
-                        embedCreateSpec.addField(String.format("**%s**", card.getSet()), String.format("$%s %s €%s",
-                                card.getPrice().getUsd(), ResponseUtils.BULLET, card.getPrice().getUsd()), true);
-                    }, event.isFragment(), event.getInlineOrder());
-                });
-    }
+    private Mono<Message> createCardPriceEmbed(List<Card> list, CardPriceEvent event) {
+        if(list.isEmpty()) return cardUtils.createErrorEmbed(event);
 
-    private Mono<Response> notFoundMessage(CardPriceEvent event) {
-        return event.getMessage().getChannel()
-                .map(channel -> CardUtils.createErrorEmbed(channel, event));
+        final Consumer<EmbedCreateSpec> specConsumer = embedCreateSpec -> {
+            embedCreateSpec.setColor(Color.GREEN);
+            embedCreateSpec.setTitle(String.format("**Prices for %s**", list.get(0).getName()));
+            embedCreateSpec.setDescription(list.get(0).getTypeLine());
+
+            for (int i = 0; i < Math.min(list.size(), 4); i += 2) {
+                embedCreateSpec.addField(String.format("**%s**", list.get(i).getSet()), String.format("$%s %s €%s",
+                        list.get(i).getPrice().getUsd(), MessageService.BULLET, list.get(i).getPrice().getUsd()), true);
+                embedCreateSpec.addField(MessageService.ZERO_WIDTH_SPACE, MessageService.ZERO_WIDTH_SPACE, true);
+                embedCreateSpec.addField(String.format("**%s**", list.get(i + 1).getSet()), String.format("$%s %s €%s",
+                        list.get(i + 1).getPrice().getUsd(), MessageService.BULLET, list.get(i + 1).getPrice().getUsd()), true);
+            }
+        };
+
+        final Response response = Response.with(specConsumer, event.getChannel(), event.getChannelId(),
+                event.isFragment(), event.getInlineOrder());
+        return messageService.sendOrQueue(event.getChannel(), response);
     }
 }

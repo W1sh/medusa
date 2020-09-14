@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 
 @Component
 @RequiredArgsConstructor
-public final class CardDetailListener implements CustomEventListener<CardDetailEvent> {
+public final class CardDetailEventListener implements CustomEventListener<CardDetailEvent> {
 
     private final CardService cardService;
     private final MessageService messageService;
