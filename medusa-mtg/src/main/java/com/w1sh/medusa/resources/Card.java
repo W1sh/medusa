@@ -22,6 +22,9 @@ public class Card {
 
     private String name;
 
+    @JsonProperty(value = "set_name")
+    private String set;
+
     private String power;
 
     private String toughness;
@@ -38,12 +41,15 @@ public class Card {
     @JsonProperty(value = "prices")
     private Price price;
 
+    @JsonProperty(value = "prints_search_uri")
+    private String uniquePrintsUri;
+
     @JsonProperty(value = "edhrec_rank")
     private Integer edhrecRank;
 
     public boolean isEmpty(){
-        return Stream.of(uri, manaCost, image, name, power, toughness, typeLine, oracleText,
-                flavorText, price, edhrecRank)
+        return Stream.of(uri, manaCost, image, name, set, power, toughness, typeLine, oracleText,
+                flavorText, price, uniquePrintsUri, edhrecRank)
                 .allMatch(Objects::isNull);
     }
 

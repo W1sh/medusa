@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 
 @Component
 @RequiredArgsConstructor
-public final class CardImageListener implements CustomEventListener<CardImageEvent> {
+public final class CardImageEventListener implements CustomEventListener<CardImageEvent> {
 
     private final CardService cardService;
     private final MessageService messageService;
@@ -29,7 +29,7 @@ public final class CardImageListener implements CustomEventListener<CardImageEve
         return Mono.just(event)
                 .filter(InlineEvent::hasArgument)
                 .flatMap(ev -> cardService.getCardByName(ev.getInlineArgument()))
-                .flatMap(tuple -> createCardImageEmbed(tuple, event))
+                .flatMap(card -> createCardImageEmbed(card, event))
                 .then();
     }
 
