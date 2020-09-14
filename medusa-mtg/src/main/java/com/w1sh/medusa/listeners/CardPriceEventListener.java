@@ -12,6 +12,7 @@ import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.rest.util.Color;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -43,17 +44,41 @@ public final class CardPriceEventListener implements CustomEventListener<CardPri
             embedCreateSpec.setTitle(String.format("**Prices for %s**", list.get(0).getName()));
             embedCreateSpec.setDescription(list.get(0).getTypeLine());
 
-            for (int i = 0; i < Math.min(list.size(), 4); i += 2) {
-                embedCreateSpec.addField(String.format("**%s**", list.get(i).getSet()), String.format("$%s %s €%s",
-                        list.get(i).getPrice().getUsd(), MessageService.BULLET, list.get(i).getPrice().getUsd()), true);
-                embedCreateSpec.addField(MessageService.ZERO_WIDTH_SPACE, MessageService.ZERO_WIDTH_SPACE, true);
-                embedCreateSpec.addField(String.format("**%s**", list.get(i + 1).getSet()), String.format("$%s %s €%s",
-                        list.get(i + 1).getPrice().getUsd(), MessageService.BULLET, list.get(i + 1).getPrice().getUsd()), true);
+            final int maxFields = Math.min(list.size(), 4);
+            if (maxFields % 2 == 0) {
+                addFieldsForEvenPrints(embedCreateSpec, list, maxFields);
+            } else {
+                addFieldsForOddPrints(embedCreateSpec, list, maxFields);
             }
         };
 
         final Response response = Response.with(specConsumer, event.getChannel(), event.getChannelId(),
                 event.isFragment(), event.getInlineOrder());
         return messageService.sendOrQueue(event.getChannel(), response);
+    }
+
+    private void addFieldsForEvenPrints(EmbedCreateSpec embedCreateSpec, List<Card> list, int maxFields) {
+        for (int i = 0; i < maxFields; i += 2) {
+            embedCreateSpec.addField(String.format("**%s**", list.get(i).getSet()), String.format("%s %s %s",
+                    getUsdField(list.get(i)), MessageService.BULLET, getEurField(list.get(i))), true);
+            embedCreateSpec.addField(MessageService.ZERO_WIDTH_SPACE, MessageService.ZERO_WIDTH_SPACE, true);
+            embedCreateSpec.addField(String.format("**%s**", list.get(i + 1).getSet()), String.format("%s %s %s",
+                    getUsdField(list.get(i + 1)), MessageService.BULLET, getEurField(list.get(i + 1))), true);
+        }
+    }
+
+    private void addFieldsForOddPrints(EmbedCreateSpec embedCreateSpec, List<Card> list, int maxFields) {
+        for (int i = 0; i < maxFields; i++) {
+            embedCreateSpec.addField(String.format("**%s**", list.get(i).getSet()), String.format("%s %s %s",
+                    getUsdField(list.get(i)), MessageService.BULLET, getEurField(list.get(i))), true);
+        }
+    }
+
+    private String getUsdField(Card card){
+        return StringUtils.isEmpty(card.getPrice().getUsd()) ? "N/A" : String.format("$%s", card.getPrice().getUsd());
+    }
+
+    private String getEurField(Card card){
+        return StringUtils.isEmpty(card.getPrice().getEur()) ? "N/A" : String.format("€%s", card.getPrice().getEur());
     }
 }

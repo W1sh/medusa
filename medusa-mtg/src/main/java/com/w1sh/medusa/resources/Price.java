@@ -14,16 +14,4 @@ public class Price {
 
     @JsonProperty(value = "usd_foil")
     private String usdFoil;
-
-    public String getEur() {
-        return eur == null ? "N/A" : eur;
-    }
-
-    public String getUsd() {
-        return usd == null ? "N/A" : eur;
-    }
-
-    public String getUsdFoil() {
-        return usdFoil == null ? "N/A" : eur;
-    }
 }
