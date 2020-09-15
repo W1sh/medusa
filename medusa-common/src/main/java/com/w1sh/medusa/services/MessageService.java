@@ -9,6 +9,7 @@ import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.spec.EmbedCreateSpec;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
+import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.FluxProcessor;
@@ -99,7 +100,12 @@ public class MessageService {
     }
 
     private String getMessage(String messageKey, String[] args) {
-        return messageSource.getMessage(messageKey, args, Locale.ENGLISH);
+        try {
+            return messageSource.getMessage(messageKey, args, Locale.ENGLISH);
+        } catch (NoSuchMessageException e) {
+            log.error("Failed to retrieve message with key {}", messageKey);
+            return null;
+        }
     }
 
     public static String formatDuration(Long duration){

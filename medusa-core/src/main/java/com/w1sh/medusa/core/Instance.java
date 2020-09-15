@@ -64,8 +64,7 @@ public final class Instance {
         this.eventValidators = eventValidators;
         this.messageValidators = messageValidators;
         this.executor = executor;
-        this.events = reflections.getSubTypesOf(Event.class)
-                .stream()
+        this.events = reflections.getSubTypesOf(Event.class).stream()
                 .filter(event -> !Modifier.isAbstract(event.getModifiers()))
                 .collect(Collectors.toSet());
     }

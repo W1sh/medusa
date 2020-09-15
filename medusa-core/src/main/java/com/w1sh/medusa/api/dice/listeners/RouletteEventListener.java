@@ -4,10 +4,8 @@ import com.w1sh.medusa.api.dice.events.RouletteEvent;
 import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.data.responses.MessageEnum;
 import com.w1sh.medusa.listeners.CustomEventListener;
-import com.w1sh.medusa.rules.NoGamblingRuleEnforcer;
 import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.services.UserService;
-import com.w1sh.medusa.utils.Reactive;
 import discord4j.core.object.entity.Message;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +20,6 @@ public final class RouletteEventListener implements CustomEventListener<Roulette
 
     private final MessageService messageService;
     private final UserService userService;
-    private final NoGamblingRuleEnforcer noGamblingRuleEnforcer;
     private final Random random;
 
     @Override
@@ -32,14 +29,10 @@ public final class RouletteEventListener implements CustomEventListener<Roulette
 
         final Mono<User> guildUserMono = Mono.defer(() -> userService.findByUserIdAndGuildId(event.getUserId(), event.getGuildId()));
 
-        final Mono<Message> rouletteMessage = Mono.defer(() -> Mono.zip(valueMono, guildUserMono)
+        return Mono.zip(valueMono, guildUserMono)
                 .filter(tuple -> tuple.getT1() <= tuple.getT2().getPoints())
                 .flatMap(tuple -> roulettePoints(tuple.getT1(), tuple.getT2(), event))
-                .switchIfEmpty(createErrorMessage(event)));
-
-        return event.getGuildChannel()
-                .flatMap(noGamblingRuleEnforcer::validate)
-                .transform(Reactive.ifElse(bool -> noGamblingRuleEnforcer.enforce(event), bool -> rouletteMessage))
+                .switchIfEmpty(createErrorMessage(event))
                 .then();
     }
 

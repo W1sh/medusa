@@ -21,7 +21,7 @@ public enum MessageEnum {
     DISABLE_SINGLE_ERROR("message.event.disable.single.error"),
     DISABLE_MULTIPLE_SUCCESS("message.event.disable.multiple.success"),
     DISABLE_MULTIPLE_ERROR("message.event.disable.multiple.error"),
-    NOGAMBLING("message.event.nogambling.success"),
+    NOGAMBLING("message.event.nogambling"),
     POINTS("message.event.points"),
     RULES_ERROR("message.event.rules.error"),
     RULES_ACTIVATED("message.event.rules.activated"),

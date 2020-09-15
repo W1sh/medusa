@@ -43,10 +43,8 @@ public final class BlocklistValidator implements Validator<MessageCreateEvent> {
                 MessageEnum.BLOCKLIST, event.getMember().map(Member::getDisplayName).orElse(""));
 
         return warningService.addWarning(new Warning(event))
-                .doOnNext(ignored -> event.getMessage()
-                        .delete()
-                        .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete message", t)))
-                        .subscribe())
+                .doOnNext(ignored -> event.getMessage().delete())
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete message", t)))
                 .then(warningMessage);
     }
 
