@@ -14,8 +14,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static com.w1sh.medusa.utils.Reactive.flatZipWith;
-import static com.w1sh.medusa.utils.Reactive.isEmpty;
+import static com.w1sh.medusa.utils.Reactive.*;
 
 @Component
 @RequiredArgsConstructor
@@ -30,13 +29,13 @@ public final class PermissionsValidator implements Validator {
                 .transform(flatZipWith(Mono.just(event.getClient().getSelfId()), this::hasPermissions))
                 .flatMap(effPermissions -> Flux.fromIterable(event.getClass().getAnnotation(Type.class).eventType().getPermissions())
                         .all(effPermissions::contains)
-                        .flatMap(bool -> Boolean.FALSE.equals(bool) ? createErrorMessage(event) : Mono.empty()))
+                        .transform(ifElse(b -> Mono.empty(), b -> createErrorMessage(event))))
                 .transform(isEmpty());
     }
 
     private Mono<Message> createErrorMessage(Event event){
         return messageService.send(event.getChannel(), MessageEnum.VALIDATOR_PERMISSIONS_ERROR)
-                .doOnNext(textMessage -> log.error("Permissions validation failed, event discarded"));
+                .doOnNext(textMessage -> log.warn("Permissions validation failed in guild with id <{}>, event was discarded", event.getGuildId()));
     }
 
     private Mono<PermissionSet> hasPermissions(GuildChannel channel, Snowflake snowflake) {

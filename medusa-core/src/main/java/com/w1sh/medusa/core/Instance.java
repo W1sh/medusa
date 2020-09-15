@@ -120,7 +120,7 @@ public final class Instance {
                 .filterWhen(ev -> Flux.fromIterable(validators)
                         .filter(validator -> Event.class.isAssignableFrom(ev.getClass()))
                         .flatMap(validator -> validator.validate(ev))
-                        .all(bool -> true)
+                        .all(Boolean.TRUE::equals)
                         .defaultIfEmpty(true))
                 .flatMap(customEventPublisher::publish);
 
