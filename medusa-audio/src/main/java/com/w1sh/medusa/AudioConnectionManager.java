@@ -110,7 +110,7 @@ public final class AudioConnectionManager {
     public void shutdown(){
         log.info("Starting shutdown of AudioConnectionManager");
         log.info("Terminating {} audio connections", audioConnections.size());
-        audioConnections.values().forEach(AudioConnection::destroy);
+        audioConnections.values().forEach(audioConnection -> audioConnection.destroy().block());
     }
 
     public Mono<AudioConnection> getAudioConnection(Event event) {
