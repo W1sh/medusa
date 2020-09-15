@@ -47,7 +47,8 @@ public final class Instance {
     private final EventFactory eventFactory;
     private final CustomEventPublisher customEventPublisher;
     private final DiscordEventPublisher discordEventPublisher;
-    private final List<Validator> validators;
+    private final List<Validator<Event>> eventValidators;
+    private final List<Validator<MessageCreateEvent>> messageValidators;
     private final Set<Class<? extends Event>> events;
     private final Executor executor;
 
@@ -55,11 +56,13 @@ public final class Instance {
     private String token;
 
     public Instance(EventFactory eventFactory, CustomEventPublisher customEventPublisher, DiscordEventPublisher discordEventPublisher,
-                    List<Validator> validators, Executor executor, Reflections reflections) {
+                    List<Validator<Event>> eventValidators, List<Validator<MessageCreateEvent>> messageValidators,
+                    Executor executor, Reflections reflections) {
         this.eventFactory = eventFactory;
         this.customEventPublisher = customEventPublisher;
         this.discordEventPublisher = discordEventPublisher;
-        this.validators = validators;
+        this.eventValidators = eventValidators;
+        this.messageValidators = messageValidators;
         this.executor = executor;
         this.events = reflections.getSubTypesOf(Event.class)
                 .stream()
@@ -116,8 +119,12 @@ public final class Instance {
 
         final Publisher<?> onMessageCreate = gateway.on(MessageCreateEvent.class)
                 .filter(event -> event.getClass().equals(MessageCreateEvent.class) && event.getMember().map(user -> !user.isBot()).orElse(false))
+                .filterWhen(ev -> Flux.fromIterable(messageValidators)
+                        .flatMap(validator -> validator.validate(ev))
+                        .all(Boolean.TRUE::equals)
+                        .defaultIfEmpty(true))
                 .flatMap(event -> Mono.justOrEmpty(eventFactory.extractEvents(event)))
-                .filterWhen(ev -> Flux.fromIterable(validators)
+                .filterWhen(ev -> Flux.fromIterable(eventValidators)
                         .filter(validator -> Event.class.isAssignableFrom(ev.getClass()))
                         .flatMap(validator -> validator.validate(ev))
                         .all(Boolean.TRUE::equals)

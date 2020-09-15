@@ -16,7 +16,7 @@ import static com.w1sh.medusa.utils.Reactive.isEmpty;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public final class ArgumentValidator implements Validator {
+public final class ArgumentValidator implements Validator<Event> {
 
     private final MessageService messageService;
 
