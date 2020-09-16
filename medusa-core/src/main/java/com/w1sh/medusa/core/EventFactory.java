@@ -8,9 +8,11 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.reflections.Reflections;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,8 +36,12 @@ public final class EventFactory {
     @Getter @Setter
     private String prefix;
 
-    public EventFactory() {
+    public EventFactory(Reflections reflections) {
         this.prefix = "!";
+        reflections.getSubTypesOf(Event.class).stream()
+                .filter(event -> !Modifier.isAbstract(event.getModifiers()))
+                .forEach(this::registerEvent);
+        log.info("Found and registered {} events", events.size());
     }
 
     public Event extractEvents(final MessageCreateEvent event){
@@ -65,6 +71,7 @@ public final class EventFactory {
             log.error("Failed to register event! Event with keyword <{}> is already registered!", type.prefix());
             return;
         }
+        log.info("Registering new event of type <{}>", clazz.getSimpleName());
         events.put(type.prefix(), clazz);
     }
 

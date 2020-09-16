@@ -23,20 +23,15 @@ import discord4j.rest.route.Routes;
 import discord4j.store.jdk.JdkStoreService;
 import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
-import org.reflections.Reflections;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.retry.Retry;
 
-import javax.annotation.PostConstruct;
-import java.lang.reflect.Modifier;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -49,7 +44,6 @@ public final class Instance {
     private final DiscordEventPublisher discordEventPublisher;
     private final List<Validator<Event>> eventValidators;
     private final List<Validator<MessageCreateEvent>> messageValidators;
-    private final Set<Class<? extends Event>> events;
     private final Executor executor;
 
     @Value("${discord.token}")
@@ -57,20 +51,16 @@ public final class Instance {
 
     public Instance(EventFactory eventFactory, CustomEventPublisher customEventPublisher, DiscordEventPublisher discordEventPublisher,
                     List<Validator<Event>> eventValidators, List<Validator<MessageCreateEvent>> messageValidators,
-                    Executor executor, Reflections reflections) {
+                    Executor executor) {
         this.eventFactory = eventFactory;
         this.customEventPublisher = customEventPublisher;
         this.discordEventPublisher = discordEventPublisher;
         this.eventValidators = eventValidators;
         this.messageValidators = messageValidators;
         this.executor = executor;
-        this.events = reflections.getSubTypesOf(Event.class).stream()
-                .filter(event -> !Modifier.isAbstract(event.getModifiers()))
-                .collect(Collectors.toSet());
     }
 
-    @PostConstruct
-    public void init(){
+    public void initialize(){
         log.info("Setting up client...");
 
         final var client = DiscordClient.builder(token)
@@ -95,8 +85,6 @@ public final class Instance {
         assert gateway != null;
 
         initDispatcher(gateway);
-
-        registerEvents();
 
         executor.startPointDistribution(gateway);
 
@@ -136,14 +124,6 @@ public final class Instance {
         Mono.when(onReady, onGuildDelete, onMemberLeave, onTextChannelCreate, onTextChannelDelete,
                 onMessageUpdate, onMessageCreate, onDisconnect)
                 .subscribe(null, t -> log.error("An unknown error occurred", t));
-    }
-
-    private void registerEvents() {
-        for (Class<? extends Event> clazz : events) {
-            eventFactory.registerEvent(clazz);
-            log.info("Registering new event of type <{}>", clazz.getSimpleName());
-        }
-        log.info("Found and registered {} events", events.size());
     }
 
     public static String getUptime(){
