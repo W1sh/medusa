@@ -43,7 +43,8 @@ public class UserRepository {
 
     public Mono<List<User>> findAllByGuildId(String guildId) {
         final Query query = new Query(Criteria.where(GUILD_ID_FIELD).is(guildId));
-        return template.find(query, User.class).collectList();
+        return template.find(query, User.class).collectList()
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to find all users in guild with id \"{}\"", guildId, t)));
     }
 
     public Mono<DeleteResult> removeByUserId(String userId) {
@@ -64,9 +65,10 @@ public class UserRepository {
     }
 
     public Flux<User> findTop5ByGuildIdOrderByPoints(String guildId) {
-        final Query query = new Query(Criteria.where("guildId").is(guildId))
+        final Query query = new Query(Criteria.where(GUILD_ID_FIELD).is(guildId))
                 .limit(5)
                 .with(Sort.by(Sort.Direction.DESC, POINTS_FIELD));
-        return template.find(query, User.class);
+        return template.find(query, User.class)
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to find users with most points in guild with id \"{}\"", guildId, t)));
     }
 }

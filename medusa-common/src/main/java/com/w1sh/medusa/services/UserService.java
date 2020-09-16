@@ -100,7 +100,7 @@ public class UserService {
                 .map(Signal::next), guildId)
                 .onCacheMissResume(supplier)
                 .andWriteWith((key, signal) -> Mono.fromRunnable(() -> Optional.ofNullable(signal.get()).ifPresent(value -> cache.put(key, value))))
-                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to retrieve all guild users in guild with guild id \"{}\"", guildId, t)))
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to retrieve all guild users in guild with id \"{}\"", guildId, t)))
                 .flatMapIterable(Function.identity());
     }
 
