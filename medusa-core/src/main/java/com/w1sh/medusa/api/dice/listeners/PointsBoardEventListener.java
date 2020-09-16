@@ -3,10 +3,8 @@ package com.w1sh.medusa.api.dice.listeners;
 import com.w1sh.medusa.api.dice.events.PointsBoardEvent;
 import com.w1sh.medusa.data.User;
 import com.w1sh.medusa.listeners.CustomEventListener;
-import com.w1sh.medusa.rules.NoGamblingRuleEnforcer;
 import com.w1sh.medusa.services.MessageService;
 import com.w1sh.medusa.services.UserService;
-import com.w1sh.medusa.utils.Reactive;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Message;
@@ -24,19 +22,15 @@ public final class PointsBoardEventListener implements CustomEventListener<Point
 
     private final MessageService messageService;
     private final UserService userService;
-    private final NoGamblingRuleEnforcer noGamblingRuleEnforcer;
+
 
     @Override
     public Mono<Void> execute(PointsBoardEvent event) {
-        final Mono<Message> pointsLeaderboardMessage = Mono.defer(() -> userService.findTop5PointsInGuild(event.getGuildId())
+        return userService.findTop5PointsInGuild(event.getGuildId())
                 .collectList()
                 .zipWith(event.getGuild(), this::buildBoard)
                 .flatMap(Flux::collectList)
-                .flatMap(strings -> listUsers(strings, event.getChannel())));
-
-        return event.getGuildChannel()
-                .flatMap(noGamblingRuleEnforcer::validate)
-                .transform(Reactive.ifElse(bool -> noGamblingRuleEnforcer.enforce(event), bool -> pointsLeaderboardMessage))
+                .flatMap(strings -> listUsers(strings, event.getChannel()))
                 .then();
     }
 

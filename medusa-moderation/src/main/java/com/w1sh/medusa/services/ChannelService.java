@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.mongodb.client.result.DeleteResult;
 import com.w1sh.medusa.data.Channel;
+import com.w1sh.medusa.data.Rule;
 import com.w1sh.medusa.repos.ChannelRepository;
 import com.w1sh.medusa.utils.Reactive;
 import discord4j.core.object.entity.channel.GuildChannel;
@@ -58,6 +59,12 @@ public class ChannelService {
         return repository.removeByGuildId(guildId)
                 .doOnNext(ignored -> cache.invalidateAll())
                 .map(DeleteResult::wasAcknowledged);
+    }
+
+    public Mono<Boolean> containsRule(String channelId, Rule rule) {
+        return Mono.justOrEmpty(cache.getIfPresent(channelId))
+                .map(chan -> chan.getRules().contains(rule))
+                .switchIfEmpty(repository.containsRule(channelId, rule));
     }
 
     public Mono<Channel> findByChannel(GuildChannel channel) {

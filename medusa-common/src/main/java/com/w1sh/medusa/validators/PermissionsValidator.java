@@ -19,7 +19,7 @@ import static com.w1sh.medusa.utils.Reactive.*;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public final class PermissionsValidator implements Validator {
+public final class PermissionsValidator implements Validator<Event> {
 
     private final MessageService messageService;
 
