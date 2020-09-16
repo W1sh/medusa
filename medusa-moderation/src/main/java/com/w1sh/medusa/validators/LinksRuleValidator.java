@@ -35,7 +35,7 @@ public final class LinksRuleValidator implements Validator<MessageCreateEvent> {
     @Override
     public Mono<Boolean> validate(MessageCreateEvent event) {
         return event.getMessage().getChannel()
-                .flatMap(chan -> channelService.containsRule(chan.getId().asString(), Rule.NO_LINKS))
+                .filterWhen(chan -> channelService.containsRule(chan.getId().asString(), Rule.NO_LINKS))
                 .map(ignored -> event.getMessage().getContent())
                 .flatMap(this::containsLinks)
                 .transform(ifElse(b -> enforce(event), b-> Mono.empty()))

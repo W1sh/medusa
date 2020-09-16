@@ -15,7 +15,8 @@ public final class MessageUpdateEventListener implements DiscordEventListener<Me
 
     @Override
     public Mono<Void> execute(MessageUpdateEvent event) {
-        return linksRuleValidator.validate(event)
+        return Mono.just(event)
+                .filterWhen(linksRuleValidator::validate)
                 .flatMap(ignored -> event.getMessage().flatMap(Message::delete));
     }
 }
