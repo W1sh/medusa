@@ -2,6 +2,7 @@ package com.w1sh.medusa.repos;
 
 import com.mongodb.client.result.DeleteResult;
 import com.w1sh.medusa.data.Channel;
+import com.w1sh.medusa.data.Rule;
 import com.w1sh.medusa.utils.Reactive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +49,14 @@ public class ChannelRepository {
         final Query query = new Query(Criteria.where(GUILD_ID_FIELD).is(guildId));
         return template.remove(query, Channel.class)
                 .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to delete all channels from guild with id \"{}\"", guildId, t)));
+    }
+
+    public Mono<Boolean> containsRule(String channelId, Rule rule) {
+        final Query query = new Query(Criteria.where(CHANNEL_ID_FIELD).is(channelId))
+                .addCriteria(Criteria.where(RULES_FIELD).all(rule))
+                .limit(1);
+        return template.exists(query, Channel.class)
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to check if channel with id \"{}\" exists", channelId, t)));
     }
 
     public Mono<DeleteResult> remove(Channel channel) {

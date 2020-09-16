@@ -10,8 +10,6 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.event.domain.message.MessageUpdateEvent;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.channel.GuildChannel;
-import discord4j.core.object.entity.channel.MessageChannel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -37,7 +35,7 @@ public final class LinksRuleValidator implements Validator<MessageCreateEvent> {
     @Override
     public Mono<Boolean> validate(MessageCreateEvent event) {
         return event.getMessage().getChannel()
-                .filterWhen(this::containsLinksRule)
+                .flatMap(chan -> channelService.containsRule(chan.getId().asString(), Rule.NO_LINKS))
                 .map(ignored -> event.getMessage().getContent())
                 .flatMap(this::containsLinks)
                 .transform(ifElse(b -> enforce(event), b-> Mono.empty()))
@@ -46,7 +44,7 @@ public final class LinksRuleValidator implements Validator<MessageCreateEvent> {
 
     public Mono<Boolean> validate(MessageUpdateEvent event) {
         return event.getChannel()
-                .filterWhen(this::containsLinksRule)
+                .flatMap(chan -> channelService.containsRule(chan.getId().asString(), Rule.NO_LINKS))
                 .flatMap(ignored -> event.getMessage())
                 .map(Message::getContent)
                 .flatMap(this::containsLinks);
@@ -66,12 +64,5 @@ public final class LinksRuleValidator implements Validator<MessageCreateEvent> {
         return Flux.fromIterable(Arrays.asList(content.split(" ")))
                 .filter(s -> p.matcher(s).find())
                 .hasElements();
-    }
-
-    private Mono<Boolean> containsLinksRule(MessageChannel messageChannel) {
-        return Mono.just(messageChannel).ofType(GuildChannel.class)
-                .flatMap(channelService::findByChannel)
-                .filter(channel -> channel.getRules().contains(Rule.NO_LINKS))
-                .hasElement();
     }
 }

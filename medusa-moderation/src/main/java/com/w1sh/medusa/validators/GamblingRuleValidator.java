@@ -12,7 +12,6 @@ import com.w1sh.medusa.services.WarningService;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.channel.GuildChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
 import org.springframework.stereotype.Component;
@@ -46,9 +45,7 @@ public final class GamblingRuleValidator implements Validator<MessageCreateEvent
     @Override
     public Mono<Boolean> validate(MessageCreateEvent event) {
         return event.getMessage().getChannel()
-                .ofType(GuildChannel.class)
-                .flatMap(channelService::findByChannel)
-                .filter(channel -> channel.getRules().contains(Rule.NO_GAMBLING))
+                .flatMap(chan -> channelService.containsRule(chan.getId().asString(), Rule.NO_GAMBLING))
                 .map(ignored -> event.getMessage().getContent())
                 .filterWhen(this::containsGamblingEvent)
                 .flatMap(ignored -> enforce(event))
