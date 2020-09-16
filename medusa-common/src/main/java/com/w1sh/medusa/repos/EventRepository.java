@@ -22,7 +22,6 @@ public class EventRepository {
     }
 
     public void saveAll(List<Event> events) {
-        log.info("Starting batch save of {} events", events.size());
         template.insert(events, Event.class)
                 .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to save batch of events", t)))
                 .subscribe();

@@ -49,9 +49,14 @@ public class EventService {
 
     private void scheduleBatchSave() {
         log.info("Registering periodically batch save of events with delay of {} hours and interval of {} hours", saveDelay, saveInterval);
-        Schedulers.boundedElastic().schedulePeriodically(() -> {
-            eventRepository.saveAll(events);
-            events.clear();
-        }, Integer.parseInt(saveDelay), Integer.parseInt(saveInterval), TimeUnit.HOURS);
+        Schedulers.boundedElastic().schedulePeriodically(this::saveAllCached, Integer.parseInt(saveDelay),
+                Integer.parseInt(saveInterval), TimeUnit.HOURS);
+    }
+
+    public void saveAllCached() {
+        if (events.isEmpty()) return;
+        log.info("Starting batch save of {} events", events.size());
+        eventRepository.saveAll(events);
+        events.clear();
     }
 }
