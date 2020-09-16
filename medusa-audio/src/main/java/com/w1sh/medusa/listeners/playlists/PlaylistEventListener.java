@@ -25,8 +25,7 @@ public final class PlaylistEventListener implements CustomEventListener<Playlist
     }
 
     private Mono<Message> applyAction(PlaylistEvent event) {
-        PlaylistAction playlistAction = PlaylistAction.of(event.getArguments().get(0));
-        switch (playlistAction) {
+        switch (Action.of(event.getArguments().get(0))) {
             case SAVE: return playlistSaveAction.apply(event);
             case SHOW: return playlistShowAction.apply(event);
             case DELETE: return playlistDeleteAction.apply(event);
@@ -35,11 +34,11 @@ public final class PlaylistEventListener implements CustomEventListener<Playlist
         }
     }
 
-    private enum PlaylistAction {
+    private enum Action {
         SAVE, SHOW, DELETE, LOAD, UNKNOWN;
 
-        public static PlaylistAction of(String string){
-            for (PlaylistAction value : values()) {
+        public static Action of(String string){
+            for (Action value : values()) {
                 if(value.name().equalsIgnoreCase(string)) return value;
             }
             return UNKNOWN;

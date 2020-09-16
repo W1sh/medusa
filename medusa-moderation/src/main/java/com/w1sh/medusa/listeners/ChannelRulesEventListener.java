@@ -1,10 +1,10 @@
 package com.w1sh.medusa.listeners;
 
-import com.w1sh.medusa.actions.ChannelRulesActivateAction;
-import com.w1sh.medusa.actions.ChannelRulesDeactivateAction;
-import com.w1sh.medusa.actions.ChannelRulesShowAction;
 import com.w1sh.medusa.data.responses.MessageEnum;
 import com.w1sh.medusa.events.ChannelRulesEvent;
+import com.w1sh.medusa.listeners.rules.ChannelRulesActivateAction;
+import com.w1sh.medusa.listeners.rules.ChannelRulesDeactivateAction;
+import com.w1sh.medusa.listeners.rules.ChannelRulesShowAction;
 import com.w1sh.medusa.services.MessageService;
 import discord4j.core.object.entity.Message;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +29,7 @@ public final class ChannelRulesEventListener implements CustomEventListener<Chan
         if(event.getArguments().isEmpty()) return channelRulesShowAction.apply(event);
         if(event.getArguments().size() < 2) return messageService.send(event.getChannel(), MessageEnum.RULES_ERROR);
 
-        RulesAction playlistAction = RulesAction.of(event.getArguments().get(1));
-        switch (playlistAction) {
+        switch (Action.of(event.getArguments().get(1))) {
             case ON: return channelRulesActivateAction.apply(event);
             case OFF: return channelRulesDeactivateAction.apply(event);
             case SHOW: return channelRulesShowAction.apply(event);
@@ -38,11 +37,11 @@ public final class ChannelRulesEventListener implements CustomEventListener<Chan
         }
     }
 
-    private enum RulesAction {
+    private enum Action {
         ON, OFF, SHOW, UNKNOWN;
 
-        public static RulesAction of(String string){
-            for (RulesAction value : values()) {
+        public static Action of(String string){
+            for (Action value : values()) {
                 if(value.name().equalsIgnoreCase(string)) return value;
             }
             return UNKNOWN;

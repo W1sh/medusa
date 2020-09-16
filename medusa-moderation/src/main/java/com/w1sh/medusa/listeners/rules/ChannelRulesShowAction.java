@@ -1,4 +1,4 @@
-package com.w1sh.medusa.actions;
+package com.w1sh.medusa.listeners.rules;
 
 import com.w1sh.medusa.data.Channel;
 import com.w1sh.medusa.data.Rule;
