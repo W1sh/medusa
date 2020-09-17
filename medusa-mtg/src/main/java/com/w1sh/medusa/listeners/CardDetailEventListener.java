@@ -44,9 +44,7 @@ public final class CardDetailEventListener implements CustomEventListener<CardDe
             embedCreateSpec.setThumbnail(card.getImage().getSmall());
             embedCreateSpec.setColor(Color.GREEN);
             embedCreateSpec.setUrl(card.getUri());
-            embedCreateSpec.setTitle(String.format("%s %s",
-                    card.getName(),
-                    card.getManaCost()));
+            embedCreateSpec.setTitle(card.getName());
             embedCreateSpec.addField(String.format("**%s**", card.getTypeLine()),
                     String.format("%s%n*%s*",
                             card.getOracleText() == null ? MessageService.ZERO_WIDTH_SPACE : card.getOracleText(),

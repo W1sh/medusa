@@ -44,8 +44,6 @@ public final class CardPriceEventListener implements CustomEventListener<CardPri
 
         final Consumer<EmbedCreateSpec> specConsumer = embedCreateSpec -> {
             embedCreateSpec.setColor(Color.GREEN);
-            embedCreateSpec.setTitle(String.format("**Prices for %s**", list.get(0).getName()));
-            embedCreateSpec.setDescription(list.get(0).getTypeLine());
 
             final int maxFields = Math.min(list.size(), 4);
             if (maxFields % 2 == 0) {

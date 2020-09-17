@@ -40,8 +40,6 @@ public final class CardImageEventListener implements CustomEventListener<CardIma
 
         final Consumer<EmbedCreateSpec> specConsumer = embedCreateSpec -> {
             embedCreateSpec.setColor(Color.GREEN);
-            embedCreateSpec.setUrl(card.getUri());
-            embedCreateSpec.setTitle(card.getName());
             embedCreateSpec.setImage(card.getImage().getNormal());
         };
 

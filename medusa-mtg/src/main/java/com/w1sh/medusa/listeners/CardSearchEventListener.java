@@ -40,9 +40,9 @@ public final class CardSearchEventListener implements CustomEventListener<CardSe
 
         final Consumer<EmbedCreateSpec> specConsumer = embedCreateSpec -> {
             embedCreateSpec.setColor(Color.GREEN);
-            embedCreateSpec.setTitle(String.format("Search results for \"%s\"", event.getInlineArgument()));
-            for (int i = 0; i < 5; i++) {
-                embedCreateSpec.addField(String.format("**%d** - **%s**", (i+1), cards.get(i).getName()), cards.get(i).getOracleText(), false);
+            for (int i = 0; i < Math.min(cards.size(), 5); i++) {
+                embedCreateSpec.addField(String.format("%d - %s - %s", (i+1), cards.get(i).getName(), cards.get(i).getTypeLine()),
+                        cards.get(i).getOracleText(), false);
             }
         };
 
