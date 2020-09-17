@@ -8,7 +8,6 @@ import discord4j.core.object.entity.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Random;
@@ -31,20 +30,19 @@ public final class RollEventListener implements CustomEventListener<RollEvent> {
                 .filterWhen(this::validateRollArgument)
                 .map(ev -> ev.getArguments().get(0).split(ROLL_ARGUMENT_DELIMITER))
                 .map(limits -> roll(Integer.parseInt(limits[0]), Integer.parseInt(limits[1])))
-                .flatMapMany(result -> sendResults(result, event))
-                .then();
+                .flatMap(result -> sendResults(result, event));
     }
 
     private Integer roll(Integer min, Integer max){
         return random.nextInt(min + max + 1) + min;
     }
 
-    private Flux<Message> sendResults(Integer result, RollEvent event){
+    private Mono<Void> sendResults(Integer result, RollEvent event){
         final Mono<Message> rollStartMessage = messageService.send(event.getChannel(), MessageEnum.ROLL_START);
         final Mono<Message> rollResultMessage = messageService.send(event.getChannel(), MessageEnum.ROLL_RESULT,
                 event.getNickname(), String.valueOf(result));
 
-        return Flux.merge(rollStartMessage, rollResultMessage);
+        return Mono.when(rollStartMessage, rollResultMessage);
     }
 
     private Mono<Boolean> validateRollArgument(Event event){

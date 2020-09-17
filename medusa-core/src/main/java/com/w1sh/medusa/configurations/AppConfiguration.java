@@ -72,6 +72,6 @@ public class AppConfiguration {
     public SecureRandom secureRandom() { return new SecureRandom(); }
 
     @Bean
-    public Reflections reflections(){ return new Reflections("com.w1sh.medusa"); }
+    public Reflections reflections(){ return new Reflections("com.w1sh.medusa.events"); }
 
 }

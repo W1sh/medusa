@@ -45,7 +45,7 @@ public final class GamblingRuleValidator implements Validator<MessageCreateEvent
     @Override
     public Mono<Boolean> validate(MessageCreateEvent event) {
         return event.getMessage().getChannel()
-                .flatMap(chan -> channelService.containsRule(chan.getId().asString(), Rule.NO_GAMBLING))
+                .filterWhen(chan -> channelService.containsRule(chan.getId().asString(), Rule.NO_GAMBLING))
                 .map(ignored -> event.getMessage().getContent())
                 .filterWhen(this::containsGamblingEvent)
                 .flatMap(ignored -> enforce(event))
