@@ -1,6 +1,5 @@
 package com.w1sh.medusa.listeners;
 
-import com.w1sh.medusa.data.events.InlineEvent;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.events.CardPriceEvent;
 import com.w1sh.medusa.resources.Card;
@@ -31,9 +30,8 @@ public final class CardPriceEventListener implements CustomEventListener<CardPri
 
     @Override
     public Mono<Void> execute(CardPriceEvent event) {
-        return Mono.just(event)
-                .filter(InlineEvent::hasArgument)
-                .flatMap(ev -> cardService.getUniquePrintsByName(ev.getInlineArgument()))
+        return cardUtils.validateArgument(event)
+                .flatMapMany(cardService::getUniquePrintsByName)
                 .flatMap(list -> createCardPriceEmbed(list, event))
                 .switchIfEmpty(cardUtils.createErrorEmbed(event))
                 .then();

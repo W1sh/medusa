@@ -1,6 +1,5 @@
 package com.w1sh.medusa.listeners;
 
-import com.w1sh.medusa.data.events.InlineEvent;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.events.CardDetailEvent;
 import com.w1sh.medusa.resources.Card;
@@ -26,9 +25,8 @@ public final class CardDetailEventListener implements CustomEventListener<CardDe
 
     @Override
     public Mono<Void> execute(CardDetailEvent event) {
-        return Mono.just(event)
-                .filter(InlineEvent::hasArgument)
-                .flatMap(ev -> cardService.getCardByName(ev.getInlineArgument()))
+        return cardUtils.validateArgument(event)
+                .flatMapMany(cardService::getCardByName)
                 .defaultIfEmpty(new Card())
                 .flatMap(card -> createCardDetailEmbed(card, event))
                 .then();

@@ -51,7 +51,7 @@ public final class CardService {
 
     public Flux<Card> getCardsByName(String name) {
         return scryfallClient.getCardsByName(name)
-                .doOnNext(response -> log.info("Retrieved {} prints for \"{}\"", response.getTotalCards(), name))
+                .doOnNext(response -> log.info("Retrieved {} cards with name similar to \"{}\"", response.getTotalCards(), name))
                 .flatMapIterable(ListResponse::getData)
                 .doOnNext(card -> cache.put(card.getName(), card))
                 .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to fetch cards with name \"{}\"", name, t)));

@@ -1,6 +1,5 @@
 package com.w1sh.medusa.listeners;
 
-import com.w1sh.medusa.data.events.InlineEvent;
 import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.events.CardSearchEvent;
 import com.w1sh.medusa.resources.Card;
@@ -27,9 +26,8 @@ public final class CardSearchEventListener implements CustomEventListener<CardSe
 
     @Override
     public Mono<Void> execute(CardSearchEvent event) {
-        return Mono.just(event)
-                .filter(InlineEvent::hasArgument)
-                .flatMapMany(ev -> cardService.getCardsByName(ev.getInlineArgument()))
+        return cardUtils.validateArgument(event)
+                .flatMapMany(cardService::getCardsByName)
                 .collectList()
                 .flatMap(list -> createCardSearchEmbed(list, event))
                 .then();
