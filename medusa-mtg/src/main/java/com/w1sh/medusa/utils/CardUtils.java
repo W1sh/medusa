@@ -16,8 +16,6 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 public class CardUtils {
 
-    public static final int MAX_ALLOWED_LENGTH = 128;
-
     private final MessageService messageService;
 
     public Mono<Message> createErrorEmbed(InlineEvent event){
@@ -29,10 +27,5 @@ public class CardUtils {
         final Response response = Response.with(specConsumer, event.getChannel(), event.getChannelId(),
                 event.isFragment(), event.getInlineOrder());
         return messageService.sendOrQueue(event.getChannel(), response);
-    }
-
-    public Mono<String> validateArgument(InlineEvent event){
-        if(!event.hasArgument()) return Mono.empty();
-        return event.getInlineArgument().length() < MAX_ALLOWED_LENGTH ? Mono.just(event.getInlineArgument()) : Mono.empty();
     }
 }

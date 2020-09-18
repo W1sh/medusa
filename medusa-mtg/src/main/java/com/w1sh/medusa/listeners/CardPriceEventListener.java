@@ -30,8 +30,8 @@ public final class CardPriceEventListener implements CustomEventListener<CardPri
 
     @Override
     public Mono<Void> execute(CardPriceEvent event) {
-        return cardUtils.validateArgument(event)
-                .flatMapMany(cardService::getUniquePrintsByName)
+        if (!event.isValidArgument()) return cardUtils.createErrorEmbed(event).then();
+        return cardService.getUniquePrintsByName(event.getInlineArgument())
                 .flatMap(list -> createCardPriceEmbed(list, event))
                 .switchIfEmpty(cardUtils.createErrorEmbed(event))
                 .then();

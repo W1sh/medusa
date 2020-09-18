@@ -25,8 +25,8 @@ public final class CardArtworkEventListener implements CustomEventListener<CardA
 
     @Override
     public Mono<Void> execute(CardArtworkEvent event) {
-        return cardUtils.validateArgument(event)
-                .flatMapMany(cardService::getCardByName)
+        if (!event.isValidArgument()) return cardUtils.createErrorEmbed(event).then();
+        return cardService.getCardByName(event.getInlineArgument())
                 .flatMap(card -> createCardArtworkEmbed(card, event))
                 .then();
     }

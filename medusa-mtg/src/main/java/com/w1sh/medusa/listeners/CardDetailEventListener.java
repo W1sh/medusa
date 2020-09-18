@@ -25,8 +25,8 @@ public final class CardDetailEventListener implements CustomEventListener<CardDe
 
     @Override
     public Mono<Void> execute(CardDetailEvent event) {
-        return cardUtils.validateArgument(event)
-                .flatMapMany(cardService::getCardByName)
+        if (!event.isValidArgument()) return cardUtils.createErrorEmbed(event).then();
+        return cardService.getCardByName(event.getInlineArgument())
                 .defaultIfEmpty(new Card())
                 .flatMap(card -> createCardDetailEmbed(card, event))
                 .then();

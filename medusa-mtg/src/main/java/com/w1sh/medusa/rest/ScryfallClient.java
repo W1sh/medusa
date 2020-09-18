@@ -54,7 +54,7 @@ public final class ScryfallClient {
     public <T> Mono<T> get(String uri, TypeReference<T> typeReference) {
         return responseReceiver.uri(uri)
                 .responseSingle(((response, byteBuf) -> handleHttpResponse(response, byteBuf, typeReference)))
-                .retryWhen(Retry.maxInARow(3))
+                .retryWhen(Retry.maxInARow(2))
                 .timeout(Duration.ofSeconds(10));
     }
 

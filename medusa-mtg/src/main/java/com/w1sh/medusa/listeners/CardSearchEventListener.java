@@ -26,8 +26,8 @@ public final class CardSearchEventListener implements CustomEventListener<CardSe
 
     @Override
     public Mono<Void> execute(CardSearchEvent event) {
-        return cardUtils.validateArgument(event)
-                .flatMapMany(cardService::getCardsByName)
+        if (!event.isValidArgument()) return cardUtils.createErrorEmbed(event).then();
+        return cardService.getCardsByName(event.getInlineArgument())
                 .collectList()
                 .flatMap(list -> createCardSearchEmbed(list, event))
                 .then();
