@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import reactor.cache.CacheMono;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Signal;
 
@@ -49,12 +48,13 @@ public final class CardService {
                 .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to fetch card with name \"{}\"", name, t)));
     }
 
-    public Flux<Card> getCardsByName(String name) {
+    public Mono<List<Card>> getCardsByName(String name) {
         return scryfallClient.getCardsByName(name)
                 .doOnNext(response -> log.info("Retrieved {} cards with name similar to \"{}\"", response.getTotalCards(), name))
                 .flatMapIterable(ListResponse::getData)
                 .doOnNext(card -> cache.put(card.getName(), card))
-                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to fetch cards with name \"{}\"", name, t)));
+                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to fetch cards with name \"{}\"", name, t)))
+                .collectList();
     }
 
     public Mono<List<Card>> getUniquePrintsByName(String name) {

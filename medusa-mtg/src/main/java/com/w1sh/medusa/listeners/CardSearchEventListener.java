@@ -1,20 +1,13 @@
 package com.w1sh.medusa.listeners;
 
-import com.w1sh.medusa.data.responses.Response;
 import com.w1sh.medusa.events.CardSearchEvent;
-import com.w1sh.medusa.resources.Card;
+import com.w1sh.medusa.output.ErrorEmbed;
+import com.w1sh.medusa.output.SearchEmbed;
 import com.w1sh.medusa.services.CardService;
 import com.w1sh.medusa.services.MessageService;
-import com.w1sh.medusa.utils.CardUtils;
-import discord4j.core.object.entity.Message;
-import discord4j.core.spec.EmbedCreateSpec;
-import discord4j.rest.util.Color;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
-import java.util.function.Consumer;
 
 @Component
 @RequiredArgsConstructor
@@ -22,30 +15,14 @@ public final class CardSearchEventListener implements CustomEventListener<CardSe
 
     private final CardService cardService;
     private final MessageService messageService;
-    private final CardUtils cardUtils;
 
     @Override
     public Mono<Void> execute(CardSearchEvent event) {
-        if (!event.isValidArgument()) return cardUtils.createErrorEmbed(event).then();
+        if (event.isInvalid()) return messageService.sendOrQueue(event.getChannel(), new ErrorEmbed(event)).then();
         return cardService.getCardsByName(event.getInlineArgument())
-                .collectList()
-                .flatMap(list -> createCardSearchEmbed(list, event))
+                .map(list -> new SearchEmbed(list, event))
+                .flatMap(embed -> messageService.sendOrQueue(event.getChannel(), embed))
+                .switchIfEmpty(messageService.sendOrQueue(event.getChannel(), new ErrorEmbed(event)))
                 .then();
-    }
-
-    private Mono<Message> createCardSearchEmbed(List<Card> cards, CardSearchEvent event){
-        if(cards.isEmpty()) return cardUtils.createErrorEmbed(event);
-
-        final Consumer<EmbedCreateSpec> specConsumer = embedCreateSpec -> {
-            embedCreateSpec.setColor(Color.GREEN);
-            for (int i = 0; i < Math.min(cards.size(), 5); i++) {
-                embedCreateSpec.addField(String.format("%d - %s - %s", (i+1), cards.get(i).getName(), cards.get(i).getTypeLine()),
-                        cards.get(i).getOracleText(), false);
-            }
-        };
-
-        final Response response = Response.with(specConsumer, event.getChannel(), event.getChannelId(),
-                event.isFragment(), event.getInlineOrder());
-        return messageService.sendOrQueue(event.getChannel(), response);
     }
 }

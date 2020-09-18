@@ -21,7 +21,7 @@ public abstract class InlineEvent extends Event {
         super(event);
     }
 
-    public boolean isValidArgument(){
-        return inlineArgument != null && !inlineArgument.isBlank() && inlineArgument.length() <= MAX_ALLOWED_LENGTH;
+    public boolean isInvalid(){
+        return inlineArgument == null || inlineArgument.isBlank() || inlineArgument.length() > MAX_ALLOWED_LENGTH;
     }
 }
