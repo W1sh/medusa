@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 public final class EventFactory {
 
     private static final Pattern INLINE_EVENT_PATTERN = Pattern.compile("\\{\\{.+?(?:}})");
-    private static final Pattern INLINE_SPECIALS_PATTERN = Pattern.compile("[{!?$}]");
+    private static final Pattern INLINE_SPECIALS_PATTERN = Pattern.compile("[{!?$@}]");
     private static final Pattern WORD_PATTERN = Pattern.compile("\\w");
     private static final String ARGUMENT_DELIMITER = " ";
 
