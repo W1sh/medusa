@@ -13,16 +13,13 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.FluxProcessor;
-import reactor.core.publisher.FluxSink;
-import reactor.core.publisher.Mono;
-import reactor.core.publisher.UnicastProcessor;
+import reactor.cache.CacheMono;
+import reactor.core.publisher.*;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 import java.time.Duration;
-import java.util.Locale;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -46,7 +43,7 @@ public class MessageService {
 
     private final Map<String, SortedSet<OutputEmbed>> responseMap = new ConcurrentHashMap<>();
     private final FluxSink<OutputEmbed> fluxSink;
-    private final Cache<String, Message> messageCache;
+    private final Cache<String, Tuple2<Message, OutputEmbed>> messageCache;
     private final MessageSource messageSource;
     private final ReactionService reactionService;
 
@@ -66,6 +63,19 @@ public class MessageService {
                         .flatMap(messageChannel -> messageChannel.createEmbed(response.getEmbedCreateSpec()))
                         .flatMap(message -> reactionService.addReactions(message, response.getReactions())))
                 .subscribe();
+    }
+
+    public Mono<Tuple2<Message, OutputEmbed>> getCached(String messageId) {
+        return CacheMono.lookup(key -> Mono.justOrEmpty(messageCache.getIfPresent(key))
+                .map(Signal::next), messageId)
+                .onCacheMissResume(Mono.empty())
+                .andWriteWith((key, signal) -> Mono.fromRunnable(() -> Optional.ofNullable(signal.get()).ifPresent(value -> messageCache.put(key, value))));
+    }
+
+    public Mono<Message> update(String messageId, OutputEmbed outputEmbed) {
+        return getCached(messageId)
+                .flatMap(tuple -> tuple.getT1().edit(messageEditSpec -> messageEditSpec.setEmbed(outputEmbed.getEmbedCreateSpec())))
+                .doOnNext(message -> messageCache.put(messageId, Tuples.of(message, outputEmbed)));
     }
 
     /**
@@ -96,7 +106,7 @@ public class MessageService {
 
     public Mono<Void> send(Mono<MessageChannel> channelMono, OutputEmbed outputEmbed) {
         return channelMono.flatMap(channel -> channel.createEmbed(outputEmbed.getEmbedCreateSpec()))
-                .doOnNext(m -> messageCache.put(m.getId().asString(), m))
+                .doOnNext(m -> messageCache.put(m.getId().asString(), Tuples.of(m, outputEmbed)))
                 .flatMap(message -> reactionService.addReactions(message, outputEmbed.getReactions()));
     }
 
@@ -109,8 +119,7 @@ public class MessageService {
      * If an error is received, it is emitted through the {@code Mono}.
      */
     public Mono<Message> send(Mono<MessageChannel> channelMono, Consumer<EmbedCreateSpec> embedCreateSpec) {
-        return channelMono.flatMap(channel -> channel.createEmbed(embedCreateSpec))
-                .doOnNext(m -> messageCache.put(m.getId().asString(), m));
+        return channelMono.flatMap(channel -> channel.createEmbed(embedCreateSpec));
     }
 
     /**
@@ -122,8 +131,7 @@ public class MessageService {
      * If an error is received, it is emitted through the {@code Mono}.
      */
     public Mono<Message> send(Mono<MessageChannel> channelMono, String message) {
-        return channelMono.flatMap(channel -> channel.createMessage(message))
-                .doOnNext(m -> messageCache.put(m.getId().asString(), m));
+        return channelMono.flatMap(channel -> channel.createMessage(message));
     }
 
     /**
@@ -135,8 +143,7 @@ public class MessageService {
      * If an error is received, it is emitted through the {@code Mono}.
      */
     public Mono<Message> send(Mono<MessageChannel> channelMono, MessageEnum messageEnum) {
-        return channelMono.flatMap(channel -> channel.createMessage(getMessage(messageEnum.getMessageKey(), null)))
-                .doOnNext(message -> messageCache.put(message.getId().asString(), message));
+        return channelMono.flatMap(channel -> channel.createMessage(getMessage(messageEnum.getMessageKey(), null)));
     }
 
     /**
@@ -149,8 +156,7 @@ public class MessageService {
      * If an error is received, it is emitted through the {@code Mono}.
      */
     public Mono<Message> send(Mono<MessageChannel> channelMono, MessageEnum messageEnum, String... args) {
-        return channelMono.flatMap(channel -> channel.createMessage(getMessage(messageEnum.getMessageKey(), args)))
-                .doOnNext(message -> messageCache.put(message.getId().asString(), message));
+        return channelMono.flatMap(channel -> channel.createMessage(getMessage(messageEnum.getMessageKey(), args)));
     }
 
     /**

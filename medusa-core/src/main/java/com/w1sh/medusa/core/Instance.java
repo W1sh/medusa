@@ -12,6 +12,9 @@ import discord4j.core.event.domain.guild.MemberLeaveEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.event.domain.message.MessageUpdateEvent;
+import discord4j.core.event.domain.message.ReactionAddEvent;
+import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.User;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.shard.LocalShardCoordinator;
@@ -25,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import reactor.bool.BooleanUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.retry.Retry;
@@ -102,7 +106,15 @@ public final class Instance {
 
         final Publisher<?> onTextChannelDelete = gateway.on(TextChannelDeleteEvent.class, discordEventPublisher::publish);
 
-        final Publisher<?> onMessageUpdate = gateway.on(MessageUpdateEvent.class, discordEventPublisher::publish);
+        final Publisher<?> onReactionAdd = gateway.on(ReactionAddEvent.class)
+                .filterWhen(event -> BooleanUtils.not(event.getUser().map(User::isBot)))
+                .flatMap(discordEventPublisher::publish);
+
+        final Publisher<?> onMessageUpdate = gateway.on(MessageUpdateEvent.class)
+                .filterWhen(event -> BooleanUtils.not(event.getMessage()
+                        .flatMap(Message::getAuthorAsMember)
+                        .map(User::isBot)))
+                .flatMap(discordEventPublisher::publish);
 
         final Publisher<?> onMessageCreate = gateway.on(MessageCreateEvent.class)
                 .filter(event -> event.getClass().equals(MessageCreateEvent.class) && event.getMember().map(user -> !user.isBot()).orElse(false))
@@ -121,7 +133,7 @@ public final class Instance {
         final Publisher<?> onDisconnect = gateway.onDisconnect()
                 .doOnTerminate(() -> log.info("Client disconnected"));
 
-        Mono.when(onReady, onGuildDelete, onMemberLeave, onTextChannelCreate, onTextChannelDelete,
+        Mono.when(onReady, onGuildDelete, onMemberLeave, onTextChannelCreate, onTextChannelDelete, onReactionAdd,
                 onMessageUpdate, onMessageCreate, onDisconnect)
                 .subscribe(null, t -> log.error("An unknown error occurred", t));
     }
