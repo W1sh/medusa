@@ -18,11 +18,10 @@ public final class CardSearchEventListener implements CustomEventListener<CardSe
 
     @Override
     public Mono<Void> execute(CardSearchEvent event) {
-        if (event.isInvalid()) return messageService.sendOrQueue(event.getChannel(), new ErrorEmbed(event)).then();
+        if (event.isInvalid()) return messageService.sendOrQueue(event.getChannel(), new ErrorEmbed(event));
         return cardService.getCardsByName(event.getInlineArgument())
                 .map(list -> new SearchEmbed(list, event))
                 .flatMap(embed -> messageService.sendOrQueue(event.getChannel(), embed))
-                .switchIfEmpty(messageService.sendOrQueue(event.getChannel(), new ErrorEmbed(event)))
-                .then();
+                .onErrorResume(t -> messageService.sendOrQueue(event.getChannel(), new ErrorEmbed(event)));
     }
 }

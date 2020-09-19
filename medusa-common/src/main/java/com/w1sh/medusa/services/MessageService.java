@@ -48,9 +48,11 @@ public class MessageService {
     private final FluxSink<OutputEmbed> fluxSink;
     private final Cache<String, Message> messageCache;
     private final MessageSource messageSource;
+    private final ReactionService reactionService;
 
-    public MessageService(ResourceBundleMessageSource messageSource) {
+    public MessageService(ResourceBundleMessageSource messageSource, ReactionService reactionService) {
         final FluxProcessor<OutputEmbed, OutputEmbed> fluxProcessor = UnicastProcessor.create();
+        this.reactionService = reactionService;
         this.messageSource = messageSource;
         this.fluxSink = fluxProcessor.sink();
         this.messageCache = Caffeine.newBuilder()
@@ -61,7 +63,8 @@ public class MessageService {
         fluxProcessor.map(x -> x)
                 .doOnEach(responseSignal -> log.debug("Received signal {} in message processor", responseSignal.getType().toString()))
                 .flatMap(response -> response.getMessageChannelMono()
-                        .flatMap(messageChannel -> messageChannel.createEmbed(response.getEmbedCreateSpec())))
+                        .flatMap(messageChannel -> messageChannel.createEmbed(response.getEmbedCreateSpec()))
+                        .flatMap(message -> reactionService.addReactions(message, response.getReactions())))
                 .subscribe();
     }
 
@@ -71,9 +74,9 @@ public class MessageService {
      * @param outputEmbed The {@link OutputEmbed} to queue.
      */
     public void queue(OutputEmbed outputEmbed) {
-        final SortedSet<OutputEmbed> respons = responseMap.getOrDefault(outputEmbed.getChannelId(), new TreeSet<>());
-        respons.add(outputEmbed);
-        responseMap.put(outputEmbed.getChannelId(), respons);
+        final SortedSet<OutputEmbed> responses = responseMap.getOrDefault(outputEmbed.getChannelId(), new TreeSet<>());
+        responses.add(outputEmbed);
+        responseMap.put(outputEmbed.getChannelId(), responses);
     }
 
     /**
@@ -85,11 +88,16 @@ public class MessageService {
      * @return A {@link Mono} where, upon successful completion, emits the {@link Message} created if present.
      * If an error is received, it is emitted through the {@code Mono}.
      */
-    public Mono<Message> sendOrQueue(Mono<MessageChannel> channelMono, OutputEmbed outputEmbed) {
+    public Mono<Void> sendOrQueue(Mono<MessageChannel> channelMono, OutputEmbed outputEmbed) {
         if(outputEmbed.isFragment()) {
-            queue(outputEmbed);
-            return Mono.empty();
-        } else return send(channelMono, outputEmbed.getEmbedCreateSpec());
+            return Mono.fromRunnable(() -> queue(outputEmbed));
+        } else return send(channelMono, outputEmbed);
+    }
+
+    public Mono<Void> send(Mono<MessageChannel> channelMono, OutputEmbed outputEmbed) {
+        return channelMono.flatMap(channel -> channel.createEmbed(outputEmbed.getEmbedCreateSpec()))
+                .doOnNext(m -> messageCache.put(m.getId().asString(), m))
+                .flatMap(message -> reactionService.addReactions(message, outputEmbed.getReactions()));
     }
 
     /**

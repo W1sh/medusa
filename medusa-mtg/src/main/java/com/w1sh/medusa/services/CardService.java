@@ -53,7 +53,6 @@ public final class CardService {
                 .doOnNext(response -> log.info("Retrieved {} cards with name similar to \"{}\"", response.getTotalCards(), name))
                 .flatMapIterable(ListResponse::getData)
                 .doOnNext(card -> cache.put(card.getName(), card))
-                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to fetch cards with name \"{}\"", name, t)))
                 .collectList();
     }
 
