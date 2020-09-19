@@ -18,11 +18,10 @@ public final class CardImageEventListener implements CustomEventListener<CardIma
 
     @Override
     public Mono<Void> execute(CardImageEvent event) {
-        if (event.isInvalid()) return messageService.sendOrQueue(event.getChannel(), new ErrorEmbed(event)).then();
+        if (event.isInvalid()) return messageService.sendOrQueue(event.getChannel(), new ErrorEmbed(event));
         return cardService.getCardByName(event.getInlineArgument())
                 .map(card -> new ImageEmbed(card, event))
                 .flatMap(embed -> messageService.sendOrQueue(event.getChannel(), embed))
-                .switchIfEmpty(messageService.sendOrQueue(event.getChannel(), new ErrorEmbed(event)))
-                .then();
+                .onErrorResume(t -> messageService.sendOrQueue(event.getChannel(), new ErrorEmbed(event)));
     }
 }

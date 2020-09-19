@@ -44,8 +44,7 @@ public final class CardService {
         return CacheMono.lookup(key -> Mono.justOrEmpty(cache.getIfPresent(key))
                 .map(Signal::next), name)
                 .onCacheMissResume(supplier)
-                .andWriteWith((key, signal) -> Mono.fromRunnable(() -> Optional.ofNullable(signal.get()).ifPresent(value -> cache.put(key, value))))
-                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to fetch card with name \"{}\"", name, t)));
+                .andWriteWith((key, signal) -> Mono.fromRunnable(() -> Optional.ofNullable(signal.get()).ifPresent(value -> cache.put(key, value))));
     }
 
     public Mono<List<Card>> getCardsByName(String name) {
@@ -67,7 +66,6 @@ public final class CardService {
         return CacheMono.lookup(key -> Mono.justOrEmpty(uniquePrints.getIfPresent(key))
                 .map(Signal::next), name)
                 .onCacheMissResume(supplier)
-                .andWriteWith((key, signal) -> Mono.fromRunnable(() -> Optional.ofNullable(signal.get()).ifPresent(value -> uniquePrints.put(key, value))))
-                .onErrorResume(t -> Mono.fromRunnable(() -> log.error("Failed to fetch cards with name \"{}\"", name, t)));
+                .andWriteWith((key, signal) -> Mono.fromRunnable(() -> Optional.ofNullable(signal.get()).ifPresent(value -> uniquePrints.put(key, value))));
     }
 }

@@ -18,11 +18,10 @@ public final class CardPriceEventListener implements CustomEventListener<CardPri
 
     @Override
     public Mono<Void> execute(CardPriceEvent event) {
-        if (event.isInvalid()) return messageService.sendOrQueue(event.getChannel(), new ErrorEmbed(event)).then();
+        if (event.isInvalid()) return messageService.sendOrQueue(event.getChannel(), new ErrorEmbed(event));
         return cardService.getUniquePrintsByName(event.getInlineArgument())
                 .map(list -> new PriceEmbed(list, event))
                 .flatMap(embed -> messageService.sendOrQueue(event.getChannel(), embed))
-                .switchIfEmpty(messageService.sendOrQueue(event.getChannel(), new ErrorEmbed(event)))
-                .then();
+                .onErrorResume(t -> messageService.sendOrQueue(event.getChannel(), new ErrorEmbed(event)));
     }
 }
