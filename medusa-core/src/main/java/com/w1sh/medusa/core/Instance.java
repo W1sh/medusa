@@ -67,15 +67,14 @@ public final class Instance {
     public void initialize(){
         log.info("Setting up client...");
 
-        final var client = DiscordClient.builder(token)
+        final var gateway = DiscordClient.builder(token)
                 .onClientResponse(ResponseFunction.emptyIfNotFound())
                 .onClientResponse(ResponseFunction.retryWhen(RouteMatcher.route(Routes.MESSAGE_CREATE),
                         Retry.onlyIf(ClientException.isRetryContextStatusCode(500))
                                 .exponentialBackoffWithJitter(Duration.ofSeconds(2), Duration.ofSeconds(10))))
                 .onClientResponse(ResponseFunction.retryOnceOnErrorStatus(500))
-                .build();
-
-        final var gateway = client.gateway()
+                .build()
+                .gateway()
                 //.setEnabledIntents(IntentSet.of(GUILD_MEMBERS, GUILD_MESSAGES, GUILD_VOICE_STATES))
                 .setSharding(ShardingStrategy.recommended())
                 .setShardCoordinator(LocalShardCoordinator.create())
@@ -84,9 +83,8 @@ public final class Instance {
                 .setEventDispatcher(EventDispatcher.buffering())
                 .setInitialStatus(shardInfo -> Presence.online(Activity.watching("you turn to stone")))
                 .login()
-                .block();
-
-        assert gateway != null;
+                .blockOptional()
+                .orElseThrow(RuntimeException::new);
 
         initDispatcher(gateway);
 
