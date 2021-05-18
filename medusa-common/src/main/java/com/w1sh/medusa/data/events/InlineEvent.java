@@ -9,6 +9,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public abstract class InlineEvent extends Event {
 
+    public static final int MAX_ALLOWED_LENGTH = 128;
+
     private boolean fragment;
 
     private String inlineArgument;
@@ -19,7 +21,7 @@ public abstract class InlineEvent extends Event {
         super(event);
     }
 
-    public boolean hasArgument(){
-        return inlineArgument != null && !inlineArgument.isBlank();
+    public boolean isInvalid(){
+        return inlineArgument == null || inlineArgument.isBlank() || inlineArgument.length() > MAX_ALLOWED_LENGTH;
     }
 }

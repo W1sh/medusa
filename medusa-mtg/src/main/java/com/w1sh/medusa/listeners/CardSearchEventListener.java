@@ -1,53 +1,59 @@
 package com.w1sh.medusa.listeners;
 
-import com.w1sh.medusa.data.events.InlineEvent;
-import com.w1sh.medusa.data.responses.Response;
+import com.w1sh.medusa.data.responses.OutputEmbed;
 import com.w1sh.medusa.events.CardSearchEvent;
+import com.w1sh.medusa.output.ErrorEmbed;
+import com.w1sh.medusa.output.SearchEmbed;
 import com.w1sh.medusa.resources.Card;
 import com.w1sh.medusa.services.CardService;
 import com.w1sh.medusa.services.MessageService;
-import com.w1sh.medusa.utils.CardUtils;
+import discord4j.core.event.domain.message.ReactionAddEvent;
 import discord4j.core.object.entity.Message;
-import discord4j.core.spec.EmbedCreateSpec;
-import discord4j.rest.util.Color;
+import discord4j.core.object.reaction.ReactionEmoji;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 @Component
 @RequiredArgsConstructor
-public final class CardSearchEventListener implements CustomEventListener<CardSearchEvent> {
+public final class CardSearchEventListener implements CustomUpdatableEventListener<CardSearchEvent> {
 
     private final CardService cardService;
     private final MessageService messageService;
-    private final CardUtils cardUtils;
 
     @Override
     public Mono<Void> execute(CardSearchEvent event) {
-        return Mono.just(event)
-                .filter(InlineEvent::hasArgument)
-                .flatMapMany(ev -> cardService.getCardsByName(ev.getInlineArgument()))
-                .collectList()
-                .flatMap(list -> createCardSearchEmbed(list, event))
-                .then();
+        if (event.isInvalid()) return messageService.sendOrQueue(event.getChannel(), new ErrorEmbed(event));
+        return cardService.getCardsByName(event.getInlineArgument())
+                .doOnNext(this::filterList)
+                .map(list -> new SearchEmbed(list, event))
+                .flatMap(embed -> messageService.sendOrQueue(event.getChannel(), embed))
+                .onErrorResume(t -> messageService.sendOrQueue(event.getChannel(), new ErrorEmbed(event)));
     }
 
-    private Mono<Message> createCardSearchEmbed(List<Card> cards, CardSearchEvent event){
-        if(cards.isEmpty()) return cardUtils.createErrorEmbed(event);
+    @Override
+    public Mono<Void> update(ReactionAddEvent event) {
+        return messageService.getCached(event.getMessageId().asString())
+                .filter(tuple -> tuple.getT2().getReactions().contains(event.getEmoji()))
+                .flatMap(tuple -> createPage(event, tuple.getT2()))
+                .onErrorResume(t -> Mono.empty())
+                .then(event.getMessage()
+                        .flatMap(message -> message.removeReaction(event.getEmoji(), event.getUserId())));
+    }
 
-        final Consumer<EmbedCreateSpec> specConsumer = embedCreateSpec -> {
-            embedCreateSpec.setColor(Color.GREEN);
-            embedCreateSpec.setTitle(String.format("Search results for \"%s\"", event.getInlineArgument()));
-            for (int i = 0; i < 5; i++) {
-                embedCreateSpec.addField(String.format("**%d** - **%s**", (i+1), cards.get(i).getName()), cards.get(i).getOracleText(), false);
-            }
-        };
+    private Mono<Message> createPage(ReactionAddEvent event, OutputEmbed outputEmbed) {
+        if(event.getEmoji().equals(ReactionEmoji.unicode("\u2B05"))) {
+            final SearchEmbed embed = SearchEmbed.previousOf(((SearchEmbed) outputEmbed));
+            return messageService.update(event.getMessageId().asString(), embed);
+        } else {
+            final SearchEmbed embed = SearchEmbed.nextOf(((SearchEmbed) outputEmbed));
+            return messageService.update(event.getMessageId().asString(), embed);
+        }
+    }
 
-        final Response response = Response.with(specConsumer, event.getChannel(), event.getChannelId(),
-                event.isFragment(), event.getInlineOrder());
-        return messageService.sendOrQueue(event.getChannel(), response);
+    private void filterList(List<Card> cards) {
+        cards.removeIf(card -> card.getName() == null || card.getTypeLine() == null || card.getOracleText() == null);
     }
 }

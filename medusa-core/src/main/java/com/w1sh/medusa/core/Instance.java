@@ -12,6 +12,9 @@ import discord4j.core.event.domain.guild.MemberLeaveEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.event.domain.message.MessageUpdateEvent;
+import discord4j.core.event.domain.message.ReactionAddEvent;
+import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.User;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.shard.LocalShardCoordinator;
@@ -25,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import reactor.bool.BooleanUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.retry.Retry;
@@ -63,15 +67,14 @@ public final class Instance {
     public void initialize(){
         log.info("Setting up client...");
 
-        final var client = DiscordClient.builder(token)
+        final var gateway = DiscordClient.builder(token)
                 .onClientResponse(ResponseFunction.emptyIfNotFound())
                 .onClientResponse(ResponseFunction.retryWhen(RouteMatcher.route(Routes.MESSAGE_CREATE),
                         Retry.onlyIf(ClientException.isRetryContextStatusCode(500))
                                 .exponentialBackoffWithJitter(Duration.ofSeconds(2), Duration.ofSeconds(10))))
                 .onClientResponse(ResponseFunction.retryOnceOnErrorStatus(500))
-                .build();
-
-        final var gateway = client.gateway()
+                .build()
+                .gateway()
                 //.setEnabledIntents(IntentSet.of(GUILD_MEMBERS, GUILD_MESSAGES, GUILD_VOICE_STATES))
                 .setSharding(ShardingStrategy.recommended())
                 .setShardCoordinator(LocalShardCoordinator.create())
@@ -80,9 +83,8 @@ public final class Instance {
                 .setEventDispatcher(EventDispatcher.buffering())
                 .setInitialStatus(shardInfo -> Presence.online(Activity.watching("you turn to stone")))
                 .login()
-                .block();
-
-        assert gateway != null;
+                .blockOptional()
+                .orElseThrow(RuntimeException::new);
 
         initDispatcher(gateway);
 
@@ -102,7 +104,15 @@ public final class Instance {
 
         final Publisher<?> onTextChannelDelete = gateway.on(TextChannelDeleteEvent.class, discordEventPublisher::publish);
 
-        final Publisher<?> onMessageUpdate = gateway.on(MessageUpdateEvent.class, discordEventPublisher::publish);
+        final Publisher<?> onReactionAdd = gateway.on(ReactionAddEvent.class)
+                .filterWhen(event -> BooleanUtils.not(event.getUser().map(User::isBot)))
+                .flatMap(discordEventPublisher::publish);
+
+        final Publisher<?> onMessageUpdate = gateway.on(MessageUpdateEvent.class)
+                .filterWhen(event -> BooleanUtils.not(event.getMessage()
+                        .flatMap(Message::getAuthorAsMember)
+                        .map(User::isBot)))
+                .flatMap(discordEventPublisher::publish);
 
         final Publisher<?> onMessageCreate = gateway.on(MessageCreateEvent.class)
                 .filter(event -> event.getClass().equals(MessageCreateEvent.class) && event.getMember().map(user -> !user.isBot()).orElse(false))
@@ -121,7 +131,7 @@ public final class Instance {
         final Publisher<?> onDisconnect = gateway.onDisconnect()
                 .doOnTerminate(() -> log.info("Client disconnected"));
 
-        Mono.when(onReady, onGuildDelete, onMemberLeave, onTextChannelCreate, onTextChannelDelete,
+        Mono.when(onReady, onGuildDelete, onMemberLeave, onTextChannelCreate, onTextChannelDelete, onReactionAdd,
                 onMessageUpdate, onMessageCreate, onDisconnect)
                 .subscribe(null, t -> log.error("An unknown error occurred", t));
     }

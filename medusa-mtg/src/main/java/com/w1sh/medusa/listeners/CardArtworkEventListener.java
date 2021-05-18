@@ -1,7 +1,7 @@
 package com.w1sh.medusa.listeners;
 
-import com.w1sh.medusa.events.CardDetailEvent;
-import com.w1sh.medusa.output.DetailsEmbed;
+import com.w1sh.medusa.events.CardArtworkEvent;
+import com.w1sh.medusa.output.ArtworkEmbed;
 import com.w1sh.medusa.output.ErrorEmbed;
 import com.w1sh.medusa.services.CardService;
 import com.w1sh.medusa.services.MessageService;
@@ -11,16 +11,16 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public final class CardDetailEventListener implements CustomEventListener<CardDetailEvent> {
+public final class CardArtworkEventListener implements CustomEventListener<CardArtworkEvent> {
 
     private final CardService cardService;
     private final MessageService messageService;
 
     @Override
-    public Mono<Void> execute(CardDetailEvent event) {
+    public Mono<Void> execute(CardArtworkEvent event) {
         if (event.isInvalid()) return messageService.sendOrQueue(event.getChannel(), new ErrorEmbed(event));
         return cardService.getCardByName(event.getInlineArgument())
-                .map(card -> new DetailsEmbed(card, event))
+                .map(card -> new ArtworkEmbed(card, event))
                 .flatMap(embed -> messageService.sendOrQueue(event.getChannel(), embed))
                 .onErrorResume(t -> messageService.sendOrQueue(event.getChannel(), new ErrorEmbed(event)));
     }
