@@ -20,7 +20,6 @@ public class Main implements CommandLineRunner {
 
     private final Instance instance;
     private final EventService eventService;
-    private final AudioConnectionManager audioConnectionManager;
 
     public static void main(String[] args) {
         Thread.currentThread().setName("medusa-main");
@@ -39,7 +38,6 @@ public class Main implements CommandLineRunner {
     public void onDestroy(){
         log.info("Shutting down Medusa - live for {}", Instance.getUptime());
         eventService.saveAllCached();
-        audioConnectionManager.shutdown();
         log.info("Shutdown complete");
     }
 

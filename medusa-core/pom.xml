@@ -24,17 +24,7 @@
 
         <dependency>
             <groupId>com.w1sh</groupId>
-            <artifactId>medusa-audio</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.w1sh</groupId>
             <artifactId>medusa-mtg</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.w1sh</groupId>
-            <artifactId>medusa-moderation</artifactId>
         </dependency>
     </dependencies>
 

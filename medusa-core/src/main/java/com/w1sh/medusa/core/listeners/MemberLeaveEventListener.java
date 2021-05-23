@@ -2,7 +2,6 @@ package com.w1sh.medusa.core.listeners;
 
 import com.w1sh.medusa.listeners.DiscordEventListener;
 import com.w1sh.medusa.services.UserService;
-import com.w1sh.medusa.services.WarningService;
 import com.w1sh.medusa.utils.Reactive;
 import discord4j.core.event.domain.guild.MemberLeaveEvent;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,6 @@ import reactor.core.publisher.Mono;
 public final class MemberLeaveEventListener implements DiscordEventListener<MemberLeaveEvent> {
 
     private final UserService userService;
-    private final WarningService warningService;
 
     @Override
     public Mono<Void> execute(MemberLeaveEvent event) {
@@ -31,12 +29,7 @@ public final class MemberLeaveEventListener implements DiscordEventListener<Memb
                         bool -> Mono.fromRunnable(() -> log.info("User with id <{}> left guild with id <{}>, all data associated was deleted", userId, guildId)),
                         bool -> Mono.fromRunnable(() -> log.warn("Could not delete data associated with user with id <{}> of guild with id <{}>", userId, guildId))));
 
-        final Publisher<?> warningsPublisher = warningService.deleteByUserIdAndGuildId(userId, guildId)
-                .transform(Reactive.ifElse(
-                        bool -> Mono.fromRunnable(() -> log.info("Deleted all warnings from user with id <{}> in guild with id <{}>", userId, guildId)),
-                        bool -> Mono.fromRunnable(() -> log.warn("Warnings from user with id <{}> in guild with id <{}> could not be deleted", userId, guildId))));
-
-        return Mono.when(userPublisher, warningsPublisher)
+        return Mono.when(userPublisher)
                 .doAfterTerminate(() -> log.info("Data deletion process for user with id <{}> on guild with <{}> has concluded", userId, guildId));
     }
 }
