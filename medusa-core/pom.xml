@@ -18,13 +18,13 @@
         </dependency>
 
         <dependency>
-            <groupId>io.projectreactor.addons</groupId>
-            <artifactId>reactor-extra</artifactId>
+            <groupId>com.w1sh</groupId>
+            <artifactId>medusa-mtg</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>com.w1sh</groupId>
-            <artifactId>medusa-mtg</artifactId>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
         </dependency>
     </dependencies>
 

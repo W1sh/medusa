@@ -44,20 +44,17 @@ public final class Instance {
     private final DiscordEventPublisher discordEventPublisher;
     private final List<Validator<Event>> eventValidators;
     private final List<Validator<MessageCreateEvent>> messageValidators;
-    private final Executor executor;
 
     @Value("${discord.token}")
     private String token;
 
     public Instance(EventFactory eventFactory, CustomEventPublisher customEventPublisher, DiscordEventPublisher discordEventPublisher,
-                    List<Validator<Event>> eventValidators, List<Validator<MessageCreateEvent>> messageValidators,
-                    Executor executor) {
+                    List<Validator<Event>> eventValidators, List<Validator<MessageCreateEvent>> messageValidators) {
         this.eventFactory = eventFactory;
         this.customEventPublisher = customEventPublisher;
         this.discordEventPublisher = discordEventPublisher;
         this.eventValidators = eventValidators;
         this.messageValidators = messageValidators;
-        this.executor = executor;
     }
 
     public void initialize(){
@@ -83,8 +80,6 @@ public final class Instance {
                 .orElseThrow(RuntimeException::new);
 
         initDispatcher(gateway);
-
-        executor.startPointDistribution(gateway);
 
         log.info("Client setup completed");
     }
