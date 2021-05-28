@@ -35,7 +35,7 @@ public class Main implements CommandLineRunner {
     }
 
     @PreDestroy
-    public void onDestroy(){
+    public void onDestroy() {
         log.info("Shutting down Medusa - live for {}", Instance.getUptime());
         eventService.saveAllCached();
         log.info("Shutdown complete");
