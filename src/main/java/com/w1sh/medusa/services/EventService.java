@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
-public class EventService {
+public final class EventService {
 
     private final EventRepository eventRepository;
     private final List<Event> events;

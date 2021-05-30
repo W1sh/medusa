@@ -11,7 +11,7 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class ReactionService {
+public final class ReactionService {
 
     public Mono<Void> addReactions(Message message, List<ReactionEmoji> reactions) {
         if (reactions.isEmpty()) return Mono.empty();

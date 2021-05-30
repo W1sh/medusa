@@ -36,7 +36,7 @@ import java.util.function.Consumer;
  */
 @Slf4j
 @Component
-public class MessageService {
+public final class MessageService {
 
     public static final String BULLET = "\u2022";
     public static final String ZERO_WIDTH_SPACE = "\u200E";

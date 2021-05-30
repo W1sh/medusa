@@ -1,9 +1,7 @@
 package com.w1sh.medusa.core;
 
 import com.w1sh.medusa.data.Event;
-import com.w1sh.medusa.data.events.EventType;
 import com.w1sh.medusa.data.events.MultipleInlineEvent;
-import com.w1sh.medusa.data.events.Type;
 import com.w1sh.medusa.listeners.CustomEventListener;
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.services.EventService;
@@ -20,7 +18,6 @@ import javax.annotation.PostConstruct;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -54,22 +51,6 @@ public final class CustomEventPublisher implements EventPublisher<Event>{
     public <K extends Event> void registerListener(EventListener<K, Event> listener) {
         log.info("Registering custom event listener of type <{}>", listener.getClass().getSimpleName());
         listenerMap.put(listener.getEventType(), listener);
-    }
-
-    public boolean removeListener(final Class<?> clazz) {
-        log.info("Removing custom event listener for type <{}>", clazz.getSimpleName());
-        final var listener= listenerMap.remove(clazz);
-        return listener != null;
-    }
-
-    public boolean removeListener(final EventType eventType) {
-        log.info("Removing all custom event listeners of type <{}>", eventType.name());
-        final var matches = listenerMap.keySet().stream()
-                .filter(clazz -> clazz.getAnnotation(Type.class).eventType().equals(eventType))
-                .collect(Collectors.toSet());
-
-        matches.forEach(listenerMap::remove);
-        return !matches.isEmpty();
     }
 
     private Mono<Void> publishMulti(final MultipleInlineEvent event) {

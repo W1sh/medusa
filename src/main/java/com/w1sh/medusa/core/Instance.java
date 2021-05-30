@@ -74,7 +74,7 @@ public final class Instance {
                 .setAwaitConnections(true)
                 .setStoreService(new JdkStoreService())
                 .setEventDispatcher(EventDispatcher.buffering())
-                .setInitialStatus(shardInfo -> Presence.online(Activity.watching("you turn to stone")))
+                .setInitialPresence(shardInfo -> Presence.online(Activity.watching("you turn to stone")))
                 .login()
                 .blockOptional()
                 .orElseThrow(RuntimeException::new);
