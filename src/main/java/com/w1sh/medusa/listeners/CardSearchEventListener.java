@@ -4,7 +4,7 @@ import com.w1sh.medusa.data.responses.OutputEmbed;
 import com.w1sh.medusa.events.CardSearchEvent;
 import com.w1sh.medusa.output.ErrorEmbed;
 import com.w1sh.medusa.output.SearchEmbed;
-import com.w1sh.medusa.resources.Card;
+import com.w1sh.medusa.rest.resources.Card;
 import com.w1sh.medusa.services.CardService;
 import com.w1sh.medusa.services.MessageService;
 import discord4j.core.event.domain.message.ReactionAddEvent;

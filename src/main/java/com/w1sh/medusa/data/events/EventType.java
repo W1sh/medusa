@@ -4,15 +4,11 @@ import discord4j.rest.util.Permission;
 
 import java.util.Set;
 
-import static discord4j.rest.util.Permission.*;
+import static discord4j.rest.util.Permission.SEND_MESSAGES;
 
 public enum EventType {
-    MODERATION(SEND_MESSAGES,ADMINISTRATOR),
-    GAMBLING(SEND_MESSAGES),
-    AUDIO(SEND_MESSAGES, CONNECT),
     MTG(SEND_MESSAGES),
-    OTHER(SEND_MESSAGES),
-    UNKNOWN(SEND_MESSAGES);
+    OTHER(SEND_MESSAGES);
 
     private final Set<Permission> permissions;
 
@@ -24,7 +20,7 @@ public enum EventType {
         for (EventType value : values()) {
             if(value.name().equalsIgnoreCase(argument)) return value;
         }
-        return UNKNOWN;
+        return OTHER;
     }
 
     public Set<Permission> getPermissions() {

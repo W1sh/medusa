@@ -2,7 +2,7 @@ package com.w1sh.medusa.output;
 
 import com.w1sh.medusa.data.events.InlineEvent;
 import com.w1sh.medusa.data.responses.OutputEmbed;
-import com.w1sh.medusa.resources.Card;
+import com.w1sh.medusa.rest.resources.Card;
 import discord4j.core.object.reaction.ReactionEmoji;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

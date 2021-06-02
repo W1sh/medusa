@@ -1,6 +1,6 @@
 package com.w1sh.medusa.services;
 
-import com.w1sh.medusa.resources.Card;
+import com.w1sh.medusa.rest.resources.Card;
 import reactor.core.publisher.Mono;
 
 import java.util.List;

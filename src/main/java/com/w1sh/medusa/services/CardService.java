@@ -1,8 +1,8 @@
 package com.w1sh.medusa.services;
 
-import com.w1sh.medusa.resources.Card;
-import com.w1sh.medusa.resources.ListResponse;
 import com.w1sh.medusa.rest.ScryfallClient;
+import com.w1sh.medusa.rest.resources.Card;
+import com.w1sh.medusa.rest.resources.ListResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;

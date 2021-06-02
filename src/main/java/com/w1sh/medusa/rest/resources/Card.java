@@ -1,15 +1,14 @@
-package com.w1sh.medusa.resources;
+package com.w1sh.medusa.rest.resources;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
-import java.util.Objects;
-import java.util.stream.Stream;
-
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Card {
+
+    private String id;
 
     @JsonProperty(value = "scryfall_uri")
     private String uri;
@@ -45,11 +44,5 @@ public class Card {
 
     @JsonProperty(value = "prints_search_uri")
     private String uniquePrintsUri;
-
-    public boolean isEmpty(){
-        return Stream.of(uri, manaCost, image, artist, name, set, power, toughness, typeLine, oracleText,
-                flavorText, price, uniquePrintsUri)
-                .allMatch(Objects::isNull);
-    }
 
 }

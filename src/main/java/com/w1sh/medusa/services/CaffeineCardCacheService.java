@@ -2,7 +2,7 @@ package com.w1sh.medusa.services;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.w1sh.medusa.resources.Card;
+import com.w1sh.medusa.rest.resources.Card;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.cache.CacheMono;
