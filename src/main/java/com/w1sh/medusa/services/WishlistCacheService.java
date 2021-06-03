@@ -7,5 +7,7 @@ import java.util.function.Supplier;
 
 public interface WishlistCacheService {
 
+    void put(String userId, Wishlist wishlist);
+
     Mono<Wishlist> findByUserId(String userId, Supplier<Mono<Wishlist>> onCacheMissSupplier);
 }

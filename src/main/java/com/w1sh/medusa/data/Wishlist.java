@@ -8,6 +8,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -28,6 +29,11 @@ public class Wishlist {
 
     @LastModifiedDate
     private Instant updatedOn;
+
+    public Wishlist(String userId) {
+        this.userId = userId;
+        this.cards = new ArrayList<>();
+    }
 
     @Override
     public boolean equals(Object o) {

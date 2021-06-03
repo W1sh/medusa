@@ -3,14 +3,12 @@ package com.w1sh.medusa.services;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.w1sh.medusa.data.Wishlist;
+import com.w1sh.medusa.utils.Caches;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import reactor.cache.CacheMono;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.Signal;
 
 import java.time.Duration;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -27,11 +25,12 @@ public final class CaffeineWishlistCacheService implements WishlistCacheService 
     }
 
     @Override
+    public void put(String userId, Wishlist wishlist) {
+        cache.put(userId, wishlist);
+    }
+
+    @Override
     public Mono<Wishlist> findByUserId(String userId, Supplier<Mono<Wishlist>> onCacheMissSupplier) {
-        return CacheMono.lookup(key -> Mono.justOrEmpty(cache.getIfPresent(key))
-                .map(Signal::next), userId)
-                .onCacheMissResume(onCacheMissSupplier)
-                .andWriteWith((key, signal) -> Mono.fromRunnable(() ->
-                        Optional.ofNullable(signal.get()).ifPresent(value -> cache.put(key, value))));
+        return Caches.lookup(cache, userId, onCacheMissSupplier);
     }
 }

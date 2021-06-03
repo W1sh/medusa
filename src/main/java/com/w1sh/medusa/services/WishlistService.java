@@ -16,6 +16,12 @@ public final class WishlistService {
     private final WishlistCacheService wishlistCacheService;
 
     public Mono<Wishlist> findByUserId(String userId){
-        return wishlistCacheService.findByUserId(userId, () -> wishlistRepository.findByUserId(userId));
+        return wishlistCacheService.findByUserId(userId, () -> wishlistRepository.findByUserId(userId))
+                .defaultIfEmpty(new Wishlist(userId));
+    }
+
+    public Mono<Wishlist> save(Wishlist wishlist) {
+        return wishlistRepository.save(wishlist)
+                .doOnNext(w -> wishlistCacheService.put(w.getUserId(), w));
     }
 }
