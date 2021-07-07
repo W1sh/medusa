@@ -38,7 +38,7 @@ public final class PermissionsValidator implements Validator<Event> {
 
     private Mono<Message> createErrorMessage(Event event){
         return messageService.send(event.getChannel(), MessageEnum.VALIDATOR_PERMISSIONS_ERROR)
-                .doOnNext(textMessage -> log.warn("Permissions validation failed in guild with id <{}>, event was discarded", event.getGuildId()));
+                .doOnNext(textMessage -> log.warn("Permissions validation failed in guild with id <{}>, event discarded", event.getGuildId()));
     }
 
     private Mono<PermissionSet> hasPermissions(GuildChannel channel, Snowflake snowflake) {

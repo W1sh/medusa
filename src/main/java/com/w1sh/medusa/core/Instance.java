@@ -1,16 +1,8 @@
 package com.w1sh.medusa.core;
 
-import com.w1sh.medusa.data.Event;
-import com.w1sh.medusa.validators.Validator;
 import discord4j.core.DiscordClient;
-import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.EventDispatcher;
-import discord4j.core.event.domain.lifecycle.ReadyEvent;
-import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.event.domain.message.MessageUpdateEvent;
-import discord4j.core.event.domain.message.ReactionAddEvent;
-import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.User;
+import discord4j.core.event.ReactiveEventAdapter;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.shard.LocalShardCoordinator;
@@ -20,19 +12,14 @@ import discord4j.rest.request.RouteMatcher;
 import discord4j.rest.response.ResponseFunction;
 import discord4j.rest.route.Routes;
 import discord4j.store.jdk.JdkStoreService;
-import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import reactor.bool.BooleanUtils;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import reactor.retry.Retry;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 
 @Component
 public final class Instance {
@@ -40,28 +27,19 @@ public final class Instance {
     public static final Instant START_INSTANCE = Instant.now();
     private static final Logger log = LoggerFactory.getLogger(Instance.class);
 
-    private final EventFactory eventFactory;
-    private final CustomEventPublisher customEventPublisher;
-    private final DiscordEventPublisher discordEventPublisher;
-    private final List<Validator<Event>> eventValidators;
-    private final List<Validator<MessageCreateEvent>> messageValidators;
+    private final ReactiveEventAdapter reactiveEventAdapter;
 
     @Value("${discord.token}")
     private String token;
 
-    public Instance(EventFactory eventFactory, CustomEventPublisher customEventPublisher, DiscordEventPublisher discordEventPublisher,
-                    List<Validator<Event>> eventValidators, List<Validator<MessageCreateEvent>> messageValidators) {
-        this.eventFactory = eventFactory;
-        this.customEventPublisher = customEventPublisher;
-        this.discordEventPublisher = discordEventPublisher;
-        this.eventValidators = eventValidators;
-        this.messageValidators = messageValidators;
+    public Instance(ReactiveEventAdapter reactiveEventAdapter) {
+        this.reactiveEventAdapter = reactiveEventAdapter;
     }
 
     public void initialize(){
         log.info("Setting up client...");
 
-        final var gateway = DiscordClient.builder(token)
+        DiscordClient.builder(token)
                 .onClientResponse(ResponseFunction.emptyIfNotFound())
                 .onClientResponse(ResponseFunction.retryWhen(RouteMatcher.route(Routes.MESSAGE_CREATE),
                         Retry.onlyIf(ClientException.isRetryContextStatusCode(500))
@@ -78,45 +56,11 @@ public final class Instance {
                 .setInitialPresence(shardInfo -> Presence.online(Activity.watching("you turn to stone")))
                 .login()
                 .blockOptional()
-                .orElseThrow(RuntimeException::new);
-
-        initDispatcher(gateway);
+                .orElseThrow(RuntimeException::new)
+                .on(reactiveEventAdapter)
+                .subscribe();
 
         log.info("Client setup completed");
-    }
-
-    private void initDispatcher(GatewayDiscordClient gateway) {
-        final Publisher<?> onReady = gateway.on(ReadyEvent.class, discordEventPublisher::publish);
-
-        final Publisher<?> onReactionAdd = gateway.on(ReactionAddEvent.class)
-                .filterWhen(event -> BooleanUtils.not(event.getUser().map(User::isBot)))
-                .flatMap(discordEventPublisher::publish);
-
-        final Publisher<?> onMessageUpdate = gateway.on(MessageUpdateEvent.class)
-                .filterWhen(event -> BooleanUtils.not(event.getMessage()
-                        .flatMap(Message::getAuthorAsMember)
-                        .map(User::isBot)))
-                .flatMap(discordEventPublisher::publish);
-
-        final Publisher<?> onMessageCreate = gateway.on(MessageCreateEvent.class)
-                .filter(event -> event.getClass().equals(MessageCreateEvent.class) && event.getMember().map(user -> !user.isBot()).orElse(false))
-                .filterWhen(ev -> Flux.fromIterable(messageValidators)
-                        .flatMap(validator -> validator.validate(ev))
-                        .all(Boolean.TRUE::equals)
-                        .defaultIfEmpty(true))
-                .flatMap(event -> Mono.justOrEmpty(eventFactory.extractEvents(event)))
-                .filterWhen(ev -> Flux.fromIterable(eventValidators)
-                        .filter(validator -> Event.class.isAssignableFrom(ev.getClass()))
-                        .flatMap(validator -> validator.validate(ev))
-                        .all(Boolean.TRUE::equals)
-                        .defaultIfEmpty(true))
-                .flatMap(customEventPublisher::publish);
-
-        final Publisher<?> onDisconnect = gateway.onDisconnect()
-                .doOnTerminate(() -> log.info("Client disconnected"));
-
-        Mono.when(onReady, onReactionAdd, onMessageUpdate, onMessageCreate, onDisconnect)
-                .subscribe(null, t -> log.error("An unknown error occurred", t));
     }
 
     public static String getUptime(){

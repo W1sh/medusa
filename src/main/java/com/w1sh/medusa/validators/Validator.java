@@ -12,6 +12,7 @@ public interface Validator<T> {
     /**
      * Returns a {@link Mono} that represents the boolean evaluation of the item.
      * @see ArgumentValidator
+     * @see PermissionsValidator
      *
      * @param item The item to validate.
      * @return A {@link Mono} where, upon successful completion, emits the {@link Boolean}. If an error is received,
