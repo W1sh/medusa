@@ -17,7 +17,7 @@
         <spring.boot.version>2.5.0</spring.boot.version>
         <discord4j.version>3.1.5</discord4j.version>
         <reactor.version>3.4.3</reactor.version>
-        <caffeine.version>3.0.2</caffeine.version>
+        <caffeine.version>3.0.3</caffeine.version>
         <lombok.version>1.18.12</lombok.version>
         <reflections.version>0.9.12</reflections.version>
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
