@@ -7,13 +7,12 @@ import discord4j.core.event.domain.guild.GuildCreateEvent;
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.event.domain.message.MessageUpdateEvent;
 import discord4j.core.event.domain.message.ReactionAddEvent;
-import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import reactor.bool.BooleanUtils;
 import reactor.core.publisher.Flux;
@@ -22,7 +21,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 @Component
-public class MedusaReactiveEventAdapter extends ReactiveEventAdapter {
+public final class MedusaReactiveEventAdapter extends ReactiveEventAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(MedusaReactiveEventAdapter.class);
 
@@ -42,6 +41,7 @@ public class MedusaReactiveEventAdapter extends ReactiveEventAdapter {
         this.messageValidators = messageValidators;
     }
 
+    @NonNull
     @Override
     public Publisher<?> onReady(ReadyEvent event) {
         return Mono.justOrEmpty(event.getGuilds().size())
@@ -55,8 +55,9 @@ public class MedusaReactiveEventAdapter extends ReactiveEventAdapter {
                 .then();
     }
 
+    @NonNull
     @Override
-    public Publisher<?> onMessageCreate(MessageCreateEvent event) {
+    public Publisher<?> onMessageCreate(@NonNull MessageCreateEvent event) {
         return Mono.justOrEmpty(event)
                 .filter(e -> e.getClass().equals(MessageCreateEvent.class) && e.getMember().map(user -> !user.isBot()).orElse(false))
                 .filterWhen(ev -> Flux.fromIterable(messageValidators)
@@ -72,22 +73,15 @@ public class MedusaReactiveEventAdapter extends ReactiveEventAdapter {
                 .flatMap(customEventPublisher::publish);
     }
 
+    @NonNull
     @Override
-    public Publisher<?> onMessageUpdate(MessageUpdateEvent event) {
-        return Mono.justOrEmpty(event)
-            .filterWhen(e -> BooleanUtils.not(e.getMessage()
-                    .flatMap(Message::getAuthorAsMember)
-                    .map(User::isBot)))
-            .flatMap(discordEventPublisher::publish);
-    }
-
-    @Override
-    public Publisher<?> onReactionAdd(ReactionAddEvent event) {
+    public Publisher<?> onReactionAdd(@NonNull ReactionAddEvent event) {
         return Mono.justOrEmpty(event)
                 .filterWhen(e -> BooleanUtils.not(e.getUser().map(User::isBot)))
                 .flatMap(discordEventPublisher::publish);
     }
 
+    @NonNull
     @Override
     public Publisher<?> onDisconnect(DisconnectEvent event) {
         Throwable cause = event.getCause().orElse(null);

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.w1sh.medusa.rest.resources.Card;
 import com.w1sh.medusa.rest.resources.ListResponse;
 import com.w1sh.medusa.rest.resources.ScryfallException;
+import discord4j.common.JacksonResources;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +31,8 @@ public final class ScryfallClient {
     private final ObjectMapper objectMapper;
     private final HttpClient.ResponseReceiver<?> responseReceiver;
 
-    public ScryfallClient(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+    public ScryfallClient(JacksonResources jacksonResources) {
+        this.objectMapper = jacksonResources.getObjectMapper();
         this.responseReceiver = HttpClient.create().get();
     }
 

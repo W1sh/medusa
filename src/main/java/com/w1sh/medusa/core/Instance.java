@@ -1,5 +1,6 @@
 package com.w1sh.medusa.core;
 
+import discord4j.common.JacksonResources;
 import discord4j.core.DiscordClient;
 import discord4j.core.event.EventDispatcher;
 import discord4j.core.event.ReactiveEventAdapter;
@@ -11,7 +12,7 @@ import discord4j.rest.http.client.ClientException;
 import discord4j.rest.request.RouteMatcher;
 import discord4j.rest.response.ResponseFunction;
 import discord4j.rest.route.Routes;
-import discord4j.store.jdk.JdkStoreService;
+import discord4j.store.api.service.StoreService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,16 +25,21 @@ import java.time.Instant;
 @Component
 public final class Instance {
 
-    public static final Instant START_INSTANCE = Instant.now();
+    private static final Instant START_INSTANCE = Instant.now();
     private static final Logger log = LoggerFactory.getLogger(Instance.class);
 
+    private final JacksonResources jacksonResources;
     private final ReactiveEventAdapter reactiveEventAdapter;
+    private final StoreService storeService;
 
-    @Value("${discord.token}")
+    @Value("${medusa.discord.token}")
     private String token;
 
-    public Instance(ReactiveEventAdapter reactiveEventAdapter) {
+    public Instance(JacksonResources jacksonResources, ReactiveEventAdapter reactiveEventAdapter,
+                    StoreService storeService) {
+        this.jacksonResources = jacksonResources;
         this.reactiveEventAdapter = reactiveEventAdapter;
+        this.storeService = storeService;
     }
 
     public void initialize(){
@@ -45,13 +51,14 @@ public final class Instance {
                         Retry.onlyIf(ClientException.isRetryContextStatusCode(500))
                                 .exponentialBackoffWithJitter(Duration.ofSeconds(2), Duration.ofSeconds(10))))
                 .onClientResponse(ResponseFunction.retryOnceOnErrorStatus(500))
+                .setJacksonResources(jacksonResources)
                 .build()
                 .gateway()
                 //.setEnabledIntents(IntentSet.of(GUILD_MEMBERS, GUILD_MESSAGES, GUILD_VOICE_STATES))
                 .setSharding(ShardingStrategy.recommended())
                 .setShardCoordinator(LocalShardCoordinator.create())
                 .setAwaitConnections(true)
-                .setStoreService(new JdkStoreService())
+                .setStoreService(storeService)
                 .setEventDispatcher(EventDispatcher.buffering())
                 .setInitialPresence(shardInfo -> Presence.online(Activity.watching("you turn to stone")))
                 .login()
