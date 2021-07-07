@@ -8,8 +8,8 @@ import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.rest.util.PermissionSet;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -17,11 +17,14 @@ import reactor.core.publisher.Mono;
 import static com.w1sh.medusa.utils.Reactive.*;
 
 @Component
-@RequiredArgsConstructor
-@Slf4j
 public final class PermissionsValidator implements Validator<Event> {
 
+    private static final Logger log = LoggerFactory.getLogger(PermissionsValidator.class);
     private final MessageService messageService;
+
+    public PermissionsValidator(MessageService messageService) {
+        this.messageService = messageService;
+    }
 
     @Override
     public Mono<Boolean> validate(Event event) {

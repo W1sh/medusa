@@ -4,21 +4,17 @@ import com.w1sh.medusa.data.events.InlineEvent;
 import com.w1sh.medusa.data.responses.OutputEmbed;
 import com.w1sh.medusa.rest.resources.Card;
 import discord4j.core.object.reaction.ReactionEmoji;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
 
 import java.util.List;
+import java.util.Objects;
 
-@Getter
-@EqualsAndHashCode(callSuper = true)
 public class SearchEmbed extends OutputEmbed {
 
     private final List<Card> cards;
     private final int maxPages;
     private final int page;
 
-    public SearchEmbed(@NonNull List<Card> cards, InlineEvent event) {
+    public SearchEmbed(List<Card> cards, InlineEvent event) {
         super(event.getChannel(), event.getChannelId(), event.isFragment(), event.getInlineOrder());
         this.cards = cards;
         this.maxPages = (int) Math.ceil(cards.size() / (double) 5);
@@ -54,5 +50,31 @@ public class SearchEmbed extends OutputEmbed {
             this.getReactions().add(ReactionEmoji.unicode("\u2B05"));
             this.getReactions().add(ReactionEmoji.unicode("\u27A1"));
         });
+    }
+
+    public List<Card> getCards() {
+        return this.cards;
+    }
+
+    public int getMaxPages() {
+        return this.maxPages;
+    }
+
+    public int getPage() {
+        return this.page;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        SearchEmbed that = (SearchEmbed) o;
+        return maxPages == that.maxPages && page == that.page && Objects.equals(cards, that.cards);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), cards, maxPages, page);
     }
 }

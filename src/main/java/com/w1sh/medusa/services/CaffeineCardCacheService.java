@@ -4,7 +4,8 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.w1sh.medusa.rest.resources.Card;
 import com.w1sh.medusa.utils.Caches;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -12,10 +13,10 @@ import java.time.Duration;
 import java.util.List;
 import java.util.function.Supplier;
 
-@Slf4j
 @Component
 public final class CaffeineCardCacheService implements CardCacheService {
 
+    private static final Logger log = LoggerFactory.getLogger(CaffeineCardCacheService.class);
     private final Cache<String, Card> cache;
     private final Cache<String, List<Card>> uniquePrints;
 

@@ -1,7 +1,5 @@
 package com.w1sh.medusa.data;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -12,9 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-@Data
 @Document
-@NoArgsConstructor
 public class Wishlist {
 
     @Id
@@ -30,9 +26,53 @@ public class Wishlist {
     @LastModifiedDate
     private Instant updatedOn;
 
-    public Wishlist(String userId) {
-        this.userId = userId;
+    public Wishlist() {
         this.cards = new ArrayList<>();
+    }
+
+    public Wishlist(String userId) {
+        this();
+        this.userId = userId;
+    }
+
+    public String getId() {
+        return this.id;
+    }
+
+    public String getUserId() {
+        return this.userId;
+    }
+
+    public List<String> getCards() {
+        return this.cards;
+    }
+
+    public Instant getCreatedOn() {
+        return this.createdOn;
+    }
+
+    public Instant getUpdatedOn() {
+        return this.updatedOn;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public void setCards(List<String> cards) {
+        this.cards = cards;
+    }
+
+    public void setCreatedOn(Instant createdOn) {
+        this.createdOn = createdOn;
+    }
+
+    public void setUpdatedOn(Instant updatedOn) {
+        this.updatedOn = updatedOn;
     }
 
     @Override
@@ -46,5 +86,10 @@ public class Wishlist {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public String toString() {
+        return "Wishlist(id=" + this.getId() + ", userId=" + this.getUserId() + ", cards=" + this.getCards() +
+                ", createdOn=" + this.getCreatedOn() + ", updatedOn=" + this.getUpdatedOn() + ")";
     }
 }

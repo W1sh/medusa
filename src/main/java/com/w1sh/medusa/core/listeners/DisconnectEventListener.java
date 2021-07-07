@@ -2,13 +2,15 @@ package com.w1sh.medusa.core.listeners;
 
 import com.w1sh.medusa.listeners.DiscordEventListener;
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-@Slf4j
 public final class DisconnectEventListener implements DiscordEventListener<DisconnectEvent> {
+
+    private static final Logger log = LoggerFactory.getLogger(DisconnectEventListener.class);
 
     @Override
     public Mono<Void> execute(DisconnectEvent event) {

@@ -8,7 +8,8 @@ import discord4j.core.object.Embed;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.spec.EmbedCreateSpec;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.support.ResourceBundleMessageSource;
@@ -34,12 +35,12 @@ import java.util.function.Consumer;
  * be send by invoking {@link #flush(String)} with the key.
  *
  */
-@Slf4j
 @Component
 public final class MessageService {
 
     public static final String BULLET = "\u2022";
     public static final String ZERO_WIDTH_SPACE = "\u200E";
+    private static final Logger log = LoggerFactory.getLogger(MessageService.class);
 
     private final Map<String, SortedSet<OutputEmbed>> responseMap = new ConcurrentHashMap<>();
     private final FluxSink<OutputEmbed> fluxSink;

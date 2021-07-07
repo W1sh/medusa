@@ -8,18 +8,22 @@ import discord4j.core.object.entity.Message;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.discordjson.json.ActivityUpdateRequest;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-@Slf4j
 @Component
-@RequiredArgsConstructor
 public final class ChangePrefixEventListener implements CustomEventListener<ChangePrefixEvent> {
 
+    private static final Logger log = LoggerFactory.getLogger(ChangePrefixEventListener.class);
     private final MessageService messageService;
     private final EventFactory eventFactory;
+
+    public ChangePrefixEventListener(MessageService messageService, EventFactory eventFactory) {
+        this.messageService = messageService;
+        this.eventFactory = eventFactory;
+    }
 
     @Override
     public Mono<Void> execute(ChangePrefixEvent event) {

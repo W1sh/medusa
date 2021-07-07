@@ -6,8 +6,8 @@ import com.w1sh.medusa.listeners.CustomEventListener;
 import com.w1sh.medusa.listeners.EventListener;
 import com.w1sh.medusa.services.EventService;
 import com.w1sh.medusa.services.MessageService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -19,15 +19,20 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Slf4j
 @Component
-@RequiredArgsConstructor
 public final class CustomEventPublisher implements EventPublisher<Event>{
 
+    private static final Logger log = LoggerFactory.getLogger(CustomEventPublisher.class);
     private final Map<Class<? extends Event>, EventListener<? extends Event, Event>> listenerMap = new ConcurrentHashMap<>();
     private final ApplicationContext applicationContext;
     private final MessageService messageService;
     private final EventService eventService;
+
+    public CustomEventPublisher(ApplicationContext applicationContext, MessageService messageService, EventService eventService) {
+        this.applicationContext = applicationContext;
+        this.messageService = messageService;
+        this.eventService = eventService;
+    }
 
     @PostConstruct
     private void init() {

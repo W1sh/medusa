@@ -3,7 +3,8 @@ package com.w1sh.medusa.services;
 import com.w1sh.medusa.rest.ScryfallClient;
 import com.w1sh.medusa.rest.resources.Card;
 import com.w1sh.medusa.rest.resources.ListResponse;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
@@ -12,9 +13,9 @@ import java.util.List;
 import java.util.function.Supplier;
 
 @Component
-@Slf4j
 public final class CardService {
 
+    private static final Logger log = LoggerFactory.getLogger(CardService.class);
     private final ScryfallClient scryfallClient;
     private final CardCacheService cardCacheService;
 

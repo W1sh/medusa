@@ -20,8 +20,9 @@ import discord4j.rest.request.RouteMatcher;
 import discord4j.rest.response.ResponseFunction;
 import discord4j.rest.route.Routes;
 import discord4j.store.jdk.JdkStoreService;
-import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.bool.BooleanUtils;
@@ -33,11 +34,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
-@Slf4j
 @Component
 public final class Instance {
 
     public static final Instant START_INSTANCE = Instant.now();
+    private static final Logger log = LoggerFactory.getLogger(Instance.class);
 
     private final EventFactory eventFactory;
     private final CustomEventPublisher customEventPublisher;

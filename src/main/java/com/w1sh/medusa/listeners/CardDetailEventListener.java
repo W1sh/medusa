@@ -5,16 +5,19 @@ import com.w1sh.medusa.output.DetailsEmbed;
 import com.w1sh.medusa.output.ErrorEmbed;
 import com.w1sh.medusa.services.CardService;
 import com.w1sh.medusa.services.MessageService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-@RequiredArgsConstructor
 public final class CardDetailEventListener implements CustomEventListener<CardDetailEvent> {
 
     private final CardService cardService;
     private final MessageService messageService;
+
+    public CardDetailEventListener(CardService cardService, MessageService messageService) {
+        this.cardService = cardService;
+        this.messageService = messageService;
+    }
 
     @Override
     public Mono<Void> execute(CardDetailEvent event) {

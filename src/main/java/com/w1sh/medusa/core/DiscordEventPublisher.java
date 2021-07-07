@@ -3,8 +3,8 @@ package com.w1sh.medusa.core;
 import com.w1sh.medusa.listeners.DiscordEventListener;
 import com.w1sh.medusa.listeners.EventListener;
 import discord4j.core.event.domain.Event;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -14,13 +14,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Slf4j
 @Component
-@RequiredArgsConstructor
 public final class DiscordEventPublisher implements EventPublisher<Event> {
 
+    private static final Logger log = LoggerFactory.getLogger(DiscordEventPublisher.class);
     private final Map<Class<? extends Event>, EventListener<? extends Event, Event>> listenerMap = new ConcurrentHashMap<>();
     private final ApplicationContext applicationContext;
+
+    public DiscordEventPublisher(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     @PostConstruct
     private void init() {

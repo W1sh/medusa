@@ -11,8 +11,6 @@ import discord4j.core.object.entity.channel.Channel;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.gateway.ShardInfo;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -28,9 +26,7 @@ import java.util.Objects;
  *
  * {@link #guildId} and {@link #member} may not be present if the message was sent in a private channel.
  */
-@Data
 @Document
-@NoArgsConstructor
 public class Event {
 
     @Id
@@ -57,15 +53,19 @@ public class Event {
     @Transient
     private List<String> arguments;
 
-    public Event(MessageCreateEvent event){
+    public Event() {
+        this.arguments = new ArrayList<>();
+        this.createdOn = Instant.now();
+    }
+
+    public Event(MessageCreateEvent event) {
+        this();
         this.userId = event.getMember().map(User::getId).map(Snowflake::asString).orElse(null);
         this.guildId = event.getGuildId().map(Snowflake::asString).orElse(null);
         this.message = event.getMessage();
         this.shardInfo = event.getShardInfo();
         this.member = event.getMember().orElse(null);
         this.client = event.getClient();
-        this.arguments = new ArrayList<>();
-        this.createdOn = Instant.now();
 
         Objects.requireNonNull(userId);
         Objects.requireNonNull(guildId);
@@ -122,5 +122,94 @@ public class Event {
     public String getNickname(){
         if (member == null) return "";
         return member.getNickname().orElse(member.getDisplayName());
+    }
+
+    public String getId() {
+        return this.id;
+    }
+
+    public String getUserId() {
+        return this.userId;
+    }
+
+    public String getGuildId() {
+        return this.guildId;
+    }
+
+    public Instant getCreatedOn() {
+        return this.createdOn;
+    }
+
+    public Member getMember() {
+        return this.member;
+    }
+
+    public Message getMessage() {
+        return this.message;
+    }
+
+    public ShardInfo getShardInfo() {
+        return this.shardInfo;
+    }
+
+    public GatewayDiscordClient getClient() {
+        return this.client;
+    }
+
+    public List<String> getArguments() {
+        return this.arguments;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public void setGuildId(String guildId) {
+        this.guildId = guildId;
+    }
+
+    public void setCreatedOn(Instant createdOn) {
+        this.createdOn = createdOn;
+    }
+
+    public void setMember(Member member) {
+        this.member = member;
+    }
+
+    public void setMessage(Message message) {
+        this.message = message;
+    }
+
+    public void setShardInfo(ShardInfo shardInfo) {
+        this.shardInfo = shardInfo;
+    }
+
+    public void setClient(GatewayDiscordClient client) {
+        this.client = client;
+    }
+
+    public void setArguments(List<String> arguments) {
+        this.arguments = arguments;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Event event = (Event) o;
+        return Objects.equals(id, event.id) && Objects.equals(userId, event.userId) &&
+                Objects.equals(guildId, event.guildId) && Objects.equals(createdOn, event.createdOn) &&
+                Objects.equals(member, event.member) && Objects.equals(message, event.message) &&
+                Objects.equals(shardInfo, event.shardInfo) && Objects.equals(client, event.client) &&
+                Objects.equals(arguments, event.arguments);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, userId, guildId, createdOn, member, message, shardInfo, client, arguments);
     }
 }

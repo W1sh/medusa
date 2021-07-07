@@ -5,10 +5,9 @@ import com.w1sh.medusa.data.events.InlineEvent;
 import com.w1sh.medusa.data.events.MultipleInlineEvent;
 import com.w1sh.medusa.data.events.Type;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.InvocationTargetException;
@@ -22,7 +21,6 @@ import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Component
 public final class EventFactory {
 
@@ -30,10 +28,10 @@ public final class EventFactory {
     private static final Pattern INLINE_SPECIALS_PATTERN = Pattern.compile("[{!?$@}]");
     private static final Pattern WORD_PATTERN = Pattern.compile("\\w");
     private static final String ARGUMENT_DELIMITER = " ";
+    private static final Logger log = LoggerFactory.getLogger(EventFactory.class);
 
     private final Map<String, Class<? extends Event>> events = new ConcurrentHashMap<>(0);
 
-    @Getter @Setter
     private String prefix;
 
     public EventFactory(Reflections reflections) {
@@ -124,6 +122,14 @@ public final class EventFactory {
         if (content.startsWith(prefix)) return MessageType.EVENT;
         if (INLINE_EVENT_PATTERN.matcher(content).find()) return MessageType.INLINE_EVENT;
         return MessageType.MESSAGE;
+    }
+
+    public String getPrefix() {
+        return this.prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
     }
 
     private enum MessageType {

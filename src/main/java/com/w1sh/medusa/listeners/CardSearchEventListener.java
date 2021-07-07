@@ -10,18 +10,21 @@ import com.w1sh.medusa.services.MessageService;
 import discord4j.core.event.domain.message.ReactionAddEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.reaction.ReactionEmoji;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
 public final class CardSearchEventListener implements CustomUpdatableEventListener<CardSearchEvent> {
 
     private final CardService cardService;
     private final MessageService messageService;
+
+    public CardSearchEventListener(CardService cardService, MessageService messageService) {
+        this.cardService = cardService;
+        this.messageService = messageService;
+    }
 
     @Override
     public Mono<Void> execute(CardSearchEvent event) {

@@ -5,8 +5,8 @@ import com.w1sh.medusa.data.events.Type;
 import com.w1sh.medusa.data.responses.MessageEnum;
 import com.w1sh.medusa.services.MessageService;
 import discord4j.core.object.entity.Message;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -14,11 +14,14 @@ import static com.w1sh.medusa.utils.Reactive.ifElse;
 import static com.w1sh.medusa.utils.Reactive.isEmpty;
 
 @Component
-@RequiredArgsConstructor
-@Slf4j
 public final class ArgumentValidator implements Validator<Event> {
 
+    private static final Logger log = LoggerFactory.getLogger(ArgumentValidator.class);
     private final MessageService messageService;
+
+    public ArgumentValidator(MessageService messageService) {
+        this.messageService = messageService;
+    }
 
     @Override
     public Mono<Boolean> validate(Event event){

@@ -7,7 +7,8 @@ import com.w1sh.medusa.rest.resources.Card;
 import com.w1sh.medusa.rest.resources.ListResponse;
 import com.w1sh.medusa.rest.resources.ScryfallException;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.netty.ByteBufMono;
@@ -19,12 +20,12 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
-@Slf4j
 @Component
 public final class ScryfallClient {
 
     private static final String SEARCH_URL = "https://api.scryfall.com/cards/search?q=%s";
     private static final String NAMED_SEARCH_URL = "https://api.scryfall.com/cards/named?fuzzy=%s";
+    private static final Logger log = LoggerFactory.getLogger(ScryfallClient.class);
 
     private final ObjectMapper objectMapper;
     private final HttpClient.ResponseReceiver<?> responseReceiver;

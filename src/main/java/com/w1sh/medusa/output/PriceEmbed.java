@@ -5,13 +5,11 @@ import com.w1sh.medusa.data.responses.OutputEmbed;
 import com.w1sh.medusa.rest.resources.Card;
 import com.w1sh.medusa.services.MessageService;
 import discord4j.core.spec.EmbedCreateSpec;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 
-@EqualsAndHashCode(callSuper = true)
 public class PriceEmbed extends OutputEmbed {
 
     private static final String TITLE_FIELD_FORMAT = "**%s**";
@@ -19,7 +17,7 @@ public class PriceEmbed extends OutputEmbed {
 
     private final List<Card> cards;
 
-    public PriceEmbed(@NonNull List<Card> cards, InlineEvent event) {
+    public PriceEmbed(List<Card> cards, InlineEvent event) {
         super(event.getChannel(), event.getChannelId(), event.isFragment(), event.getInlineOrder());
         this.cards = cards;
     }
@@ -62,5 +60,19 @@ public class PriceEmbed extends OutputEmbed {
 
     private String getEurField(Card card){
         return StringUtils.isEmpty(card.getPrice().getEur()) ? "N/A" : String.format("€%s", card.getPrice().getEur());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        PriceEmbed that = (PriceEmbed) o;
+        return Objects.equals(cards, that.cards);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), cards);
     }
 }

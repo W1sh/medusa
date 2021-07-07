@@ -4,14 +4,13 @@ import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.rest.util.Color;
-import lombok.Data;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
-@Data
 public abstract class OutputEmbed implements Comparable<OutputEmbed>{
 
     private final Mono<MessageChannel> messageChannelMono;
@@ -34,8 +33,58 @@ public abstract class OutputEmbed implements Comparable<OutputEmbed>{
 
     protected abstract void build();
 
+    public Mono<MessageChannel> getMessageChannelMono() {
+        return this.messageChannelMono;
+    }
+
+    public String getChannelId() {
+        return this.channelId;
+    }
+
+    public boolean isFragment() {
+        return this.fragment;
+    }
+
+    public Integer getOrder() {
+        return this.order;
+    }
+
+    public List<ReactionEmoji> getReactions() {
+        return this.reactions;
+    }
+
+    public Consumer<EmbedCreateSpec> getEmbedCreateSpec() {
+        return this.embedCreateSpec;
+    }
+
+    public void setEmbedCreateSpec(Consumer<EmbedCreateSpec> embedCreateSpec) {
+        this.embedCreateSpec = embedCreateSpec;
+    }
+
     @Override
     public int compareTo(OutputEmbed outputEmbed) {
         return this.order.compareTo(outputEmbed.order);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OutputEmbed that = (OutputEmbed) o;
+        return fragment == that.fragment && Objects.equals(messageChannelMono, that.messageChannelMono) &&
+                Objects.equals(channelId, that.channelId) && Objects.equals(order, that.order) &&
+                Objects.equals(reactions, that.reactions) && Objects.equals(embedCreateSpec, that.embedCreateSpec);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(messageChannelMono, channelId, fragment, order, reactions, embedCreateSpec);
+    }
+
+    @Override
+    public String toString() {
+        return "OutputEmbed{" + "messageChannelMono=" + messageChannelMono + ", channelId='" + channelId + '\'' +
+                ", fragment=" + fragment + ", order=" + order + ", reactions=" + reactions +
+                ", embedCreateSpec=" + embedCreateSpec + '}';
     }
 }

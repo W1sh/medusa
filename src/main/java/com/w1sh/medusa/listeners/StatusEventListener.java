@@ -7,7 +7,6 @@ import com.w1sh.medusa.services.EventService;
 import com.w1sh.medusa.services.MessageService;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.rest.util.Color;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -15,7 +14,6 @@ import reactor.core.publisher.Mono;
 import java.util.function.Consumer;
 
 @Component
-@RequiredArgsConstructor
 public final class StatusEventListener implements CustomEventListener<StatusEvent> {
 
     @Value("${medusa.version}")
@@ -23,6 +21,11 @@ public final class StatusEventListener implements CustomEventListener<StatusEven
 
     private final MessageService messageService;
     private final EventService eventService;
+
+    public StatusEventListener(MessageService messageService, EventService eventService) {
+        this.messageService = messageService;
+        this.eventService = eventService;
+    }
 
     @Override
     public Mono<Void> execute(StatusEvent event) {

@@ -3,13 +3,15 @@ package com.w1sh.medusa.core.listeners;
 import com.w1sh.medusa.listeners.DiscordEventListener;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-@Slf4j
 public final class ReadyEventListener implements DiscordEventListener<ReadyEvent> {
+
+    private static final Logger log = LoggerFactory.getLogger(ReadyEventListener.class);
 
     @Override
     public Mono<Void> execute(ReadyEvent event) {
