@@ -3,6 +3,7 @@ package com.w1sh.medusa.hazelcast;
 import com.austinv11.servicer.WireService;
 import com.hazelcast.core.HazelcastInstance;
 import discord4j.store.api.Store;
+import discord4j.store.api.primitive.ForwardingStore;
 import discord4j.store.api.primitive.LongObjStore;
 import discord4j.store.api.service.StoreService;
 import discord4j.store.api.util.StoreContext;
@@ -35,12 +36,13 @@ public final class HazelcastStoreService implements StoreService {
 
     @Override
     public boolean hasLongObjStores() {
-        return false;
+        return true;
     }
 
+    @NonNull
     @Override
     public <V> LongObjStore<V> provideLongObjStore(@NonNull Class<V> valueClass) {
-        return null;
+        return new ForwardingStore<>(provideGenericStore(Long.class, valueClass));
     }
 
     @Override
