@@ -1,7 +1,9 @@
 package com.w1sh.medusa.core;
 
+import com.w1sh.medusa.commands.SlashCommandServiceFactory;
 import discord4j.common.JacksonResources;
 import discord4j.core.DiscordClient;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.EventDispatcher;
 import discord4j.core.event.ReactiveEventAdapter;
 import discord4j.core.object.presence.Activity;
@@ -17,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.retry.Retry;
 
 import java.time.Duration;
@@ -27,25 +31,28 @@ public final class Instance {
 
     private static final Instant START_INSTANCE = Instant.now();
     private static final Logger log = LoggerFactory.getLogger(Instance.class);
+    private static final long GUILD_ID = 323939237198036994L;
 
     private final JacksonResources jacksonResources;
     private final ReactiveEventAdapter reactiveEventAdapter;
     private final StoreService storeService;
+    private final SlashCommandServiceFactory slashCommandServiceFactory;
 
     @Value("${medusa.discord.token}")
     private String token;
 
     public Instance(JacksonResources jacksonResources, ReactiveEventAdapter reactiveEventAdapter,
-                    StoreService storeService) {
+                    StoreService storeService, SlashCommandServiceFactory slashCommandServiceFactory) {
         this.jacksonResources = jacksonResources;
         this.reactiveEventAdapter = reactiveEventAdapter;
         this.storeService = storeService;
+        this.slashCommandServiceFactory = slashCommandServiceFactory;
     }
 
     public void initialize(){
         log.info("Setting up client...");
 
-        DiscordClient.builder(token)
+        final GatewayDiscordClient client = DiscordClient.builder(token)
                 .onClientResponse(ResponseFunction.emptyIfNotFound())
                 .onClientResponse(ResponseFunction.retryWhen(RouteMatcher.route(Routes.MESSAGE_CREATE),
                         Retry.onlyIf(ClientException.isRetryContextStatusCode(500))
@@ -63,11 +70,24 @@ public final class Instance {
                 .setInitialPresence(shardInfo -> Presence.online(Activity.watching("you turn to stone")))
                 .login()
                 .blockOptional()
-                .orElseThrow(RuntimeException::new)
-                .on(reactiveEventAdapter)
-                .subscribe();
+                .orElseThrow(RuntimeException::new);
 
+        initializeApplicationCommands(client);
+
+        client.on(reactiveEventAdapter).blockLast();
         log.info("Client setup completed");
+    }
+
+    private void initializeApplicationCommands(GatewayDiscordClient client) {
+        long applicationId = client.getRestClient().getApplicationId().block();
+
+        Flux.fromIterable(slashCommandServiceFactory.getAllApplicationCommands())
+                .flatMap(command -> client.getRestClient().getApplicationService()
+                        .createGuildApplicationCommand(applicationId, GUILD_ID, command.buildApplicationCommandRequest())
+                        .doOnNext(applicationCommandData -> log.info("Created application command with name {}", applicationCommandData.name()))
+                        .doOnError(e -> log.warn("Unable to create guild command", e))
+                        .onErrorResume(e -> Mono.empty()))
+                .blockLast();
     }
 
     public static String getUptime(){

@@ -1,9 +1,11 @@
 package com.w1sh.medusa.core;
 
+import com.w1sh.medusa.commands.SlashCommandServiceFactory;
 import com.w1sh.medusa.data.Event;
 import com.w1sh.medusa.validators.Validator;
 import discord4j.core.event.ReactiveEventAdapter;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
+import discord4j.core.event.domain.interaction.SlashCommandEvent;
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -30,15 +32,17 @@ public final class MedusaReactiveEventAdapter extends ReactiveEventAdapter {
     private final DiscordEventPublisher discordEventPublisher;
     private final List<Validator<Event>> eventValidators;
     private final List<Validator<MessageCreateEvent>> messageValidators;
+    private final SlashCommandServiceFactory slashCommandServiceFactory;
 
     public MedusaReactiveEventAdapter(EventFactory eventFactory, CustomEventPublisher customEventPublisher,
                                       DiscordEventPublisher discordEventPublisher, List<Validator<Event>> eventValidators,
-                                      List<Validator<MessageCreateEvent>> messageValidators) {
+                                      List<Validator<MessageCreateEvent>> messageValidators, SlashCommandServiceFactory slashCommandServiceFactory) {
         this.eventFactory = eventFactory;
         this.customEventPublisher = customEventPublisher;
         this.discordEventPublisher = discordEventPublisher;
         this.eventValidators = eventValidators;
         this.messageValidators = messageValidators;
+        this.slashCommandServiceFactory = slashCommandServiceFactory;
     }
 
     @NonNull
@@ -53,6 +57,12 @@ public final class MedusaReactiveEventAdapter extends ReactiveEventAdapter {
                 .flatMap(ev -> ev.getClient().getGuilds().count())
                 .doOnNext(guilds -> log.info("Currently serving {} guilds", guilds))
                 .then();
+    }
+
+    @NonNull
+    @Override
+    public Publisher<?> onSlashCommand(SlashCommandEvent event) {
+        return slashCommandServiceFactory.getService(event.getCommandName()).reply(event);
     }
 
     @NonNull
