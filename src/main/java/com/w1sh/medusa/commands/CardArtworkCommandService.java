@@ -2,7 +2,6 @@ package com.w1sh.medusa.commands;
 
 import com.w1sh.medusa.rest.resources.Card;
 import com.w1sh.medusa.services.CardService;
-import com.w1sh.medusa.services.MessageService;
 import discord4j.core.event.domain.interaction.SlashCommandEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
@@ -15,19 +14,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 @Component
-public final class CardPriceCommandService implements ApplicationCommandService {
+public final class CardArtworkCommandService implements ApplicationCommandService {
 
-    private static final String TITLE_FIELD_FORMAT = "**%s**";
-    private static final String TEXT_FIELD_FORMAT = "%s %s %s";
-    private static final String COMMAND_NAME = "price";
+    private static final String COMMAND_NAME = "artwork";
 
     private final CardService cardService;
 
-    public CardPriceCommandService(CardService cardService) {
+    public CardArtworkCommandService(CardService cardService) {
         this.cardService = cardService;
     }
 
@@ -51,44 +47,21 @@ public final class CardPriceCommandService implements ApplicationCommandService 
                 .map(ApplicationCommandInteractionOptionValue::asString).orElse("");
 
         if (StringUtils.hasText(name)) {
-            return cardService.getUniquePrintsByName(name)
-                    .map(this::buildPriceEmbed)
+            return cardService.getCardByName(name)
+                    .map(this::buildArtworkEmbed)
                     .flatMap(embed -> event.reply(spec -> spec.addEmbed(embed)));
         } else {
             return event.replyEphemeral("Failed to find the card you requested, be more specific or try another card.");
         }
     }
 
-    private Consumer<EmbedCreateSpec> buildPriceEmbed(List<Card> cards) {
+    protected Consumer<EmbedCreateSpec> buildArtworkEmbed(Card card) {
         return embedCreateSpec -> {
             embedCreateSpec.setColor(Color.GREEN);
-            final int maxFields = Math.min(cards.size(), 4);
-            if (maxFields % 2 == 0) {
-                addFieldsForEvenPrints(embedCreateSpec, cards, maxFields);
-            } else {
-                addFieldsForOddPrints(embedCreateSpec, cards, maxFields);
-            }
+            embedCreateSpec.setTitle(card.getName());
+            embedCreateSpec.setImage(card.getImage().getArtwork());
+            embedCreateSpec.setFooter("Artwork by: " + card.getArtist(), null);
         };
-    }
-
-    private void addFieldsForEvenPrints(EmbedCreateSpec embedCreateSpec, List<Card> list, int maxFields) {
-        for (int i = 0; i < maxFields; i += 2) {
-            embedCreateSpec.addField(String.format(TITLE_FIELD_FORMAT, list.get(i).getSet()),
-                    String.format(TEXT_FIELD_FORMAT, list.get(i).getPrice().getUsd(), MessageService.BULLET,
-                            list.get(i).getPrice().getEur()), true);
-            embedCreateSpec.addField(MessageService.ZERO_WIDTH_SPACE, MessageService.ZERO_WIDTH_SPACE, true);
-            embedCreateSpec.addField(String.format(TITLE_FIELD_FORMAT, list.get(i + 1).getSet()),
-                    String.format(TEXT_FIELD_FORMAT, list.get(i + 1).getPrice().getUsd(), MessageService.BULLET,
-                            list.get(i + 1).getPrice().getEur()), true);
-        }
-    }
-
-    private void addFieldsForOddPrints(EmbedCreateSpec embedCreateSpec, List<Card> list, int maxFields) {
-        for (int i = 0; i < maxFields; i++) {
-            embedCreateSpec.addField(String.format(TITLE_FIELD_FORMAT, list.get(i).getSet()),
-                    String.format(TEXT_FIELD_FORMAT, list.get(i).getPrice().getUsd(), MessageService.BULLET,
-                            list.get(i).getPrice().getEur()), true);
-        }
     }
 
     @Override

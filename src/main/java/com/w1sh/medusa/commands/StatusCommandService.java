@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class StatusCommandService implements ApplicationCommandService {
+public final class StatusCommandService implements ApplicationCommandService {
 
     private static final String COMMAND_NAME = "status";
 

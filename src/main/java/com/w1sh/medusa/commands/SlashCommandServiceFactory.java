@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-public class SlashCommandServiceFactory {
+public final class SlashCommandServiceFactory {
 
     private static final Logger log = LoggerFactory.getLogger(SlashCommandServiceFactory.class);
     private final ConcurrentHashMap<String, ApplicationCommandService> commandsMap = new ConcurrentHashMap<>();

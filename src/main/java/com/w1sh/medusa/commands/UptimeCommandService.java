@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class UptimeCommandService implements ApplicationCommandService {
+public final class UptimeCommandService implements ApplicationCommandService {
 
     private static final String COMMAND_NAME = "uptime";
     private static final String CONTENT = "Medusa has been online for %s";
