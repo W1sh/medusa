@@ -17,13 +17,13 @@ import reactor.core.publisher.Mono;
 import java.util.function.Consumer;
 
 @Component
-public final class CardArtworkCommandService implements ApplicationCommandService {
+public final class CardImageCommandService implements ApplicationCommandService {
 
-    private static final String COMMAND_NAME = "artwork";
+    private static final String COMMAND_NAME = "image";
 
     private final CardService cardService;
 
-    public CardArtworkCommandService(CardService cardService) {
+    public CardImageCommandService(CardService cardService) {
         this.cardService = cardService;
     }
 
@@ -31,7 +31,7 @@ public final class CardArtworkCommandService implements ApplicationCommandServic
     public ApplicationCommandRequest buildApplicationCommandRequest() {
         return ApplicationCommandRequest.builder()
                 .name(COMMAND_NAME)
-                .description("View the artwork of the given card")
+                .description("View a print of the given card")
                 .addOption(ApplicationCommandOptionData.builder()
                         .name("name")
                         .description("Name of the card")
@@ -48,19 +48,17 @@ public final class CardArtworkCommandService implements ApplicationCommandServic
 
         if (StringUtils.hasText(name)) {
             return cardService.getCardByName(name)
-                    .map(this::buildArtworkEmbed)
+                    .map(this::buildImageEmbed)
                     .flatMap(embed -> event.reply(spec -> spec.addEmbed(embed)));
         } else {
             return event.replyEphemeral("Failed to find the card you requested, be more specific or try another card.");
         }
     }
 
-    protected Consumer<EmbedCreateSpec> buildArtworkEmbed(Card card) {
+    private Consumer<EmbedCreateSpec> buildImageEmbed(Card card) {
         return embedCreateSpec -> {
             embedCreateSpec.setColor(Color.GREEN);
-            embedCreateSpec.setTitle(card.getName());
-            embedCreateSpec.setImage(card.getImage().getArtwork());
-            embedCreateSpec.setFooter("Artwork by: " + card.getArtist(), null);
+            embedCreateSpec.setImage(card.getImage().getNormal());
         };
     }
 
