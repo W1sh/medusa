@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-public class SlashCommandService implements ApplicationCommandService {
+public class StatusCommandService implements ApplicationCommandService {
 
     private static final String COMMAND_NAME = "status";
 
@@ -20,7 +20,7 @@ public class SlashCommandService implements ApplicationCommandService {
     @Value("${medusa.version}")
     private String version;
 
-    public SlashCommandService(EventService eventService) {
+    public StatusCommandService(EventService eventService) {
         this.eventService = eventService;
     }
 

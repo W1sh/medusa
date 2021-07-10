@@ -2,6 +2,7 @@ package com.w1sh.medusa.rest.resources;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.util.StringUtils;
 
 import java.util.Objects;
 
@@ -22,19 +23,19 @@ public class Price {
     }
 
     public String getEur() {
-        return this.eur;
+        return !StringUtils.hasText(eur) ? "N/A" : String.format("€%s", eur);
     }
 
     public String getEurFoil() {
-        return this.eurFoil;
+        return !StringUtils.hasText(eurFoil) ? "N/A" : String.format("€%s", eurFoil);
     }
 
     public String getUsd() {
-        return this.usd;
+        return !StringUtils.hasText(usd) ? "N/A" : String.format("$%s", usd);
     }
 
     public String getUsdFoil() {
-        return this.usdFoil;
+        return !StringUtils.hasText(usdFoil) ? "N/A" : String.format("$%s", usdFoil);
     }
 
     public void setEur(String eur) {
