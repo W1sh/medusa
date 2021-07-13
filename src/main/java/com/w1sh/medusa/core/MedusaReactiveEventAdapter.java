@@ -1,48 +1,31 @@
 package com.w1sh.medusa.core;
 
 import com.w1sh.medusa.commands.SlashCommandServiceFactory;
-import com.w1sh.medusa.data.Event;
-import com.w1sh.medusa.validators.Validator;
+import com.w1sh.medusa.data.SlashCommand;
+import com.w1sh.medusa.services.SlashCommandService;
 import discord4j.core.event.ReactiveEventAdapter;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
 import discord4j.core.event.domain.interaction.SlashCommandEvent;
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
-import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.event.domain.message.ReactionAddEvent;
-import discord4j.core.object.entity.User;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
-import reactor.bool.BooleanUtils;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @Component
 public final class MedusaReactiveEventAdapter extends ReactiveEventAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(MedusaReactiveEventAdapter.class);
 
-    private final EventFactory eventFactory;
-    private final CustomEventPublisher customEventPublisher;
-    private final DiscordEventPublisher discordEventPublisher;
-    private final List<Validator<Event>> eventValidators;
-    private final List<Validator<MessageCreateEvent>> messageValidators;
     private final SlashCommandServiceFactory slashCommandServiceFactory;
+    private final SlashCommandService slashCommandService;
 
-    public MedusaReactiveEventAdapter(EventFactory eventFactory, CustomEventPublisher customEventPublisher,
-                                      DiscordEventPublisher discordEventPublisher, List<Validator<Event>> eventValidators,
-                                      List<Validator<MessageCreateEvent>> messageValidators, SlashCommandServiceFactory slashCommandServiceFactory) {
-        this.eventFactory = eventFactory;
-        this.customEventPublisher = customEventPublisher;
-        this.discordEventPublisher = discordEventPublisher;
-        this.eventValidators = eventValidators;
-        this.messageValidators = messageValidators;
+    public MedusaReactiveEventAdapter(SlashCommandServiceFactory slashCommandServiceFactory, SlashCommandService slashCommandService) {
         this.slashCommandServiceFactory = slashCommandServiceFactory;
+        this.slashCommandService = slashCommandService;
     }
 
     @NonNull
@@ -61,34 +44,9 @@ public final class MedusaReactiveEventAdapter extends ReactiveEventAdapter {
 
     @NonNull
     @Override
-    public Publisher<?> onSlashCommand(SlashCommandEvent event) {
+    public Publisher<?> onSlashCommand(@NonNull SlashCommandEvent event) {
+        slashCommandService.save(new SlashCommand(event));
         return slashCommandServiceFactory.getService(event.getCommandName()).reply(event);
-    }
-
-    @NonNull
-    @Override
-    public Publisher<?> onMessageCreate(@NonNull MessageCreateEvent event) {
-        return Mono.justOrEmpty(event)
-                .filter(e -> e.getClass().equals(MessageCreateEvent.class) && e.getMember().map(user -> !user.isBot()).orElse(false))
-                .filterWhen(ev -> Flux.fromIterable(messageValidators)
-                        .flatMap(validator -> validator.validate(ev))
-                        .all(Boolean.TRUE::equals)
-                        .defaultIfEmpty(true))
-                .flatMap(e -> Mono.justOrEmpty(eventFactory.extractEvents(e)))
-                .filterWhen(ev -> Flux.fromIterable(eventValidators)
-                        .filter(validator -> Event.class.isAssignableFrom(ev.getClass()))
-                        .flatMap(validator -> validator.validate(ev))
-                        .all(Boolean.TRUE::equals)
-                        .defaultIfEmpty(true))
-                .flatMap(customEventPublisher::publish);
-    }
-
-    @NonNull
-    @Override
-    public Publisher<?> onReactionAdd(@NonNull ReactionAddEvent event) {
-        return Mono.justOrEmpty(event)
-                .filterWhen(e -> BooleanUtils.not(e.getUser().map(User::isBot)))
-                .flatMap(discordEventPublisher::publish);
     }
 
     @NonNull

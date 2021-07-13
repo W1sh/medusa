@@ -2,7 +2,7 @@ package com.w1sh.medusa.commands;
 
 import com.w1sh.medusa.rest.resources.Card;
 import com.w1sh.medusa.services.CardService;
-import com.w1sh.medusa.services.MessageService;
+import com.w1sh.medusa.utils.Messages;
 import discord4j.core.event.domain.interaction.SlashCommandEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
@@ -64,10 +64,10 @@ public final class DetailsCommandService implements ApplicationCommandService {
             embedCreateSpec.setTitle(card.getName());
             embedCreateSpec.addField(String.format("**%s**", card.getTypeLine()),
                     String.format("%s%n*%s*",
-                            card.getOracleText() == null ? MessageService.ZERO_WIDTH_SPACE : card.getOracleText(),
-                            card.getFlavorText() == null ? MessageService.ZERO_WIDTH_SPACE : card.getFlavorText()), false);
+                            card.getOracleText() == null ? Messages.ZERO_WIDTH_SPACE : card.getOracleText(),
+                            card.getFlavorText() == null ? Messages.ZERO_WIDTH_SPACE : card.getFlavorText()), false);
             if (card.getPower() != null || card.getToughness() != null) {
-                embedCreateSpec.addField(MessageService.ZERO_WIDTH_SPACE,
+                embedCreateSpec.addField(Messages.ZERO_WIDTH_SPACE,
                         String.format("**%s/%s**",
                                 card.getPower(),
                                 card.getToughness()), true);

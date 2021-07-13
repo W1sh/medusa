@@ -61,9 +61,9 @@ public final class ScryfallClient {
     }
 
     private <T> Mono<T> handleHttpResponse(HttpClientResponse httpClientResponse, ByteBufMono byteBufMono, TypeReference<T> typeReference){
-        log.info("Received response from Scryfall with status {}", httpClientResponse.status().toString());
+        log.info("Received response from Scryfall with status {}", httpClientResponse.status());
         final String exceptionMessage = String.format("Failed to retrieve cards from Scryfall API with reason \"%s\"",
-                httpClientResponse.status().toString());
+                httpClientResponse.status());
         if(httpClientResponse.status().equals(HttpResponseStatus.OK)){
             return byteBufMono.asString()
                     .flatMap(json -> Mono.justOrEmpty(parse(json, typeReference)))
