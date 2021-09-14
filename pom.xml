@@ -16,7 +16,7 @@
 
         <spring.boot.version>2.5.2</spring.boot.version>
         <discord4j.version>3.1.7</discord4j.version>
-        <reactor.version>3.4.3</reactor.version>
+        <reactor.version>3.4.5</reactor.version>
         <caffeine.version>3.0.3</caffeine.version>
         <reflections.version>0.9.12</reflections.version>
         <hazelcast.version>4.2.1</hazelcast.version>
