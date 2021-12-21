@@ -19,7 +19,7 @@
         <reactor.version>3.4.3</reactor.version>
         <caffeine.version>3.0.3</caffeine.version>
         <reflections.version>0.9.12</reflections.version>
-        <hazelcast.version>4.2.1</hazelcast.version>
+        <hazelcast.version>5.0.2</hazelcast.version>
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
     </properties>
 
